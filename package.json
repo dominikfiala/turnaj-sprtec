@@ -4,7 +4,8 @@
   "description": "Aplikace pro řízení turnaje ve šprtci",
   "main": "index.html",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "bundle": "./node_modules/.bin/gulp bundle"
   },
   "repository": {
     "type": "git",
@@ -21,7 +22,13 @@
   },
   "homepage": "https://github.com/dominikfiala/turnaj-sprtec#readme",
   "dependencies": {
-    "bootstrap": "^3.3.7",
-    "jquery": "^3.2.1"
+    "bootstrap": "4.0.0-beta",
+    "jquery": "3.2.1",
+    "popper.js": "1.11.0",
+    "vue": "2.5.1"
+  },
+  "devDependencies": {
+    "gulp": "3.9.1",
+    "gulp-concat": "2.6.1"
   }
 }

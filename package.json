@@ -1,0 +1,27 @@
+{
+  "name": "turnaj",
+  "version": "1.0.0",
+  "description": "Aplikace pro řízení turnaje ve šprtci",
+  "main": "index.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dominikfiala/turnaj-sprtec.git"
+  },
+  "keywords": [
+    "turnaj",
+    "šprtec"
+  ],
+  "author": "Dominik Fiala, domo.fiala@gmail.com",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dominikfiala/turnaj-sprtec/issues"
+  },
+  "homepage": "https://github.com/dominikfiala/turnaj-sprtec#readme",
+  "dependencies": {
+    "bootstrap": "^3.3.7",
+    "jquery": "^3.2.1"
+  }
+}

@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="cs">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Turnaj ve šprtci</title>
+  <!-- build:css -->
+  <link rel="stylesheet" href="../node_modules/bootstrap/dist/css/bootstrap.css">
+  <!-- endbuild -->
+  <style>
+  @media print {
+    body {
+      font-size: 10px;
+    }
+    abbr[title] {
+      text-decoration: none;
+    }
+    abbr[title]::after {
+      content: "";
+    }
+    #m-print-none {
+      margin: 0 !important;
+    }
+  }
+  </style>
+</head>
+
+<body>
+  <div id="app" class="m-2">
+    <h3 class="d-none d-print-block">{{ config.name }}, {{ tournamentDate }}</h3>
+
+    <!-- Application tabs -->
+    <ul class="nav nav-tabs d-print-none">
+      <li class="nav-item">
+        <a href="#config" :class="{active: state.activeTab == 'config', 'text-danger': !configComplete}" v-on:click="state.activeTab = 'config'" id="config-tab" data-toggle="tab" class="nav-link">Nastavení turnaje</a>
+      </li>
+      <li class="nav-item">
+        <a href="#players" :class="{active: state.activeTab == 'players', 'text-danger': !playersComplete}" v-on:click="state.activeTab = 'players'" id="players-tab" data-toggle="tab" class="nav-link">Účastníci</a>
+      </li>
+      <li class="nav-item">
+        <a href="#matches" :class="{active: state.activeTab == 'matches'}" v-on:click="state.activeTab = 'matches'" id="matches-tab" data-toggle="tab" class="nav-link">Zápasy</a>
+      </li>
+      <li class="nav-item">
+        <a href="#results" :class="{active: state.activeTab == 'results'}" v-on:click="state.activeTab = 'results'" id="results-tab" data-toggle="tab" class="nav-link">Výsledky</a>
+      </li>
+      <li class="nav-item">
+        <a href="#about-app" :class="{active: state.activeTab == 'about-app'}" v-on:click="state.activeTab = 'about-app'" id="about-app-tab" data-toggle="tab" class="nav-link">O aplikaci</a>
+      </li>
+    </ul>
+
+    <!-- Application screen -->
+    <div class="tab-content m-2" id="m-print-none">
+      <!-- Tournament config -->
+      <div class="tab-pane" :class="{active: state.activeTab == 'config', show: state.activeTab == 'config'}" id="config">
+        <form>
+          <div class="form-group">
+            <label for="config-name">Název turnaje</label>
+            <input type="text" v-model="config.name" class="form-control" id="config-name" :class="{'is-invalid': !config.name}">
+          </div>
+          <div class="form-group">
+            <label for="config-date">Datum konání</label>
+            <input type="date" v-model="config.date" class="form-control" id="config-date" :class="{'is-invalid': !config.date}">
+          </div>
+          <div class="form-group">
+            <label for="config-date">Počet kol (min. 3)</label>
+            <input type="number" min="3" v-model.number="config.numberOfRounds" class="form-control" id="config-date" :class="{'is-invalid': !config.numberOfRounds}">
+          </div>
+          <label>Volné kolo</label>
+          <div class="form-check">
+            <label class="form-check-label">
+              <input class="form-check-input" type="radio" v-model="config.bye" value="bottom">
+              Ze spodu &ndash; volné kolo získávají hráči ze spodních pozic průběžného pořadí
+            </label>
+          </div>
+          <div class="form-check">
+            <label class="form-check-label">
+              <input class="form-check-input" type="radio" v-model="config.bye" value="random">
+              Náhodně &ndash; volné kolo získávají hráči náhodně
+            </label>
+          </div>
+          <div class="form-group">
+            <label>Kluby</label>
+            <input v-for="(club, clubIndex) in config.clubs" type="text" v-model="config.clubs[clubIndex]" class="form-control mb-2">
+            <input v-on:blur="addClub" type="text" class="form-control" placeholder="Další klub">
+          </div>
+        </form>
+        <p>
+          <button v-on:click="resetTournament" class="btn btn-danger">Reset</button>
+        </p>
+      </div>
+
+      <!-- Players config -->
+      <div class="tab-pane" :class="{active: state.activeTab == 'players', show: state.activeTab == 'players'}" id="players">
+        <div class="row mb-2 d-print-none">
+          <div class="col">
+            <span class="btn">Počet účastníků: <strong>{{ players.length }}</strong></span>
+          </div>
+          <div class="col text-right">
+            <button v-on:click="addPlayer" class="btn btn-success">Přidat účastníka</button>
+          </div>
+        </div>
+
+        <form class="d-flex d-print-none flex-column-reverse players-list">
+          <div v-for="(player, playerIndex) in players" class="form-row mb-2 players-list-item">
+            <div class="col-auto" v-if="rounds.length === 0">
+              <button v-on:click="removePlayer(playerIndex)" class="btn btn-danger" title="Odebrat účastníka"><strong>&times;</strong></button>
+            </div>
+            <div class="col">
+              <input v-model="player.surname" type="text" class="form-control" :class="{'is-invalid': !player.surname.length}" placeholder="PŘÍJMENÍ">
+            </div>
+            <div class="col">
+              <input v-model="player.name" type="text" class="form-control" :class="{'is-invalid': !player.name.length}" placeholder="Jméno">
+            </div>
+            <div class="col">
+              <select v-model="player.club" class="form-control" :class="{'is-invalid': player.club === -1}">
+                <option :value="-1">Klub</option>
+                <option v-for="(club, clubIndex) in config.clubs" :value="clubIndex">{{ club }}</option>
+              </select>
+            </div>
+            <div class="col">
+              <select v-model="player.sex" class="form-control">
+                <option value="male">muž</option>
+                <option value="female">žena</option>
+              </select>
+            </div>
+            <div class="col">
+              <input v-model="player.yearOfBirth" min="1900" type="number" class="form-control" placeholder="Ročník" :class="{'is-invalid': player.yearOfBirth > (new Date()).getFullYear()}">
+            </div>
+            <div class="col-auto" :title="playerCategories[playerIndex].name">
+              <input type="text" :value="playerCategories[playerIndex].shortcut" class="form-control-plaintext text-center" style="width: 20px;" tabindex="-1">
+            </div>
+<!--             <div class="col-auto form-check">
+              <label class="form-check-label">
+                <input type="checkbox" class="form-check-input" v-model="player.feePaid">
+              </label>
+            </div> -->
+          </div>
+        </form>
+
+        <div class="d-none d-print-block">
+          <p class="lead">Listina účastníků, celkem hráčů: {{ players.length }}</p>
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Hráč</th>
+                <th>Klub</th>
+                <th>Kategorie</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(player, playerIndex) in players">
+                <td>{{ playerIndex+1 }}.</td>
+                <td>{{ playerNames[playerIndex] }}</td>
+                <td>{{ config.clubs[player.club] }}</td>
+                <td>{{ playerCategories[playerIndex].name }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Matches -->
+      <div class="tab-pane" :class="{active: state.activeTab == 'matches', show: state.activeTab == 'matches'}" id="matches">
+        <!-- Rounds tabs -->
+        <div class="row d-print-none">
+          <div class="col">
+            <div class="nav nav-pills mb-2">
+              <a v-for="round in config.numberOfRounds"
+                class="nav-link"
+                :class="{active: state.activeRound === round - 1}"
+                :id="`rounds-tab-${round}-tab`"
+                data-toggle="pill"
+                :href="`#rounds-tab-${round}`"
+                v-on:click="state.activeRound = round - 1"
+              >{{round}}. kolo</a>
+            </div>
+          </div>
+          <div class="col-auto">
+            <button v-on:click="generateRound(state.activeRound)" class="btn btn-success" :disabled="!isTournamentReady || !isRoundReady(state.activeRound) || isRoundGenerated(state.activeRound)">Generovat zápasy</button>
+            <button v-on:click="rounds = []" class="btn btn-danger">Reset</button>
+          </div>
+        </div>
+
+        <!-- Round results -->
+        <div class="tab-content" id="rounds-tabContent">
+          <p class="d-none d-print-block lead">Zápasy {{ state.activeRound+1 }}. kola</p>
+
+          <p v-if="!isTournamentReady" class="alert alert-warning">Turnaj nelza zahájit, není kompletní nastavení turnaje nebo listina účastníků.</p>
+          <p v-if="!isRoundReady(state.activeRound)" class="alert alert-warning">Nelze generovat zápasy, není kompletní předchozí kolo.</p>
+          <div v-for="(round, roundIndex) in rounds" class="tab-pane" :id="`rounds-tab-${roundIndex}`"
+            :class="{show: state.activeRound == roundIndex, active: state.activeRound == roundIndex}">
+            <div class="d-flex mb-2 d-print-none" v-for="match in round.matches">
+              <input type="text" readonly tabindex="-1" class="form-control-plaintext" style="flex: 1"
+                :value="playerNames[match.home]">
+              <input type="text" readonly tabindex="-1" class="form-control-plaintext text-center" style="width: 30px" value="&times;">
+              <input type="text" readonly tabindex="-1" class="form-control-plaintext" style="flex: 1"
+                :value="playerNames[match.away]">
+              <div class="input-group mr-2" style="width: 150px">
+                <input v-model.number="match.home_score" type="number" class="form-control" :class="{'is-invalid': match.home_score === ''}" min="0">
+                <span class="input-group-addon">:</span>
+                <input v-model.number="match.away_score" type="number" class="form-control" :class="{'is-invalid': match.away_score === ''}" min="0">
+              </div>
+              <select v-model="match.referee" class="form-control w-25" :class="{'is-invalid': match.referee === -1}">
+                <option :value="-1">Rozhodčí</option>
+                <option v-for="(player, playerIndex) in playerNames" :value="playerIndex">{{ player }}</option>
+              </select>
+            </div>
+            <div class="d-none d-print-block">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th colspan="3">Soupeři</th>
+                    <th class="text-center">Výsledek</th>
+                    <th>Rozhodčí</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(match, matchIndex) in round.matches">
+                    <td>{{ matchIndex+1 }}.</td>
+                    <td>{{ playerNames[match.home] }}</td>
+                    <td class="text-center">&times;</td>
+                    <td>{{ playerNames[match.away] }}</td>
+                    <td class="text-center">:</td>
+                    <td class="w-25"></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p v-if="round.bye !== -1">Volné kolo: <strong>{{ playerNames[round.bye] }}</strong></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Results -->
+      <div class="tab-pane" :class="{active: state.activeTab == 'results', show: state.activeTab == 'results'}" id="results">
+        <p v-if="roundsComplete.length !== config.numberOfRounds" class="d-none d-print-block lead">Průběžné výsledky, odehráno kol: {{ roundsComplete.length }}/{{ config.numberOfRounds }}</p>
+        <p v-if="roundsComplete.length === config.numberOfRounds" class="d-none d-print-block lead">Konečné výsledky turnaje</p>
+        <table class="table table-hover table-sm">
+          <thead>
+            <tr>
+              <th><abbr title="Umístění">#</abbr></th>
+              <th>Hráč</th>
+              <th>Klub</th>
+              <th class="text-center"><abbr title="Kategorie">K</abbr></th>
+              <th class="text-center"><abbr title="Počet zápasů">Z</abbr></th>
+              <th class="text-center"><abbr title="Výhry">V</abbr></th>
+              <th class="text-center"><abbr title="Remízy">R</abbr></th>
+              <th class="text-center"><abbr title="Prohry">P</abbr></th>
+              <th class="text-center"><abbr title="Body">B</abbr></th>
+              <th class="text-center"><abbr title="Body soupeřů">BS</abbr></th>
+              <th class="text-center"><abbr title="Body soupeřů soupeřů">BSS</abbr></th>
+              <th class="text-center" colspan="3">Skóre</th>
+              <th class="text-center"><abbr title="Rozhodčí">R</abbr></th>
+              <th v-if="rounds.length > 0" :colspan="config.numberOfRounds" class="text-center">Zápasy {{ rounds.legnth }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(result, resultIndex) in tournamentResults">
+              <td>
+                {{ resultIndex + 1 }}.
+                <abbr v-if="result.sharedPosition" class="text-muted" title="Výsledková shoda s předchozím hráčem v pořadí">?</abbr>
+              </td>
+              <td>{{ playerNames[result.playerIndex] }}</td>
+              <td><span v-if="players[result.playerIndex].club !== -1">{{ config.clubs[players[result.playerIndex].club] }}</span></td>
+              <td class="text-center" :title="playerCategories[result.playerIndex].name">{{ playerCategories[result.playerIndex].shortcut }}</td>
+              <td class="text-center">{{ result.matches }}</td>
+              <td class="text-center">{{ result.wins }}</td>
+              <td class="text-center">{{ result.ties }}</td>
+              <td class="text-center">{{ result.losses }}</td>
+              <td class="text-center">{{ result.points }}</td>
+              <td class="text-center">{{ result.opponentsPoints }}</td>
+              <td class="text-center">{{ result.opponentsOpponentsPoints }}</td>
+              <td class="text-right">{{ result.goalsFor }}</td>
+              <td class="text-center">:</td>
+              <td>{{ result.goalsAgainst }}</td>
+              <td class="text-center">{{ result.referee }}</td>
+              <td v-for="match in result.results">
+                <span v-if="match.opponent === -1">volno</span>
+                <span v-if="match.opponent !== -1">{{playerPlacementByIndex(match.opponent)}} ({{ match.goalsFor }}:{{ match.goalsAgainst }})</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- About app -->
+      <div class="tab-pane" :class="{active: state.activeTab == 'about-app', show: state.activeTab == 'about-app'}" id="about-app">
+        <h1>Turnaj ve šprtci</h1>
+        <p class="lead">Webová aplikace pro řízení šprtcových turnajů.</p>
+        <h2>Vlastnosti</h2>
+        <h3>Rozhodující kritéria</h3>
+        <ol>
+          <li>Body</li>
+          <li>Body soupeřů</li>
+          <li>Body soupeřů soupeřů</li>
+          <li>Vstřelené branky (max. 5 na zápas)</li>
+        </ol>
+        <h2>Autor</h2>
+        <p>Dominik Fiala, <a href="mailto:domo.fiala@gmail.com">domo.fiala@gmail.com</a></p>
+        <h2>Návrhy pro zlepšení</h2>
+        <ul>
+          <li>Fungování bez připojení k Internetu</li>
+          <li>Umožnit ukládání/sdílení turnajů</li>
+          <li>Vyhnout se vzájemným zápasům hráčů stejného klubu</li>
+          <li>Volné kolo se uděluje hráčům ze spodu</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- build:js -->
+  <script src="../node_modules/jquery/dist/jquery.slim.min.js"></script>
+  <script src="../node_modules/popper.js/dist/umd/popper.min.js"></script>
+  <script src="../node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+  <script src="../node_modules/vue/dist/vue.min.js"></script>
+  <script src="./app.js"></script>
+  <!-- endbuild -->
+</body>
+
+</html>

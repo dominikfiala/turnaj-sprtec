@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Turnaj ve šprtci</title>
-  <link rel="stylesheet" href="./bundle.css">
+  <link rel="stylesheet" href="./bundle.min.css">
   <style>
   @media print {
     body {
@@ -118,7 +118,7 @@
             </div>
 <!--             <div class="col-auto form-check">
               <label class="form-check-label">
-                <input type="checkbox" class="form-check-input" v-model="player.feedPaid">
+                <input type="checkbox" class="form-check-input" v-model="player.feePaid">
               </label>
             </div> -->
           </div>
@@ -238,9 +238,6 @@
               <th class="text-center"><abbr title="Body">B</abbr></th>
               <th class="text-center"><abbr title="Body soupeřů">BS</abbr></th>
               <th class="text-center"><abbr title="Body soupeřů soupeřů">BSS</abbr></th>
-<!--               <th class="text-right"><abbr title="Góly vstřelené">GV</abbr></th>
-              <th class="text-center"></th>
-              <th><abbr title="Góly obdržené">GO</abbr></th> -->
               <th class="text-center" colspan="3">Skóre</th>
               <th class="text-center"><abbr title="Rozhodčí">R</abbr></th>
               <th v-if="rounds.length > 0" :colspan="config.numberOfRounds" class="text-center">Zápasy {{ rounds.legnth }}</th>
@@ -285,21 +282,22 @@
           <li>Body</li>
           <li>Body soupeřů</li>
           <li>Body soupeřů soupeřů</li>
-          <li>Vstřelené branky</li>
+          <li>Vstřelené branky (max. 5 na zápas)</li>
         </ol>
         <h2>Autor</h2>
         <p>Dominik Fiala, <a href="mailto:domo.fiala@gmail.com">domo.fiala@gmail.com</a></p>
         <h2>Návrhy pro zlepšení</h2>
         <ul>
           <li>Fungování bez připojení k Internetu</li>
-          <li>Určení kategorie hráče dle pohlaví, ročníku narození a roku konání turnaje</li>
           <li>Umožnit ukládání/sdílení turnajů</li>
+          <li>Vyhnout se vzájemným zápasům hráčů stejného klubu</li>
+          <li>Volné kolo se uděluje hráčům ze spodu</li>
         </ul>
       </div>
     </div>
   </div>
 
-  <script src="./bundle.js"></script>
+  <script src="./bundle.min.js"></script>
 </body>
 
 </html>

@@ -1,3 +1,5 @@
+Vue.config.devtools = true;
+
 var data = {
   state: {
     activeTab: 'config',
@@ -7,7 +9,23 @@ var data = {
     name: 'Turnaj ve šprtci',
     numberOfRounds: 3,
     date: new Date().toISOString().slice(0, 10),
-    clubs: ['BHK Orel Boskovice', 'Šprtmejkři Ostrava']
+    clubs: [
+      'BHC Dragons Modřice',
+      'BHC StarColor Most',
+      'BHK Orel Boskovice',
+      'Doudeen Team',
+      'Fluke Kohoutovice',
+      'Future Úsov',
+      'Gunners Břeclav',
+      'Old Friends Stochov',
+      'Prague NHL',
+      'SHC Bizoni Uherčice',
+      'SHL SDS EXMOST Brno',
+      'SHL WIP Reklama D. Voda',
+      'Sokol Stochov',
+      'THE Orel Bohunice',
+    ],
+    bye: 'bottom'
   },
   players: [],
   rounds: []
@@ -40,12 +58,12 @@ var app = new Vue({
       }
       event.target.value = ''
     },
-    
+
     resetTournament: function() {
       store.clear()
       location.reload()
     },
-    
+
     playersMutualMatch: function(a, b) {
       return this.rounds.some(function(round) {
         return round.matches.some(function(match) {
@@ -74,15 +92,15 @@ var app = new Vue({
     removePlayer: function(playerIndex) {
       this.players.splice(playerIndex, 1)
     },
-    
+
     generateRound: function(roundIndex) {
       var round = {
         matches: [],
         bye: -1
       }
-          
+
       // clone results array
-      var availablePlayers = this.tournamentResults.slice()        
+      var availablePlayers = this.tournamentResults.slice()
 
       // random player gets bye round, if players count odd and if didnt get bye round yet
       if (availablePlayers.length % 2 === 1) {
@@ -95,7 +113,7 @@ var app = new Vue({
           }
         }
       }
-      
+
       // make pairs
       while (availablePlayers.length > 1) {
         var home = availablePlayers.shift()
@@ -119,7 +137,7 @@ var app = new Vue({
         }
         round.matches.push(match)
       }
-      
+
       this.$set(this.rounds, roundIndex, round)
     },
     isRoundReady: function(roundIndex) {
@@ -155,7 +173,7 @@ var app = new Vue({
     randomIndex: function(array) {
       return Math.floor(Math.random()*array.length)
     }
-  }, 
+  },
   computed: {
     isTournamentReady: function() {
       return this.playersComplete && this.configComplete
@@ -179,7 +197,7 @@ var app = new Vue({
       var currentYear = new Date(this.config.date).getFullYear();
       return this.players.map(function(player) {
         var age = currentYear - player.yearOfBirth
-        
+
         if (age <= 11) {
           return {
             'shortcut': 'P',
@@ -223,6 +241,7 @@ var app = new Vue({
           ties: 0,
           referee: 0,
           goalsFor: 0,
+          goalsForSort: 0,
           goalsAgainst: 0,
           byes: 0,
           opponents: [],
@@ -234,8 +253,8 @@ var app = new Vue({
       })
       this.rounds.forEach((round, roundIndex) => {
         // round not complete yet
-        if (!this.isRoundComplete(roundIndex)) { return } 
-        
+        if (!this.isRoundComplete(roundIndex)) { return }
+
         // bye match
         if (round.bye !== -1) {
           results[round.bye].matches++
@@ -246,21 +265,23 @@ var app = new Vue({
             opponent: -1
           }
         }
-        
+
         // calculate stats
         round.matches.forEach((match, matchIndex) => {
           // sum referee
           if (match.referee !== -1) {
             results[match.referee].referee++
           }
-          
+
           // sum points and score
           var homePlayer = results[match.home]
           var awayPlayer = results[match.away]
           homePlayer.opponents.push(match.away)
           awayPlayer.opponents.push(match.home)
           homePlayer.goalsFor += match.home_score
+          homePlayer.goalsForSort += match.home_score > 5 ? 5 : match.home_score
           awayPlayer.goalsFor += match.away_score
+          awayPlayer.goalsForSort += match.away_score > 5 ? 5 : match.away_score
           homePlayer.goalsAgainst += match.away_score
           awayPlayer.goalsAgainst += match.home_score
           homePlayer.matches++
@@ -306,7 +327,7 @@ var app = new Vue({
           }
         }, 0)
       })
-      
+
       // sum opponents opponents points
       results.forEach(function(player) {
         player.opponents.forEach(function(opponentIndex) {
@@ -316,14 +337,14 @@ var app = new Vue({
           player.opponentsOpponentsPoints += opponent.opponentsPoints
         })
       })
-      
+
       return results
     },
     tournamentResults: function() {
       var results = this.playerStats.slice()
       // sort player stats
-      results.sort(this.fieldSorter(['-points', '-oppontentsPoints', '-opponentsOpponentsPoints', '-goalsFor']))
-      
+      results.sort(this.fieldSorter(['-points', '-oppontentsPoints', '-opponentsOpponentsPoints', '-goalsForSort']))
+
       // check shared positions
       var previousResult = null
       results.forEach(function(result) {
@@ -337,7 +358,7 @@ var app = new Vue({
         }
         previousResult = result
       })
-      
+
       return results
     },
     tournamentDate: function() {
@@ -348,7 +369,7 @@ var app = new Vue({
       this.rounds.forEach((round, roundIndex) => {
         if (this.isRoundComplete(roundIndex)) {
           complete.push(roundIndex)
-        } 
+        }
       })
       return complete
     }

@@ -5,7 +5,8 @@
   "main": "index.html",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "bundle": "./node_modules/.bin/gulp bundle"
+    "build": "./node_modules/.bin/gulp build",
+    "serve": "./node_modules/.bin/gulp serve"
   },
   "repository": {
     "type": "git",
@@ -28,7 +29,14 @@
     "vue": "2.5.1"
   },
   "devDependencies": {
+    "babel-core": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
+    "browser-sync": "^2.18.13",
     "gulp": "3.9.1",
-    "gulp-concat": "2.6.1"
+    "gulp-babel": "^7.0.0",
+    "gulp-concat": "2.6.1",
+    "gulp-html-replace": "^1.6.2",
+    "gulp-clean-css": "^3.9.0",
+    "gulp-uglify": "^3.0.0"
   }
 }

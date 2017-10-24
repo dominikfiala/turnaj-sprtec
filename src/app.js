@@ -2,233 +2,256 @@ Vue.config.devtools = true;
 
 var data = {
   state: {
-    activeTab: 'config',
-    activeRound: 0,
+    activeTab: "config",
+    activeRound: 0
   },
   config: {
-    name: 'Turnaj ve šprtci',
+    name: "Turnaj ve šprtci",
     numberOfRounds: 3,
     date: new Date().toISOString().slice(0, 10),
     clubs: [
-      'BHC Dragons Modřice',
-      'BHC StarColor Most',
-      'BHK Orel Boskovice',
-      'Doudeen Team',
-      'Fluke Kohoutovice',
-      'Future Úsov',
-      'Gunners Břeclav',
-      'Old Friends Stochov',
-      'Prague NHL',
-      'SHC Bizoni Uherčice',
-      'SHL SDS EXMOST Brno',
-      'SHL WIP Reklama D. Voda',
-      'Sokol Stochov',
-      'THE Orel Bohunice',
+      "BHC Dragons Modřice",
+      "BHC StarColor Most",
+      "BHK Orel Boskovice",
+      "Doudeen Team",
+      "Fluke Kohoutovice",
+      "Future Úsov",
+      "Gunners Břeclav",
+      "Old Friends Stochov",
+      "Prague NHL",
+      "SHC Bizoni Uherčice",
+      "SHL SDS EXMOST Brno",
+      "SHL WIP Reklama D. Voda",
+      "Sokol Stochov",
+      "THE Orel Bohunice"
     ],
-    bye: 'bottom'
+    bye: "bottom"
   },
   players: [],
   rounds: []
-}
+};
 
 if (window.localStorage) {
-  var store = window.localStorage
+  var store = window.localStorage;
 
-  if (store.getItem('data')) {
-    data = Object.assign(data, JSON.parse(store.getItem('data')))
+  if (store.getItem("data")) {
+    data = Object.assign(data, JSON.parse(store.getItem("data")));
   }
 }
 
 var app = new Vue({
-  el: '#app',
+  el: "#app",
   data: data,
   methods: {
     editClub: function(clubIndex) {
-      var clubName = event.target.value
-      var oldName = this.config.clubs[clubIndex]
-      console.log(clubName, oldName)
+      var clubName = event.target.value;
+      var oldName = this.config.clubs[clubIndex];
+      console.log(clubName, oldName);
       if (clubName !== oldName) {
-        this.config.clubs.splice(clubIndex, 1)
+        this.config.clubs.splice(clubIndex, 1);
       }
     },
     addClub: function(event) {
-      var clubName = event.target.value
+      var clubName = event.target.value;
       if (clubName) {
-        this.config.clubs.push(clubName)
+        this.config.clubs.push(clubName);
       }
-      event.target.value = ''
+      event.target.value = "";
     },
 
     resetTournament: function() {
-      store.clear()
-      location.reload()
+      store.clear();
+      location.reload();
     },
 
     playersMutualMatch: function(a, b) {
       return this.rounds.some(function(round) {
         return round.matches.some(function(match) {
-          return match.home === a && match.away === b || match.home === b && match.away === a
-        })
-      })
+          return (
+            (match.home === a && match.away === b) ||
+            (match.home === b && match.away === a)
+          );
+        });
+      });
     },
     addPlayer: function() {
       this.players.push({
-        surname: '',
-        name: '',
+        surname: "",
+        name: "",
         club: -1,
-        sex: 'male',
-        yearOfBirth: '',
+        sex: "male",
+        yearOfBirth: "",
         feePaid: false
-      })
+      });
       window.setTimeout(function() {
-        document.querySelector('.players-list .players-list-item:last-child input:not([readonly])').focus()
-      }, 100)
+        document
+          .querySelector(
+            ".players-list .players-list-item:last-child input:not([readonly])"
+          )
+          .focus();
+      }, 100);
     },
     playerPlacementByIndex: function(playerIndex) {
-      return this.tournamentResults.findIndex(function(player) {
-        return playerIndex === player.playerIndex
-      }) + 1
+      return (
+        this.tournamentResults.findIndex(function(player) {
+          return playerIndex === player.playerIndex;
+        }) + 1
+      );
     },
     removePlayer: function(playerIndex) {
-      this.players.splice(playerIndex, 1)
+      this.players.splice(playerIndex, 1);
     },
 
     generateRound: function(roundIndex) {
       var round = {
         matches: [],
         bye: -1
-      }
+      };
 
       // clone results array
-      var availablePlayers = this.tournamentResults.slice()
+      var availablePlayers = this.tournamentResults.slice();
 
       // random player gets bye round, if players count odd and if didnt get bye round yet
       if (availablePlayers.length % 2 === 1) {
         while (round.bye === -1) {
-          var randomIndex = this.randomIndex(availablePlayers)
-          var randomPlayer = availablePlayers[randomIndex]
+          var randomIndex = this.randomIndex(availablePlayers);
+          var randomPlayer = availablePlayers[randomIndex];
           if (randomPlayer.byes === 0) {
-            round.bye = randomPlayer.playerIndex
-            availablePlayers.splice(randomIndex, 1)
+            round.bye = randomPlayer.playerIndex;
+            availablePlayers.splice(randomIndex, 1);
           }
         }
       }
 
       // make pairs
       while (availablePlayers.length > 1) {
-        var home = availablePlayers.shift()
-        var away = false
-        var awayCandidateIndex = 0
+        var home = availablePlayers.shift();
+        var away = false;
+        var awayCandidateIndex = 0;
         while (!away) {
-          var awayCandidate = availablePlayers[awayCandidateIndex]
-          if (!this.playersMutualMatch(home.playerIndex, awayCandidate.playerIndex)) {
-            away = awayCandidate
-            availablePlayers.splice(awayCandidateIndex, 1)
+          var awayCandidate = availablePlayers[awayCandidateIndex];
+          if (
+            !this.playersMutualMatch(
+              home.playerIndex,
+              awayCandidate.playerIndex
+            )
+          ) {
+            away = awayCandidate;
+            availablePlayers.splice(awayCandidateIndex, 1);
           }
-          awayCandidateIndex++
+          awayCandidateIndex++;
         }
 
         var match = {
           home: home.playerIndex,
           away: away.playerIndex,
-          home_score: '',
-          away_score: '',
+          home_score: "",
+          away_score: "",
           referee: -1
-        }
-        round.matches.push(match)
+        };
+        round.matches.push(match);
       }
 
-      this.$set(this.rounds, roundIndex, round)
+      this.$set(this.rounds, roundIndex, round);
     },
     isRoundReady: function(roundIndex) {
-      return roundIndex === 0 || (roundIndex > 0 && this.isRoundComplete(roundIndex - 1))
+      return (
+        roundIndex === 0 ||
+        (roundIndex > 0 && this.isRoundComplete(roundIndex - 1))
+      );
     },
     isRoundGenerated: function(roundIndex) {
-      return this.rounds[roundIndex] && this.rounds[roundIndex].matches
+      return this.rounds[roundIndex] && this.rounds[roundIndex].matches;
     },
     isRoundComplete: function(roundIndex) {
-      if (!this.isRoundGenerated(roundIndex)) { return false }
-      var round = this.rounds[roundIndex]
-      return round.matches.filter(function(match) {
-        return match.home_score === '' || match.away_score === ''
-      }).length === 0
+      if (!this.isRoundGenerated(roundIndex)) {
+        return false;
+      }
+      var round = this.rounds[roundIndex];
+      return (
+        round.matches.filter(function(match) {
+          return match.home_score === "" || match.away_score === "";
+        }).length === 0
+      );
     },
 
     fieldSorter: function(fields) {
-      return function (a, b) {
-        return fields.map(function (o) {
+      return function(a, b) {
+        return fields
+          .map(function(o) {
             var dir = 1;
-            if (o[0] === '-') {
-               dir = -1;
-               o=o.substring(1);
+            if (o[0] === "-") {
+              dir = -1;
+              o = o.substring(1);
             }
             if (a[o] > b[o]) return dir;
-            if (a[o] < b[o]) return -(dir);
+            if (a[o] < b[o]) return -dir;
             return 0;
-        }).reduce(function firstNonZeroValue (p,n) {
+          })
+          .reduce(function firstNonZeroValue(p, n) {
             return p ? p : n;
-        }, 0);
+          }, 0);
       };
     },
     randomIndex: function(array) {
-      return Math.floor(Math.random()*array.length)
+      return Math.floor(Math.random() * array.length);
     }
   },
   computed: {
     isTournamentReady: function() {
-      return this.playersComplete && this.configComplete
+      return this.playersComplete && this.configComplete;
     },
     configComplete: function() {
-      return this.config.name !== '' &&
+      return (
+        this.config.name !== "" &&
         this.config.numberOfRounds > 0 &&
-        this.config.date !== ''
+        this.config.date !== ""
+      );
     },
     playersComplete: function() {
-      return this.players.filter(function(player){
-        return !player.name || !player.surname
-      }).length === 0 && this.players.length > 0
+      return (
+        this.players.filter(function(player) {
+          return !player.name || !player.surname;
+        }).length === 0 && this.players.length > 0
+      );
     },
     playerNames: function() {
       return this.players.map(function(player) {
-        return `${player.surname.toUpperCase()} ${player.name}`
-      })
+        return `${player.surname.toUpperCase()} ${player.name}`;
+      });
     },
     playerCategories: function() {
       var currentYear = new Date(this.config.date).getFullYear();
       return this.players.map(function(player) {
-        var age = currentYear - player.yearOfBirth
+        var age = currentYear - player.yearOfBirth;
 
         if (age <= 11) {
           return {
-            'shortcut': 'P',
-            'name': 'Ml. žáci'
-          }
-        }
-        else if (player.sex == 'female') {
+            shortcut: "P",
+            name: "Ml. žáci"
+          };
+        } else if (player.sex == "female") {
           return {
-            'shortcut': 'L',
-            'name': 'Ženy'
-          }
-        }
-        else if (age <= 14) {
+            shortcut: "L",
+            name: "Ženy"
+          };
+        } else if (age <= 14) {
           return {
-            'shortcut': 'Z',
-            'name': 'St. žáci'
-          }
-        }
-        else if (age <= 17) {
+            shortcut: "Z",
+            name: "St. žáci"
+          };
+        } else if (age <= 17) {
           return {
-            'shortcut': 'J',
-            'name': 'Junioři'
-          }
-        }
-        else {
+            shortcut: "J",
+            name: "Junioři"
+          };
+        } else {
           return {
-            'shortcut': 'M',
-            'name': 'Muži'
-          }
+            shortcut: "M",
+            name: "Muži"
+          };
         }
-      })
+      });
     },
     playerStats: function() {
       var results = this.players.map(function(player, playerIndex) {
@@ -249,139 +272,153 @@ var app = new Vue({
           opponentsOpponentsPoints: 0,
           results: [],
           sharedPosition: false
-        }
-      })
+        };
+      });
       this.rounds.forEach((round, roundIndex) => {
         // round not complete yet
-        if (!this.isRoundComplete(roundIndex)) { return }
+        if (!this.isRoundComplete(roundIndex)) {
+          return;
+        }
 
         // bye match
         if (round.bye !== -1) {
-          results[round.bye].matches++
-          results[round.bye].wins++
-          results[round.bye].points++
-          results[round.bye].byes++
+          results[round.bye].matches++;
+          results[round.bye].wins++;
+          results[round.bye].points++;
+          results[round.bye].byes++;
           results[round.bye].results[roundIndex] = {
             opponent: -1
-          }
+          };
         }
 
         // calculate stats
         round.matches.forEach((match, matchIndex) => {
           // sum referee
           if (match.referee !== -1) {
-            results[match.referee].referee++
+            results[match.referee].referee++;
           }
 
           // sum points and score
-          var homePlayer = results[match.home]
-          var awayPlayer = results[match.away]
-          homePlayer.opponents.push(match.away)
-          awayPlayer.opponents.push(match.home)
-          homePlayer.goalsFor += match.home_score
-          homePlayer.goalsForSort += match.home_score > 5 ? 5 : match.home_score
-          awayPlayer.goalsFor += match.away_score
-          awayPlayer.goalsForSort += match.away_score > 5 ? 5 : match.away_score
-          homePlayer.goalsAgainst += match.away_score
-          awayPlayer.goalsAgainst += match.home_score
-          homePlayer.matches++
-          awayPlayer.matches++
+          var homePlayer = results[match.home];
+          var awayPlayer = results[match.away];
+          homePlayer.opponents.push(match.away);
+          awayPlayer.opponents.push(match.home);
+          homePlayer.goalsFor += match.home_score;
+          homePlayer.goalsForSort +=
+            match.home_score > 5 ? 5 : match.home_score;
+          awayPlayer.goalsFor += match.away_score;
+          awayPlayer.goalsForSort +=
+            match.away_score > 5 ? 5 : match.away_score;
+          homePlayer.goalsAgainst += match.away_score;
+          awayPlayer.goalsAgainst += match.home_score;
+          homePlayer.matches++;
+          awayPlayer.matches++;
           homePlayer.results[roundIndex] = {
             opponent: match.away,
             goalsFor: match.home_score,
             goalsAgainst: match.away_score
-          }
+          };
           awayPlayer.results[roundIndex] = {
             opponent: match.home,
             goalsFor: match.away_score,
             goalsAgainst: match.home_score
-          }
+          };
 
           if (match.home_score > match.away_score) {
-            homePlayer.points += 1
-            homePlayer.wins += 1
-            awayPlayer.losses += 1
+            homePlayer.points += 1;
+            homePlayer.wins += 1;
+            awayPlayer.losses += 1;
+          } else if (match.home_score < match.away_score) {
+            awayPlayer.points += 1;
+            awayPlayer.wins += 1;
+            homePlayer.losses += 1;
+          } else {
+            homePlayer.points += 0.5;
+            awayPlayer.points += 0.5;
+            homePlayer.ties += 1;
+            awayPlayer.ties += 1;
           }
-          else if (match.home_score < match.away_score) {
-            awayPlayer.points += 1
-            awayPlayer.wins += 1
-            homePlayer.losses += 1
-          }
-          else {
-            homePlayer.points += 0.5
-            awayPlayer.points += 0.5
-            homePlayer.ties += 1
-            awayPlayer.ties += 1
-          }
-        })
-      })
+        });
+      });
 
       // sum opponents points
       results.forEach(function(player) {
-        player.opponentsPoints += results.reduce(function(accumulator, opponent) {
+        player.opponentsPoints += results.reduce(function(
+          accumulator,
+          opponent
+        ) {
           if (player.opponents.indexOf(opponent.playerIndex) !== -1) {
-            return accumulator + opponent.points
+            return accumulator + opponent.points;
+          } else {
+            return accumulator;
           }
-          else {
-            return accumulator
-          }
-        }, 0)
-      })
+        },
+        0);
+      });
 
       // sum opponents opponents points
       results.forEach(function(player) {
         player.opponents.forEach(function(opponentIndex) {
           var opponent = results.find(function(searchedPlayer) {
-            return searchedPlayer.playerIndex === opponentIndex
-          })
-          player.opponentsOpponentsPoints += opponent.opponentsPoints
-        })
-      })
+            return searchedPlayer.playerIndex === opponentIndex;
+          });
+          player.opponentsOpponentsPoints += opponent.opponentsPoints;
+        });
+      });
 
-      return results
+      return results;
     },
     tournamentResults: function() {
-      var results = this.playerStats.slice()
+      var results = this.playerStats.slice();
       // sort player stats
-      results.sort(this.fieldSorter(['-points', '-oppontentsPoints', '-opponentsOpponentsPoints', '-goalsForSort']))
+      results.sort(
+        this.fieldSorter([
+          "-points",
+          "-oppontentsPoints",
+          "-opponentsOpponentsPoints",
+          "-goalsForSort"
+        ])
+      );
 
       // check shared positions
-      var previousResult = null
+      var previousResult = null;
       results.forEach(function(result) {
-        if (previousResult &&
+        if (
+          previousResult &&
           previousResult.points === result.points &&
           previousResult.oppontentsPoints === result.oppontentsPoints &&
-          previousResult.opponentsOpponentsPoints === result.opponentsOpponentsPoints &&
+          previousResult.opponentsOpponentsPoints ===
+            result.opponentsOpponentsPoints &&
           previousResult.goalsFor === result.goalsFor
         ) {
-          result.sharedPosition = true
+          result.sharedPosition = true;
         }
-        previousResult = result
-      })
+        previousResult = result;
+      });
 
-      return results
+      return results;
     },
     tournamentDate: function() {
       return new Date(this.config.date).toLocaleDateString();
     },
     roundsComplete: function() {
-      complete = []
+      complete = [];
       this.rounds.forEach((round, roundIndex) => {
         if (this.isRoundComplete(roundIndex)) {
-          complete.push(roundIndex)
+          complete.push(roundIndex);
         }
-      })
-      return complete
+      });
+      return complete;
     }
   },
   watch: {
-    '$data': {
-      handler: function (dataToStore) {
+    $data: {
+      handler: function(dataToStore) {
         if (store) {
-          store.setItem('data', JSON.stringify(dataToStore))
+          store.setItem("data", JSON.stringify(dataToStore));
         }
       },
       deep: true
     }
   }
-})
+});

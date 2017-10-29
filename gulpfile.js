@@ -56,14 +56,10 @@ gulp.task("serve", function() {
     server: {
       baseDir: "./"
     },
-<<<<<<< HEAD
     ui: false,
     open: false,
-    files: ['src/app.js']
-=======
-    startPath: "src",
-    files: "src/app.js"
->>>>>>> 4b9352cef91fd9d3eb6e810d641693d0d6d8d3f4
+    files: "src/app.js",
+    startPath: "src"
   });
 
   gulp.watch("src/*.html").on("change", browserSync.reload);

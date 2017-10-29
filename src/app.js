@@ -146,6 +146,11 @@ var app = new Vue({
         return this.players[player.playerIndex].rounds.indexOf(roundIndex) !== -1
       })
 
+      if (availablePlayers.length < 2) {
+        alert('V kole není dostatek hráčů.')
+        return
+      }
+
       // assign a bye if round players count odd
       if (availablePlayers.length % 2 === 1) {
         // get bottom half of player results

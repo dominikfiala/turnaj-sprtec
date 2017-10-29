@@ -5,13 +5,15 @@ Vue.config.devtools = true;
 var data = {
   state: {
     activeTab: 'config',
-    activeRound: 0
+    activeRound: 0,
+    import: ''
   },
   config: {
     name: 'Turnaj ve šprtci',
     numberOfRounds: 3,
     date: new Date().toISOString().slice(0, 10),
-    clubs: ['BHK Orel Boskovice', 'Šprtmejkři Ostrava']
+    clubs: ['BHC Dragons Modřice', 'BHC StarColor Most', 'BHK Orel Boskovice', 'Doudeen Team', 'Fluke Kohoutovice', 'Future Úsov', 'Gunners Břeclav', 'Old Friends Stochov', 'Prague NHL', 'SHC Bizoni Uherčice', 'SHL SDS EXMOST Brno', 'SHL WIP Reklama D. Voda', 'Sokol Stochov', 'THE Orel Bohunice'],
+    bye: 'bottom'
   },
   players: [],
   rounds: []
@@ -48,6 +50,31 @@ var app = new Vue({
     resetTournament: function resetTournament() {
       store.clear();
       location.reload();
+    },
+    saveTournament: function saveTournament() {
+      var blob = new Blob([this.tournamentExport], { type: "text/plain;charset=utf-8" });
+      saveAs(blob, this.config.date + ' ' + this.config.name + '.json');
+    },
+    loadTournamentFromFile: function loadTournamentFromFile() {
+      $('#fileChooser').click();
+    },
+    loadTournament: function loadTournament() {
+      var tournamentState = this.state.import;
+      console.log(tournamentState);
+      store.setItem('data', tournamentState);
+      this.state.import = '';
+      // location.reload()
+    },
+    tournamentFileLoaded: function tournamentFileLoaded(event) {
+      var _this = this;
+
+      var input = event.target;
+
+      var reader = new FileReader();
+      reader.onload = function () {
+        _this.state.import = reader.result;
+      };
+      reader.readAsText(input.files[0]);
     },
 
     playersMutualMatch: function playersMutualMatch(a, b) {
@@ -212,7 +239,7 @@ var app = new Vue({
       });
     },
     playerStats: function playerStats() {
-      var _this = this;
+      var _this2 = this;
 
       var results = this.players.map(function (player, playerIndex) {
         return {
@@ -236,7 +263,7 @@ var app = new Vue({
       });
       this.rounds.forEach(function (round, roundIndex) {
         // round not complete yet
-        if (!_this.isRoundComplete(roundIndex)) {
+        if (!_this2.isRoundComplete(roundIndex)) {
           return;
         }
 
@@ -341,12 +368,16 @@ var app = new Vue({
     tournamentDate: function tournamentDate() {
       return new Date(this.config.date).toLocaleDateString();
     },
+    tournamentExport: function tournamentExport() {
+      return JSON.stringify(this.$data);
+    },
+
     roundsComplete: function roundsComplete() {
-      var _this2 = this;
+      var _this3 = this;
 
       complete = [];
       this.rounds.forEach(function (round, roundIndex) {
-        if (_this2.isRoundComplete(roundIndex)) {
+        if (_this3.isRoundComplete(roundIndex)) {
           complete.push(roundIndex);
         }
       });
@@ -363,4 +394,16 @@ var app = new Vue({
       deep: true
     }
   }
+});
+
+var clipboard = new Clipboard('.js-clipboard');
+clipboard.on('success', function (e) {
+  var button = e.trigger;
+  var originalText = button.innerText;
+  button.setAttribute('disabled', true);
+  button.innerText = 'Zkopírováno';
+  setTimeout(function () {
+    button.innerText = originalText;
+    button.removeAttribute('disabled');
+  }, 500);
 });

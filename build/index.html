@@ -6,8 +6,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Turnaj ve šprtci</title>
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#d7141a">
+  <meta name="apple-mobile-web-app-title" content="Turnaj ve &scaron;prtci">
+  <meta name="application-name" content="Turnaj ve &scaron;prtci">
+  <meta name="theme-color" content="#d7141a">
   <link rel="stylesheet" href="./bundle.min.css">
   <style>
+  input[type="date"] {
+    height: 2.4rem;
+  }
   @media print {
     body {
       font-size: 10px;
@@ -53,30 +64,45 @@
       <!-- Tournament config -->
       <div class="tab-pane" :class="{active: state.activeTab == 'config', show: state.activeTab == 'config'}" id="config">
         <form>
-          <div class="form-group">
-            <label for="config-name">Název turnaje</label>
-            <input type="text" v-model="config.name" class="form-control" id="config-name" :class="{'is-invalid': !config.name}">
+          <div class="form-row">
+            <div class="col">
+              <div class="form-group">
+                <label for="config-name">Název turnaje</label>
+                <input type="text" v-model="config.name" class="form-control" id="config-name" :class="{'is-invalid': !config.name}">
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label for="config-date">Datum konání</label>
+                <input type="date" v-model="config.date" class="form-control" id="config-date" :class="{'is-invalid': !config.date}">
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label for="config-date">Počet kol (min. 3)</label>
+                <input type="number" min="3" v-model.number="config.numberOfRounds" class="form-control" id="config-date" :class="{'is-invalid': !config.numberOfRounds}">
+              </div>
+            </div>
           </div>
-          <div class="form-group">
-            <label for="config-date">Datum konání</label>
-            <input type="date" v-model="config.date" class="form-control" id="config-date" :class="{'is-invalid': !config.date}">
-          </div>
-          <div class="form-group">
-            <label for="config-date">Počet kol (min. 3)</label>
-            <input type="number" min="3" v-model.number="config.numberOfRounds" class="form-control" id="config-date" :class="{'is-invalid': !config.numberOfRounds}">
-          </div>
-          <div class="form-group">
-            <label>Kluby</label>
-            <input v-for="(club, clubIndex) in config.clubs" type="text" v-model="config.clubs[clubIndex]" class="form-control mb-2">
-            <input v-on:blur="addClub" type="text" class="form-control" placeholder="Další klub">
+
+          <label>Kluby</label>
+          <div class="form-row">
+            <div class="col-4 form-group" v-for="(club, clubIndex) in config.clubs">
+              <input type="text" v-model="config.clubs[clubIndex]" class="form-control">
+            </div>
+            <div class="col-4 form-group">
+              <input v-on:blur="addClub" type="text" class="form-control" placeholder="Další klub">
+            </div>
           </div>
         </form>
-        <p>
-          <button v-on:click="resetTournament" class="btn btn-danger">Reset</button>
+        <p class="text-right">
+          <button class="btn btn-primary" data-toggle="modal" data-target="#exportTournamentModal">Exportovat turnaj</button>
+          <button class="btn btn-success" data-toggle="modal" data-target="#importTournamentModal">Importovat turnaj</button>
+          <button class="btn btn-danger" data-toggle="modal" data-target="#resetTournamentModal">Resetovat turnaj</button>
         </p>
       </div>
 
-      <!-- Players config -->
+      <!-- Players config tab -->
       <div class="tab-pane" :class="{active: state.activeTab == 'players', show: state.activeTab == 'players'}" id="players">
         <div class="row mb-2 d-print-none">
           <div class="col">
@@ -116,7 +142,7 @@
             <div class="col-auto" :title="playerCategories[playerIndex].name">
               <input type="text" :value="playerCategories[playerIndex].shortcut" class="form-control-plaintext text-center" style="width: 20px;" tabindex="-1">
             </div>
-<!--             <div class="col-auto form-check">
+            <!-- <div class="col-auto form-check">
               <label class="form-check-label">
                 <input type="checkbox" class="form-check-input" v-model="player.feePaid">
               </label>
@@ -147,7 +173,7 @@
         </div>
       </div>
 
-      <!-- Matches -->
+      <!-- Matches tab -->
       <div class="tab-pane" :class="{active: state.activeTab == 'matches', show: state.activeTab == 'matches'}" id="matches">
         <!-- Rounds tabs -->
         <div class="row d-print-none">
@@ -220,7 +246,7 @@
         </div>
       </div>
 
-      <!-- Results -->
+      <!-- Results tab -->
       <div class="tab-pane" :class="{active: state.activeTab == 'results', show: state.activeTab == 'results'}" id="results">
         <p v-if="roundsComplete.length !== config.numberOfRounds" class="d-none d-print-block lead">Průběžné výsledky, odehráno kol: {{ roundsComplete.length }}/{{ config.numberOfRounds }}</p>
         <p v-if="roundsComplete.length === config.numberOfRounds" class="d-none d-print-block lead">Konečné výsledky turnaje</p>
@@ -272,7 +298,7 @@
         </table>
       </div>
 
-      <!-- About app -->
+      <!-- About app tab -->
       <div class="tab-pane" :class="{active: state.activeTab == 'about-app', show: state.activeTab == 'about-app'}" id="about-app">
         <h1>Turnaj ve šprtci</h1>
         <p class="lead">Webová aplikace pro řízení šprtcových turnajů.</p>
@@ -294,6 +320,76 @@
           <li>Volné kolo se uděluje hráčům ze spodu</li>
         </ul>
       </div>
+
+      <!-- Reset tournament modal -->
+      <div class="modal fade" id="resetTournamentModal" tabindex="-1">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Opravdu resetovat?</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <p>Opravdu resetovat turnaj? Odstraní všechny účastníky, zápasy a výsledky.</p>
+              <p>Používejte převážně před zahájením nového turnaje.</p>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Zrušit</button>
+              <button type="button" class="btn btn-danger" v-on:click="resetTournament">Resetovat turnaj</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Export tournament modal -->
+      <div class="modal fade" id="exportTournamentModal" tabindex="-1">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Export turnaje</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <p>Pro přenesení stavu turnaje do jiného počítače zkopírujte text níže nebo si jej uložte jako soubor.</p>
+              <textarea class="form-control" rows="5" id="tournamentExport">{{ tournamentExport }}</textarea>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Zavřít</button>
+              <button type="button" class="btn btn-primary js-clipboard" data-clipboard-target="#tournamentExport" data-toggle="tooltip" title="Zkopírováno" data-trigger="manual">Zkopírovat kód</button>
+              <button type="button" class="btn btn-success" v-on:click="saveTournament">Uložit do souboru</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Import tournament modal -->
+      <div class="modal fade" id="importTournamentModal" tabindex="-1">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Import turnaje</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <p><strong>Upozornění</strong>: Import přepíše současný stav turnaje.</p>
+              <textarea class="form-control" rows="5" id="tournamentImport">{{ state.import }}</textarea>
+            </div>
+            <div class="modal-footer">
+              <input type="file" class="d-none" id="fileChooser" v-on:change="tournamentFileLoaded">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Zavřít</button>
+              <button type="button" class="btn btn-primary" v-on:click="loadTournamentFromFile">Nahrát ze souboru</button>
+              <button type="button" class="btn btn-success" v-on:click="loadTournament">Importovat</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 

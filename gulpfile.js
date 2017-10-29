@@ -49,7 +49,10 @@ gulp.task('serve', function() {
   browserSync.init({
     server: {
       baseDir: "./"
-    }
+    },
+    ui: false,
+    open: false,
+    files: ['src/app.js']
   });
 
   gulp.watch("src/*.html").on('change', browserSync.reload);

@@ -30,7 +30,7 @@ gulp.task("build-css", function() {
 });
 
 gulp.task("build-html", function() {
-  gulp
+  return gulp
     .src("./src/index.html")
     .pipe(
       htmlreplace({
@@ -42,7 +42,7 @@ gulp.task("build-html", function() {
 });
 
 gulp.task("compile-js", function() {
-  gulp
+  return gulp
     .src("src/app.js")
     .pipe(
       babel({
@@ -50,6 +50,19 @@ gulp.task("compile-js", function() {
       })
     )
     .pipe(gulp.dest("./build"));
+});
+
+gulp.task("serve-build", function() {
+  browserSync.init({
+    server: {
+      baseDir: "./build/"
+    },
+    ui: false,
+    open: false,
+    files: "src/app.js"
+  });
+
+  gulp.watch("src/*.html").on("change", browserSync.reload);
 });
 
 gulp.task("serve", function() {
@@ -64,6 +77,22 @@ gulp.task("serve", function() {
   });
 
   gulp.watch("src/*.html").on("change", browserSync.reload);
+});
+
+gulp.task("build-sw", function(callback) {
+  var swPrecache = require("sw-precache");
+  var rootDir = "build";
+
+  swPrecache.write(
+    `${rootDir}/service-worker.js`,
+    {
+      staticFileGlobs: [
+        rootDir + "/**/*.{js,html,css,png,jpg,gif,svg,eot,ttf,woff}"
+      ],
+      stripPrefix: rootDir
+    },
+    callback
+  );
 });
 
 gulp.task("build", ["build-html", "build-js", "build-css"]);

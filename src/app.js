@@ -430,12 +430,21 @@ var app = new Vue({
 
     tournamentResults: function() {
       var results = this.playerStats.slice()
+      var categoryWinner = []
+
       // sort player stats
       results.sort(this.fieldSorter(['-points', '-oppontentsPoints', '-opponentsOpponentsPoints', '-goalsForSort']))
 
-      // check shared positions
       var previousResult = null
-      results.forEach(function(result) {
+      results.forEach((result) =>  {
+        // check category winner
+        var category = this.playerCategories[result.playerIndex]
+        if (!categoryWinner[category.shortcut]) {
+          categoryWinner[category.shortcut] = true
+          result.categoryWinner = true
+        }
+
+        // check shared positions
         if (previousResult &&
           previousResult.points === result.points &&
           previousResult.oppontentsPoints === result.oppontentsPoints &&

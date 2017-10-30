@@ -286,6 +286,10 @@
         <div class="row d-print-none">
           <div class="col">
             <div class="nav nav-pills mb-2">
+              <a href="#"
+                class="nav-link"
+                :class="{active: state.activeRound === -1}"
+                v-on:click="state.activeRound = -1">Všechny</a>
               <a v-for="round in config.numberOfRounds"
                 class="nav-link"
                 :class="{active: state.activeRound === round - 1}"
@@ -306,10 +310,22 @@
         <div class="tab-content" id="rounds-tabContent">
           <p class="d-none d-print-block lead">Zápasy {{ state.activeRound+1 }}. kola</p>
 
-          <p v-if="!isTournamentReady" class="alert alert-warning">Turnaj nelza zahájit, není kompletní nastavení turnaje nebo listina účastníků.</p>
-          <p v-if="!isRoundReady(state.activeRound)" class="alert alert-warning">Nelze generovat zápasy, není kompletní předchozí kolo.</p>
-          <div v-for="(round, roundIndex) in rounds" class="tab-pane" :id="`rounds-tab-${roundIndex}`"
-            :class="{show: state.activeRound === roundIndex, active: state.activeRound === roundIndex}">
+          <p class="alert alert-warning"
+            v-if="!isTournamentReady && state.activeRound !== -1">
+            Turnaj nelza zahájit, není kompletní nastavení turnaje nebo listina účastníků.
+          </p>
+          <p class="alert alert-warning"
+            v-if="!isRoundReady(state.activeRound) && state.activeRound !== -1">
+            Nelze generovat zápasy, není kompletní předchozí kolo.
+          </p>
+          <div v-for="(round, roundIndex) in rounds"
+            class="tab-pane"
+            :id="`rounds-tab-${roundIndex}`"
+            :class="{
+              show: state.activeRound === roundIndex || state.activeRound === -1,
+              active: state.activeRound === roundIndex || state.activeRound === -1
+            }">
+            <p v-if="state.activeRound === -1" class="mb-2"><strong>{{roundIndex + 1}}. kolo</strong></p>
             <div class="d-flex mb-2 d-print-none" v-for="match in round.matches">
               <input type="text" readonly tabindex="-1" class="form-control-plaintext" style="flex: 1"
                 :value="playerNames[match.home]">
@@ -389,7 +405,10 @@
               </td>
               <td>{{ playerNames[result.playerIndex] }}</td>
               <td><span v-if="players[result.playerIndex].club !== -1">{{ config.clubs[players[result.playerIndex].club] }}</span></td>
-              <td class="text-center" :title="playerCategories[result.playerIndex].name">{{ playerCategories[result.playerIndex].shortcut }}</td>
+              <td class="text-center" :title="playerCategories[result.playerIndex].name">
+                <strong v-if="result.categoryWinner">{{ playerCategories[result.playerIndex].shortcut }}</strong>
+                <span v-if="!result.categoryWinner">{{ playerCategories[result.playerIndex].shortcut }}</span>
+              </td>
               <td class="text-center">{{ result.matches }}</td>
               <td class="text-center">{{ result.wins }}</td>
               <td class="text-center">{{ result.ties }}</td>

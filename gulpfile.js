@@ -13,6 +13,7 @@ gulp.task("build-js", ["compile-js"], function() {
       "./node_modules/jquery/dist/jquery.slim.js",
       "./node_modules/popper.js/dist/umd/popper.js",
       "./node_modules/bootstrap/dist/js/bootstrap.js",
+      "./node_modules/file-saver/FileSaver.js",
       "./build/app.js"
     ])
     .pipe(concat("bundle.min.js"))

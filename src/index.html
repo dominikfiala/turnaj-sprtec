@@ -139,17 +139,21 @@
           show: state.activeTab == 'players'
         }"
         id="players">
-        <div class="row mb-2 d-print-none">
-          <div class="col">
-              <span class="btn pl-0">Účastníků: <strong>{{ players.length }}</strong> (kol turnaje ČP: {{ roundsPerPlayers }}<span v-if="roundsPerPlayers !== config.numberOfRounds" class="text-danger">, nastaveno: {{ config.numberOfRounds }}</span>)</span>
+        <div class="mb-2 d-flex d-print-none justify-content-between">
+          <div>
+            <span class="btn pl-0">Účastníků: <strong>{{ players.length }}</strong> (kol turnaje ČP: {{ roundsPerPlayers }}<span v-if="roundsPerPlayers !== config.numberOfRounds" class="text-danger">, nastaveno: {{ config.numberOfRounds }}</span>)</span>
           </div>
-          <div class="col text-right">
+          <form class="form-inline">
+            <input type="text" class="form-control mr-2" style="width: 175px" v-model="state.playersSearch" placeholder="Hledat účastníka">
             <button v-on:click="addPlayer" class="btn btn-success">Přidat účastníka</button>
-          </div>
+          </form>
         </div>
 
         <form class="d-flex d-print-none flex-column-reverse players-list">
-          <div v-for="(player, playerIndex) in players" class="players-list-item">
+          <div v-for="(player, playerIndex) in players"
+            class="players-list-item"
+            :class="{'d-none': !playerInSearch(playerIndex)}"
+            >
             <div class="form-row mb-1">
               <div class="col-auto pt-1" v-if="rounds.length === 0">
                 <button type="button" title="Odebrat účastníka"

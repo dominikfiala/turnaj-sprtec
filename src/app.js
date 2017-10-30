@@ -4,7 +4,8 @@ var data = {
   state: {
     activeTab: 'config',
     activeRound: 0,
-    activePlayer: -1
+    activePlayer: -1,
+    playersSearch: ''
   },
   config: {
     name: 'Turnaj ve šprtci',
@@ -133,6 +134,13 @@ var app = new Vue({
     },
     playerRoundsAll: function(playerIndex) {
       this.players[playerIndex].rounds = this.players[playerIndex].rounds === true ? [] : true
+    },
+    playerInSearch: function(playerIndex) {
+      var query = this.state.playersSearch.trim()
+      if (!query) return true
+      var words = query.split(' ')
+      var regex = new RegExp(words.join('|'), 'i')
+      return regex.test(this.playerNames[playerIndex])
     },
 
     generateRound: function(roundIndex) {

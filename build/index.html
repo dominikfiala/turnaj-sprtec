@@ -62,24 +62,52 @@
     <!-- Application screen -->
     <div class="tab-content m-2" id="m-print-none">
       <!-- Tournament config -->
-      <div class="tab-pane" :class="{active: state.activeTab == 'config', show: state.activeTab == 'config'}" id="config">
+      <div class="tab-pane"
+        :class="{
+          active: state.activeTab == 'config',
+          show: state.activeTab == 'config'
+        }"
+        id="config">
         <form>
           <div class="form-row">
-            <div class="col">
+            <div class="col-6">
               <div class="form-group">
                 <label for="config-name">Název turnaje</label>
                 <input type="text" v-model="config.name" class="form-control" id="config-name" :class="{'is-invalid': !config.name}">
               </div>
             </div>
-            <div class="col">
+            <div class="col-3">
               <div class="form-group">
                 <label for="config-date">Datum konání</label>
                 <input type="date" v-model="config.date" class="form-control" id="config-date" :class="{'is-invalid': !config.date}">
               </div>
             </div>
-            <div class="col">
+            <div class="col-3">
               <div class="form-group">
-                <label for="config-date">Počet kol (min. 3)</label>
+                <label for="config-category">Kategorie</label>
+                <select v-model="config.category" class="form-control" id="config-category" :class="{'is-invalid': !config.category}">
+                  <option v-for="category in config.categories">{{ category }}</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="col-6">
+              <div class="form-group">
+                <label for="config-venue">Místo konání</label>
+                <input type="text" v-model="config.venue" class="form-control" id="config-venue" :class="{'is-invalid': !config.venue}">
+              </div>
+            </div>
+            <div class="col-3">
+              <div class="form-group">
+                <label for="config-host">Pořadatel</label>
+                <input type="text" list="clubs" v-model="config.host" class="form-control" id="config-host" :class="{'is-invalid': !config.host}">
+              </div>
+            </div>
+            <div class="col-3">
+              <div class="form-group">
+                <label for="config-date">Počet kol</label>
                 <input type="number" min="3" v-model.number="config.numberOfRounds" class="form-control" id="config-date" :class="{'is-invalid': !config.numberOfRounds}">
               </div>
             </div>
@@ -103,10 +131,15 @@
       </div>
 
       <!-- Players config tab -->
-      <div class="tab-pane" :class="{active: state.activeTab == 'players', show: state.activeTab == 'players'}" id="players">
+      <div class="tab-pane"
+        :class="{
+          active: state.activeTab == 'players',
+          show: state.activeTab == 'players'
+        }"
+        id="players">
         <div class="row mb-2 d-print-none">
           <div class="col">
-            <span class="btn">Počet účastníků: <strong>{{ players.length }}</strong></span>
+              <span class="btn pl-0">Účastníků: <strong>{{ players.length }}</strong> (kol turnaje ČP: {{ roundsPerPlayers }}<span v-if="roundsPerPlayers !== config.numberOfRounds" class="text-danger">, nastaveno: {{ config.numberOfRounds }}</span>)</span>
           </div>
           <div class="col text-right">
             <button v-on:click="addPlayer" class="btn btn-success">Přidat účastníka</button>
@@ -114,39 +147,102 @@
         </div>
 
         <form class="d-flex d-print-none flex-column-reverse players-list">
-          <div v-for="(player, playerIndex) in players" class="form-row mb-2 players-list-item">
-            <div class="col-auto" v-if="rounds.length === 0">
-              <button v-on:click="removePlayer(playerIndex)" class="btn btn-danger" title="Odebrat účastníka"><strong>&times;</strong></button>
+          <div v-for="(player, playerIndex) in players" class="players-list-item">
+            <div class="form-row mb-1">
+              <div class="col-auto pt-1" v-if="rounds.length === 0">
+                <button type="button" title="Odebrat účastníka"
+                  v-on:click="removePlayer(playerIndex)"
+                  class="btn btn-sm btn-danger">
+                  <strong>&times;</strong>
+                </button>
+              </div>
+              <div class="col-auto pt-1">
+                <button type="button" title="Účast hráče v kolech"
+                   class="btn btn-sm"
+                  :class="{
+                    'btn-primary': player.rounds.length === config.numberOfRounds,
+                    'btn-secondary': player.rounds.length !== config.numberOfRounds,
+                    'active': state.activePlayer === playerIndex
+                  }"
+                  v-on:click="playerSetActive(playerIndex)">
+                  {{ player.rounds.length }}/{{ config.numberOfRounds}}
+                </button>
+              </div>
+              <div class="col">
+                <input type="text" placeholder="PŘÍJMENÍ"
+                  v-model="player.surname"
+                  class="form-control"
+                  :class="{'is-invalid': !player.surname.length}">
+              </div>
+              <div class="col">
+                <input type="text" class="form-control" placeholder="Jméno"
+                  v-model="player.name"
+                  :class="{'is-invalid': !player.name.length}">
+              </div>
+              <div class="col">
+                <select class="form-control"
+                  v-model="player.club"
+                  :class="{'is-invalid': player.club === -1}">
+                  <option :value="-1">Klub</option>
+                  <option
+                    v-for="(club, clubIndex) in config.clubs"
+                    :value="clubIndex">{{ club }}</option>
+                </select>
+              </div>
+              <div class="col-auto">
+                <select v-model="player.sex"
+                  style="width: 90px"
+                  class="form-control">
+                  <option value="male">muž</option>
+                  <option value="female">žena</option>
+                </select>
+              </div>
+              <div class="col-auto">
+                <input style="width: 90px"
+                  min="1900"
+                  type="number"
+                  class="form-control"
+                  v-model="player.yearOfBirth"
+                  placeholder="Ročník"
+                  :class="{
+                    'is-invalid': player.yearOfBirth > (new Date()).getFullYear()
+                  }">
+              </div>
+              <div class="col-auto"
+                :title="playerCategories[playerIndex].name">
+                <input type="text"
+                  style="width: 20px;"
+                  tabindex="-1"
+                  :value="playerCategories[playerIndex].shortcut"
+                  class="form-control-plaintext text-center">
+              </div>
+              <div class="col-auto form-check text-center pt-2">
+                <label class="form-check-label"
+                  title="Účastník uhradil startovné">
+                  <input type="checkbox"
+                    class="form-check-input position-static"
+                      v-model="player.feePaid">
+                </label>
+              </div>
             </div>
-            <div class="col">
-              <input v-model="player.surname" type="text" class="form-control" :class="{'is-invalid': !player.surname.length}" placeholder="PŘÍJMENÍ">
+            <div :class="{'d-none': playerIndex !== state.activePlayer}">
+              <div class="form-check form-check-inline">
+                <label class="form-check-label pl-0">
+                  Účast hráče v kolech:
+                </label>
+              </div>
+              <div class="form-check form-check-inline"
+                :class="{disabled: rounds[roundIndex]}"
+                v-for="(round, roundIndex) in config.numberOfRounds">
+                <label class="form-check-label">
+                  <input type="checkbox"
+                    class="form-check-input"
+                    :value="roundIndex"
+                    v-model="player.rounds"
+                    :disabled="rounds[roundIndex]"> {{ round }}.
+                </label>
+              </div>
             </div>
-            <div class="col">
-              <input v-model="player.name" type="text" class="form-control" :class="{'is-invalid': !player.name.length}" placeholder="Jméno">
-            </div>
-            <div class="col">
-              <select v-model="player.club" class="form-control" :class="{'is-invalid': player.club === -1}">
-                <option :value="-1">Klub</option>
-                <option v-for="(club, clubIndex) in config.clubs" :value="clubIndex">{{ club }}</option>
-              </select>
-            </div>
-            <div class="col">
-              <select v-model="player.sex" class="form-control">
-                <option value="male">muž</option>
-                <option value="female">žena</option>
-              </select>
-            </div>
-            <div class="col">
-              <input v-model="player.yearOfBirth" min="1900" type="number" class="form-control" placeholder="Ročník" :class="{'is-invalid': player.yearOfBirth > (new Date()).getFullYear()}">
-            </div>
-            <div class="col-auto" :title="playerCategories[playerIndex].name">
-              <input type="text" :value="playerCategories[playerIndex].shortcut" class="form-control-plaintext text-center" style="width: 20px;" tabindex="-1">
-            </div>
-            <!-- <div class="col-auto form-check">
-              <label class="form-check-label">
-                <input type="checkbox" class="form-check-input" v-model="player.feePaid">
-              </label>
-            </div> -->
           </div>
         </form>
 
@@ -174,7 +270,12 @@
       </div>
 
       <!-- Matches tab -->
-      <div class="tab-pane" :class="{active: state.activeTab == 'matches', show: state.activeTab == 'matches'}" id="matches">
+      <div class="tab-pane"
+        :class="{
+          active: state.activeTab == 'matches',
+          show: state.activeTab == 'matches'
+        }"
+        id="matches">
         <!-- Rounds tabs -->
         <div class="row d-print-none">
           <div class="col">
@@ -184,7 +285,7 @@
                 :class="{active: state.activeRound === round - 1}"
                 :id="`rounds-tab-${round}-tab`"
                 data-toggle="pill"
-                :href="`#rounds-tab-${round}`"
+                :href="`#rounds-tab-${round - 1}`"
                 v-on:click="state.activeRound = round - 1"
               >{{round}}. kolo</a>
             </div>
@@ -202,7 +303,7 @@
           <p v-if="!isTournamentReady" class="alert alert-warning">Turnaj nelza zahájit, není kompletní nastavení turnaje nebo listina účastníků.</p>
           <p v-if="!isRoundReady(state.activeRound)" class="alert alert-warning">Nelze generovat zápasy, není kompletní předchozí kolo.</p>
           <div v-for="(round, roundIndex) in rounds" class="tab-pane" :id="`rounds-tab-${roundIndex}`"
-            :class="{show: state.activeRound == roundIndex, active: state.activeRound == roundIndex}">
+            :class="{show: state.activeRound === roundIndex, active: state.activeRound === roundIndex}">
             <div class="d-flex mb-2 d-print-none" v-for="match in round.matches">
               <input type="text" readonly tabindex="-1" class="form-control-plaintext" style="flex: 1"
                 :value="playerNames[match.home]">
@@ -247,7 +348,12 @@
       </div>
 
       <!-- Results tab -->
-      <div class="tab-pane" :class="{active: state.activeTab == 'results', show: state.activeTab == 'results'}" id="results">
+      <div class="tab-pane"
+        :class="{
+          active: state.activeTab == 'results',
+          show: state.activeTab == 'results'
+        }"
+        id="results">
         <p v-if="roundsComplete.length !== config.numberOfRounds" class="d-none d-print-block lead">Průběžné výsledky, odehráno kol: {{ roundsComplete.length }}/{{ config.numberOfRounds }}</p>
         <p v-if="roundsComplete.length === config.numberOfRounds" class="d-none d-print-block lead">Konečné výsledky turnaje</p>
         <table class="table table-hover table-sm">
@@ -282,7 +388,7 @@
               <td class="text-center">{{ result.wins }}</td>
               <td class="text-center">{{ result.ties }}</td>
               <td class="text-center">{{ result.losses }}</td>
-              <td class="text-center">{{ result.points }}</td>
+              <td class="text-center"><strong>{{ result.points }}</strong></td>
               <td class="text-center">{{ result.opponentsPoints }}</td>
               <td class="text-center">{{ result.opponentsOpponentsPoints }}</td>
               <td class="text-right">{{ result.goalsFor }}</td>
@@ -290,8 +396,9 @@
               <td>{{ result.goalsAgainst }}</td>
               <td class="text-center">{{ result.referee }}</td>
               <td v-for="match in result.results">
-                <span v-if="match.opponent === -1">volno</span>
-                <span v-if="match.opponent !== -1">{{playerPlacementByIndex(match.opponent)}} ({{ match.goalsFor }}:{{ match.goalsAgainst }})</span>
+                <span v-if="typeof(match) == 'undefined'">&mdash;</span>
+                <span v-if="typeof(match) == 'object' && match.opponent === -1">volno</span>
+                <span v-if="typeof(match) == 'object' && match.opponent !== -1">{{playerPlacementByIndex(match.opponent)}} ({{ match.goalsFor }}:{{ match.goalsAgainst }})</span>
               </td>
             </tr>
           </tbody>
@@ -299,7 +406,12 @@
       </div>
 
       <!-- About app tab -->
-      <div class="tab-pane" :class="{active: state.activeTab == 'about-app', show: state.activeTab == 'about-app'}" id="about-app">
+      <div class="tab-pane"
+        :class="{
+          active: state.activeTab == 'about-app',
+          show: state.activeTab == 'about-app'
+        }"
+        id="about-app">
         <h1>Turnaj ve šprtci</h1>
         <p class="lead">Webová aplikace pro řízení šprtcových turnajů.</p>
         <h2>Vlastnosti</h2>
@@ -315,14 +427,17 @@
         <h2>Návrhy pro zlepšení</h2>
         <ul>
           <li>Fungování bez připojení k Internetu</li>
-          <li>Umožnit ukládání/sdílení turnajů</li>
-          <li>Vyhnout se vzájemným zápasům hráčů stejného klubu</li>
-          <li>Volné kolo se uděluje hráčům ze spodu</li>
+          <li>Zvýraznit v konečných výsledcích vítěze kategorií</li>
+          <li>Zvýraznit v konečných výsledcích účastníky bez splněných aktivit</li>
+          <li>Vyhnout se vzájemným zápasům hráčů stejného klubu?</li>
+          <li>Důsledné generování kola (vyzkoušet všechny možné kombinace volného kola, zatím generuje pouze jednou a pokud neposkládá, je potřeba další pokus o generování)</li>
         </ul>
       </div>
 
       <!-- Reset tournament modal -->
-      <div class="modal fade" id="resetTournamentModal" tabindex="-1">
+      <div class="modal fade"
+        id="resetTournamentModal"
+        tabindex="-1">
         <div class="modal-dialog">
           <div class="modal-content">
             <div class="modal-header">
@@ -344,7 +459,9 @@
       </div>
 
       <!-- Export tournament modal -->
-      <div class="modal fade" id="exportTournamentModal" tabindex="-1">
+      <div class="modal fade"
+        id="exportTournamentModal"
+        tabindex="-1">
         <div class="modal-dialog">
           <div class="modal-content">
             <div class="modal-header">
@@ -354,12 +471,10 @@
               </button>
             </div>
             <div class="modal-body">
-              <p>Pro přenesení stavu turnaje do jiného počítače zkopírujte text níže nebo si jej uložte jako soubor.</p>
-              <textarea class="form-control" rows="5" id="tournamentExport">{{ tournamentExport }}</textarea>
+              <p>Pro přenesení stavu turnaje do jiného počítače si jej uložte do souboru a ten na jiném počítači importujte.</p>
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-dismiss="modal">Zavřít</button>
-              <button type="button" class="btn btn-primary js-clipboard" data-clipboard-target="#tournamentExport" data-toggle="tooltip" title="Zkopírováno" data-trigger="manual">Zkopírovat kód</button>
               <button type="button" class="btn btn-success" v-on:click="saveTournament">Uložit do souboru</button>
             </div>
           </div>
@@ -367,7 +482,9 @@
       </div>
 
       <!-- Import tournament modal -->
-      <div class="modal fade" id="importTournamentModal" tabindex="-1">
+      <div class="modal fade"
+        id="importTournamentModal"
+        tabindex="-1">
         <div class="modal-dialog">
           <div class="modal-content">
             <div class="modal-header">
@@ -378,18 +495,20 @@
             </div>
             <div class="modal-body">
               <p><strong>Upozornění</strong>: Import přepíše současný stav turnaje.</p>
-              <textarea class="form-control" rows="5" id="tournamentImport">{{ state.import }}</textarea>
             </div>
             <div class="modal-footer">
-              <input type="file" class="d-none" id="fileChooser" v-on:change="tournamentFileLoaded">
+              <input type="file" class="d-none" accept="application/json" id="fileChooser" v-on:change="tournamentFileLoaded">
               <button type="button" class="btn btn-secondary" data-dismiss="modal">Zavřít</button>
               <button type="button" class="btn btn-primary" v-on:click="loadTournamentFromFile">Nahrát ze souboru</button>
-              <button type="button" class="btn btn-success" v-on:click="loadTournament">Importovat</button>
             </div>
           </div>
         </div>
       </div>
 
+      <!-- Clubs datalist -->
+      <datalist id="clubs">
+        <option v-for="club in config.clubs">{{ club }}</option>
+      </datalist>
     </div>
   </div>
 

@@ -6,14 +6,17 @@ var data = {
   state: {
     activeTab: 'config',
     activeRound: 0,
-    import: ''
+    activePlayer: -1
   },
   config: {
     name: 'Turnaj ve šprtci',
-    numberOfRounds: 3,
+    venue: 'Lumpenkavárna',
+    host: 'Domo',
+    category: 'Expres',
+    numberOfRounds: 5,
     date: new Date().toISOString().slice(0, 10),
-    clubs: ['BHC Dragons Modřice', 'BHC StarColor Most', 'BHK Orel Boskovice', 'Doudeen Team', 'Fluke Kohoutovice', 'Future Úsov', 'Gunners Břeclav', 'Old Friends Stochov', 'Prague NHL', 'SHC Bizoni Uherčice', 'SHL SDS EXMOST Brno', 'SHL WIP Reklama D. Voda', 'Sokol Stochov', 'THE Orel Bohunice'],
-    bye: 'bottom'
+    categories: ['Expres', 'ČP12', 'ČP24', 'ČP36', 'Czech Open'],
+    clubs: ['BHC Dragons Modřice', 'BHC StarColor Most', 'BHK Orel Boskovice', 'Doudeen Team', 'Fluke Kohoutovice', 'Future Úsov', 'Gunners Břeclav', 'Old Friends Stochov', 'Prague NHL', 'SHC Bizoni Uherčice', 'SHL SDS EXMOST Brno', 'SHL WIP Reklama D. Voda', 'Sokol Stochov', 'THE Orel Bohunice']
   },
   players: [],
   rounds: []
@@ -52,27 +55,21 @@ var app = new Vue({
       location.reload();
     },
     saveTournament: function saveTournament() {
-      var blob = new Blob([this.tournamentExport], { type: "text/plain;charset=utf-8" });
+      var blob = new Blob([JSON.stringify(this.$data)], { type: "application/json;charset=utf-8" });
       saveAs(blob, this.config.date + ' ' + this.config.name + '.json');
+      $('#exportTournamentModal').modal('hide');
     },
     loadTournamentFromFile: function loadTournamentFromFile() {
       $('#fileChooser').click();
-    },
-    loadTournament: function loadTournament() {
-      var tournamentState = this.state.import;
-      console.log(tournamentState);
-      store.setItem('data', tournamentState);
-      this.state.import = '';
-      // location.reload()
     },
     tournamentFileLoaded: function tournamentFileLoaded(event) {
       var _this = this;
 
       var input = event.target;
-
       var reader = new FileReader();
       reader.onload = function () {
-        _this.state.import = reader.result;
+        _this.$data = Object.assign(_this.$data, JSON.parse(reader.result));
+        $('#importTournamentModal').modal('hide');
       };
       reader.readAsText(input.files[0]);
     },
@@ -85,14 +82,22 @@ var app = new Vue({
       });
     },
     addPlayer: function addPlayer() {
-      this.players.push({
+      var player = {
         surname: '',
         name: '',
         club: -1,
         sex: 'male',
         yearOfBirth: '',
-        feePaid: false
-      });
+        feePaid: false,
+        rounds: [],
+        byes: 0
+      };
+      for (var i = 0; i < this.config.numberOfRounds; i++) {
+        if (!this.rounds[i]) {
+          player.rounds.push(i);
+        }
+      }
+      this.players.push(player);
       window.setTimeout(function () {
         document.querySelector('.players-list .players-list-item:last-child input:not([readonly])').focus();
       }, 100);
@@ -105,23 +110,57 @@ var app = new Vue({
     removePlayer: function removePlayer(playerIndex) {
       this.players.splice(playerIndex, 1);
     },
+    playerSetActive: function playerSetActive(playerIndex) {
+      if (this.state.activePlayer === playerIndex) {
+        this.state.activePlayer = -1;
+      } else {
+        this.state.activePlayer = playerIndex;
+      }
+    },
+
+    playerRoundsAll: function playerRoundsAll(playerIndex) {
+      this.players[playerIndex].rounds = this.players[playerIndex].rounds === true ? [] : true;
+    },
 
     generateRound: function generateRound(roundIndex) {
+      var _this2 = this;
+
       var round = {
         matches: [],
         bye: -1
 
-        // clone results array
-      };var availablePlayers = this.tournamentResults.slice();
+        // clone results array and filter unavailable players
+      };var availablePlayers = this.tournamentResults.slice().filter(function (player) {
+        return _this2.players[player.playerIndex].rounds.indexOf(roundIndex) !== -1;
+      });
 
-      // random player gets bye round, if players count odd and if didnt get bye round yet
+      if (availablePlayers.length < 2) {
+        alert('V kole není dostatek hráčů.');
+        return;
+      }
+
+      // assign a bye if round players count odd
       if (availablePlayers.length % 2 === 1) {
+        // get bottom half of player results
+        var byeCandidates = availablePlayers.slice(Math.floor(availablePlayers.length / 2), availablePlayers.length);
+
+        // look for possible players
         while (round.bye === -1) {
-          var randomIndex = this.randomIndex(availablePlayers);
-          var randomPlayer = availablePlayers[randomIndex];
-          if (randomPlayer.byes === 0) {
-            round.bye = randomPlayer.playerIndex;
-            availablePlayers.splice(randomIndex, 1);
+          // if bye not available for player from bottom line
+          if (byeCandidates.length === 0) {
+            byeCandidates = availablePlayers.slice();
+          }
+
+          var byeCandidateIndex = this.randomIndex(byeCandidates);
+          var byeCandidate = byeCandidates.splice(byeCandidateIndex, 1)[0];
+
+          // assign a bye round
+          if (byeCandidate.byes === 0) {
+            round.bye = byeCandidate.playerIndex;
+            // and remove from round available players
+            availablePlayers.splice(availablePlayers.findIndex(function (player) {
+              return player.playerIndex === byeCandidate.playerIndex;
+            }), 1);
           }
         }
       }
@@ -129,14 +168,26 @@ var app = new Vue({
       // make pairs
       while (availablePlayers.length > 1) {
         var home = availablePlayers.shift();
+        // console.log('volno', round.bye);
+        // console.log('zapasy', round.matches);
+        // console.log('domaci', home.playerIndex);
         var away = false;
         var awayCandidateIndex = 0;
         while (!away) {
           var awayCandidate = availablePlayers[awayCandidateIndex];
+          // console.log('zkousim hosta ', awayCandidate.playerIndex);
+
+          if (!awayCandidate) {
+            alert('Nepodařilo se najít kombinace dostupných hráčů, prosím zkuste zápasy generovat znovu. Nejsou opravdu všechny kombinace vyčerpány?');
+            return;
+          }
+
           if (!this.playersMutualMatch(home.playerIndex, awayCandidate.playerIndex)) {
             away = awayCandidate;
             availablePlayers.splice(awayCandidateIndex, 1);
           }
+
+          // console.log('uz spolu hrali');
           awayCandidateIndex++;
         }
 
@@ -193,13 +244,14 @@ var app = new Vue({
       return this.playersComplete && this.configComplete;
     },
     configComplete: function configComplete() {
-      return this.config.name !== '' && this.config.numberOfRounds > 0 && this.config.date !== '';
+      return this.config.name !== '' && this.config.numberOfRounds > 0 && this.config.venue !== '' && this.config.host !== '' && this.config.category !== '' && this.config.date !== '';
     },
     playersComplete: function playersComplete() {
       return this.players.filter(function (player) {
         return !player.name || !player.surname;
       }).length === 0 && this.players.length > 0;
     },
+
     playerNames: function playerNames() {
       return this.players.map(function (player) {
         return player.surname.toUpperCase() + ' ' + player.name;
@@ -239,7 +291,7 @@ var app = new Vue({
       });
     },
     playerStats: function playerStats() {
-      var _this2 = this;
+      var _this3 = this;
 
       var results = this.players.map(function (player, playerIndex) {
         return {
@@ -263,7 +315,7 @@ var app = new Vue({
       });
       this.rounds.forEach(function (round, roundIndex) {
         // round not complete yet
-        if (!_this2.isRoundComplete(roundIndex)) {
+        if (!_this3.isRoundComplete(roundIndex)) {
           return;
         }
 
@@ -349,6 +401,7 @@ var app = new Vue({
 
       return results;
     },
+
     tournamentResults: function tournamentResults() {
       var results = this.playerStats.slice();
       // sort player stats
@@ -368,20 +421,20 @@ var app = new Vue({
     tournamentDate: function tournamentDate() {
       return new Date(this.config.date).toLocaleDateString();
     },
-    tournamentExport: function tournamentExport() {
-      return JSON.stringify(this.$data);
-    },
 
     roundsComplete: function roundsComplete() {
-      var _this3 = this;
+      var _this4 = this;
 
       complete = [];
       this.rounds.forEach(function (round, roundIndex) {
-        if (_this3.isRoundComplete(roundIndex)) {
+        if (_this4.isRoundComplete(roundIndex)) {
           complete.push(roundIndex);
         }
       });
       return complete;
+    },
+    roundsPerPlayers: function roundsPerPlayers() {
+      if (this.players.length > 64) return 7;else if (this.players.length > 32) return 6;else return 5;
     }
   },
   watch: {
@@ -394,16 +447,4 @@ var app = new Vue({
       deep: true
     }
   }
-});
-
-var clipboard = new Clipboard('.js-clipboard');
-clipboard.on('success', function (e) {
-  var button = e.trigger;
-  var originalText = button.innerText;
-  button.setAttribute('disabled', true);
-  button.innerText = 'Zkopírováno';
-  setTimeout(function () {
-    button.innerText = originalText;
-    button.removeAttribute('disabled');
-  }, 500);
 });

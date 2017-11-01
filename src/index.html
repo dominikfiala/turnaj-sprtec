@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
   <title>Turnaj ve šprtci</title>
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
@@ -72,7 +72,7 @@
         id="config">
         <form>
           <div class="form-row">
-            <div class="col-6">
+            <div class="col-5">
               <div class="form-group">
                 <label for="config-name">Název turnaje</label>
                 <input type="text" v-model="config.name" class="form-control" id="config-name" :class="{'is-invalid': !config.name}">
@@ -80,11 +80,17 @@
             </div>
             <div class="col-3">
               <div class="form-group">
+                <label for="config-host">Pořadatel</label>
+                <input type="text" list="clubs" v-model="config.host" class="form-control" id="config-host" :class="{'is-invalid': !config.host}">
+              </div>
+            </div>
+            <div class="col-2">
+              <div class="form-group">
                 <label for="config-date">Datum konání</label>
                 <input type="date" v-model="config.date" class="form-control" id="config-date" :class="{'is-invalid': !config.date}">
               </div>
             </div>
-            <div class="col-3">
+            <div class="col-2">
               <div class="form-group">
                 <label for="config-category">Kategorie</label>
                 <select v-model="config.category" class="form-control" id="config-category" :class="{'is-invalid': !config.category}">
@@ -95,16 +101,10 @@
           </div>
 
           <div class="form-row">
-            <div class="col-6">
+            <div class="col-5">
               <div class="form-group">
                 <label for="config-venue">Místo konání</label>
                 <input type="text" v-model="config.venue" class="form-control" id="config-venue" :class="{'is-invalid': !config.venue}">
-              </div>
-            </div>
-            <div class="col-3">
-              <div class="form-group">
-                <label for="config-host">Pořadatel</label>
-                <input type="text" list="clubs" v-model="config.host" class="form-control" id="config-host" :class="{'is-invalid': !config.host}">
               </div>
             </div>
             <div class="col-3">
@@ -114,7 +114,27 @@
                   v-model.number="config.numberOfRounds"
                   :class="{'is-invalid': !config.numberOfRounds}"
                   :disabled="rounds.length > 0"
-                  :title="rounds.length > 0 ? 'Nelze měnit počet kol rozehraného turnaje' : ''">
+                  :title="rounds.length > 0 ? 'Nelze měnit u již rozehraného turnaje' : ''">
+              </div>
+            </div>
+            <div class="col-2">
+              <div class="form-group">
+                <label for="config-point-win">Bodů za výhru</label>
+                <input type="number" min="0" step="0.5" class="form-control" id="config-point-win"
+                  v-model.number="config.pointsWin"
+                  :class="{'is-invalid': config.pointsWin === ''}"
+                  :disabled="rounds.length > 0"
+                  :title="rounds.length > 0 ? 'Nelze měnit u již rozehraného turnaje' : ''">
+              </div>
+            </div>
+            <div class="col-2">
+              <div class="form-group">
+                <label for="config-point-draw">Bodů za remízu</label>
+                <input type="number" min="0" step="0.5" class="form-control" id="config-point-draw"
+                  v-model.number="config.pointsDraw"
+                  :class="{'is-invalid': config.pointsDraw === ''}"
+                  :disabled="rounds.length > 0"
+                  :title="rounds.length > 0 ? 'Nelze měnit u již rozehraného turnaje' : ''">
               </div>
             </div>
           </div>
@@ -130,9 +150,9 @@
           </div>
         </form>
         <p class="text-right">
-          <button class="btn btn-primary" data-toggle="modal" data-target="#exportTournamentModal">Exportovat turnaj</button>
-          <button class="btn btn-success" data-toggle="modal" data-target="#importTournamentModal">Importovat turnaj</button>
-          <button class="btn btn-danger" data-toggle="modal" data-target="#resetTournamentModal">Resetovat turnaj</button>
+          <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exportTournamentModal">Exportovat turnaj</button>
+          <button type="button" class="btn btn-success" data-toggle="modal" data-target="#importTournamentModal">Importovat turnaj</button>
+          <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#resetTournamentModal">Resetovat turnaj</button>
         </p>
       </div>
 
@@ -149,7 +169,7 @@
           </div>
           <form class="form-inline">
             <input type="text" class="form-control mr-2" style="width: 175px" v-model="state.playersSearch" placeholder="Hledat účastníka">
-            <button v-on:click="addPlayer" class="btn btn-success">Přidat účastníka</button>
+            <button type="button" v-on:click="addPlayer" class="btn btn-success">Přidat účastníka</button>
           </form>
         </div>
 
@@ -256,6 +276,7 @@
           </div>
         </form>
 
+        <!-- Print -->
         <div class="d-none d-print-block">
           <p class="lead">Listina účastníků, celkem hráčů: {{ players.length }}</p>
           <table class="table table-sm">
@@ -265,6 +286,7 @@
                 <th>Hráč</th>
                 <th>Klub</th>
                 <th>Kategorie</th>
+                <th>Startovné</th>
               </tr>
             </thead>
             <tbody>
@@ -273,6 +295,7 @@
                 <td>{{ playerNames[playerIndex] }}</td>
                 <td>{{ config.clubs[player.club] }}</td>
                 <td>{{ playerCategories[playerIndex].name }}</td>
+                <td><span v-if="players[playerIndex].feePaid">Zaplaceno</span></td>
               </tr>
             </tbody>
           </table>
@@ -305,15 +328,14 @@
             </div>
           </div>
           <div class="col-auto">
-            <button v-on:click="generateRound(state.activeRound)" class="btn btn-success" :disabled="!isTournamentReady || !isRoundReady(state.activeRound) || isRoundGenerated(state.activeRound)">Generovat zápasy</button>
-            <button v-on:click="rounds = []" class="btn btn-danger">Reset</button>
+            <button type="button" v-on:click="generateRound(state.activeRound)" class="btn btn-success" :disabled="!isTournamentReady || !isRoundReady(state.activeRound) || isRoundGenerated(state.activeRound)">Generovat zápasy</button>
+            <button type="button" v-on:click="rounds = []" class="btn btn-danger">Reset</button>
           </div>
         </div>
 
         <!-- Round results -->
         <div class="tab-content" id="rounds-tabContent">
-          <p class="d-none d-print-block lead">Zápasy {{ state.activeRound+1 }}. kola</p>
-
+          <p class="d-none d-print-block lead">Zápasy<span v-if="state.activeRound > -1"> {{ state.activeRound+1 }}. kola</span></p>
           <p class="alert alert-warning"
             v-if="!isTournamentReady && state.activeRound !== -1">
             Turnaj nelza zahájit, není kompletní nastavení turnaje nebo listina účastníků.
@@ -346,8 +368,10 @@
                 <option v-for="(player, playerIndex) in playerNames" :value="playerIndex">{{ player }}</option>
               </select>
             </div>
+
+            <!-- Print -->
             <div class="d-none d-print-block">
-              <table class="table">
+              <table class="table table-sm">
                 <thead>
                   <tr>
                     <th>#</th>
@@ -362,8 +386,8 @@
                     <td>{{ playerNames[match.home] }}</td>
                     <td class="text-center">&times;</td>
                     <td>{{ playerNames[match.away] }}</td>
-                    <td class="text-center">:</td>
-                    <td class="w-25"></td>
+                    <td class="text-center">{{match.home_score}}:{{match.away_score}}</td>
+                    <td class="w-25">{{playerNames[match.referee]}}</td>
                   </tr>
                 </tbody>
               </table>
@@ -424,7 +448,7 @@
               <td class="text-center">:</td>
               <td>{{ result.goalsAgainst }}</td>
               <td class="text-center">{{ result.referee }}</td>
-              <td v-for="match in result.results">
+              <td v-if="result.results" v-for="match in result.results">
                 <span v-if="typeof(match) == 'undefined'">&mdash;</span>
                 <span v-if="typeof(match) == 'object' && match.opponent === -1">volno</span>
                 <span v-if="typeof(match) == 'object' && match.opponent !== -1">{{playerPlacementByIndex(match.opponent)}} ({{ match.goalsFor }}:{{ match.goalsAgainst }})</span>
@@ -446,18 +470,24 @@
         <p class="lead">Webová aplikace pro řízení šprtcových turnajů</p>
 
         <div class="row">
-          <div class="col">
+          <div class="col-lg">
             <h2>Vlastnosti</h2>
             <ul>
-              <li>funguje i&nbsp;<strong>bez připojení k&nbsp;Internetu</strong> (pokud bylo dříve z&nbsp;Internetu načteno)</li>
-              <li>generování vzájemných zápasů bere v&nbsp;potaz průběžné výsledky a&nbsp;volná kola při&nbsp;lichém počtu hráčů</li>
+              <li><strong>generování vzájemných zápasů</strong> bere v&nbsp;potaz průběžné výsledky a&nbsp;volná kola při&nbsp;lichém počtu hráčů</li>
               <li><strong>určení kategorií účastníků</strong>&nbsp;dle jejich pohlaví a&nbsp;data narození (bez vyplnění těchto údajů automaticky kategorie "muži")</li>
               <li><strong>počítání odpískaných zápasů</strong> účastníkem (časem kontrola oproti minimu aktivit)</li>
               <li>export a&nbsp;import stavu turnaje (např. pro&nbsp;přípravu startovací listiny předem a&nbsp;následné řízení turnaje z&nbsp;jiného počítače)</li>
-              <li><strong>určení vítězů kategorií</strong> ve&nbsp;výsledkové listině</li>
+              <li><strong>určení vítězů kategorií</strong> ve&nbsp;výsledkové listině (ozanačeno tučným textem)</li>
               <li><strong>konkrétní výsledky zápasů hráče</strong> (včetně skóre)</li>
-              <li>možnost zapojit kdykoliv do&nbsp;turnaje nového hráče, nebo ho naopak nechat z&nbsp;turnaje odstoupit</li>
+              <li>možnost do&nbsp;turnaje <strong>kdykoliv zapojit nového hráče</strong>, nebo ho naopak nechat z&nbsp;turnaje odstoupit (tlačítkem vlevo od příjmení hráče)</li>
               <li><strong>tiskové formátování listiny</strong> účastníků, zápasů kola a&nbsp;výsledků</li>
+            </ul>
+
+            <h2>Technické vlastnosti</h2>
+            <ul>
+              <li>aplikace <strong>funguje v moderních Internetových prohlížečích</strong> (toto se detekuje při načtení aplikace; v případě, že prohlížeč nepodporuje nezbytné funkce, aplikace se nenačte a dá o tom zprávu)</li>
+              <li>funguje i&nbsp;<strong>bez připojení k&nbsp;Internetu</strong> (pokud bylo dříve z&nbsp;Internetu načteno)</li>
+              <li><strong>stav turnaje se automaticky ukládá</strong> do paměti prohlížeče, při opětovném spuštění aplikace tedy vidíte stav turnaje, ve kterém jste jej posledně opustili (pokud použijete stejný prohlížeč na stejném počítači)</li>
             </ul>
 
             <h2>Výhody oproti programu MacMahon</h2>
@@ -469,16 +499,11 @@
               <li>práce s&nbsp;kategoriemi hráče</li>
             </ul>
 
-            <h2>Neplánované funkce</h2>
-            <ul>
-              <li><strong>zabezpečení aplikace</strong>: žádné nebude, pokud chcete zamezit, aby k aplikaci kdokoliv přišel a něco do ní psal, zamkněte počítač, na kterém běží</li>
-            </ul>
-
             <h2>Autor</h2>
-            <p>Vyrobil <strong>Dominik Fiala</strong> (<a href="mailto:domo.fiala@gmail.com">domo.fiala@gmail.com</a>) v&nbsp;roce 2017 a&nbsp;myslel při&nbsp;tom na&nbsp;všechny, kdo kdy&nbsp;pořádali šprtcový turnaj. Psali výsledky na&nbsp;papír, do&nbsp;programu MacMahon, a&nbsp;následně ještě dvakrát do&nbsp;Excelu.</p>
+            <p>Vyrobil <strong>Dominik Fiala</strong> (<a href="mailto:domo.fiala@gmail.com">domo.fiala@gmail.com</a>) v&nbsp;roce 2017 a&nbsp;myslel při&nbsp;tom na&nbsp;všechny, kdo kdy&nbsp;pořádali šprtcový turnaj. Psali výsledky na&nbsp;papír, do&nbsp;programu MacMahon, a&nbsp;následně ještě dvakrát do&nbsp;Excelu&hellip;</p>
           </div>
 
-          <div class="col">
+          <div class="col-lg">
             <h2>Rozhodující kritéria pořadí účastníků</h2>
             <ol>
               <li>body</li>
@@ -504,6 +529,11 @@
               <li><strong>účastníci bez splněných aktivit</strong> zvýraznění ve&nbsp;výsledcích</li>
               <li>vyhnout se&nbsp;vzájemným zápasům hráčů stejného klubu?</li>
               <li>důsledné generování kola (vyzkoušet všechny možné kombinace volného kola, zatím generuje pouze jednou a&nbsp;pokud neposkládá, je&nbsp;potřeba další pokus o&nbsp;generování)</li>
+            </ul>
+
+            <h2>Neplánované funkce</h2>
+            <ul>
+              <li><strong>zabezpečení aplikace</strong>: žádné nebude, pokud chcete zamezit, aby k aplikaci kdokoliv přišel a něco do ní psal, zamkněte počítač, na kterém běží</li>
             </ul>
           </div>
         </div>

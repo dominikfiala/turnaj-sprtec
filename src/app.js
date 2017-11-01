@@ -17,6 +17,8 @@ var data = {
     categories: [
       'Expres', 'ČP12', 'ČP24', 'ČP36', 'Czech Open'
     ],
+    pointsWin: 2,
+    pointsDraw: 1,
     clubs: [
       'BHC Dragons Modřice',
       'BHC StarColor Most',
@@ -346,7 +348,7 @@ var app = new Vue({
         if (round.bye !== -1) {
           results[round.bye].matches++
           results[round.bye].wins++
-          results[round.bye].points++
+          results[round.bye].points += this.config.pointsWin
           results[round.bye].byes++
           results[round.bye].results[roundIndex] = {
             opponent: -1
@@ -385,18 +387,18 @@ var app = new Vue({
           }
 
           if (match.home_score > match.away_score) {
-            homePlayer.points += 1
+            homePlayer.points += this.config.pointsWin
             homePlayer.wins += 1
             awayPlayer.losses += 1
           }
           else if (match.home_score < match.away_score) {
-            awayPlayer.points += 1
+            awayPlayer.points += this.config.pointsWin
             awayPlayer.wins += 1
             homePlayer.losses += 1
           }
           else {
-            homePlayer.points += 0.5
-            awayPlayer.points += 0.5
+            homePlayer.points += this.config.pointsDraw
+            awayPlayer.points += this.config.pointsDraw
             homePlayer.ties += 1
             awayPlayer.ties += 1
           }

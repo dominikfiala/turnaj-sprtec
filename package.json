@@ -2,7 +2,7 @@
   "name": "turnaj",
   "version": "1.0.0",
   "description": "Aplikace pro řízení turnaje ve šprtci",
-  "main": "index.html",
+  "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "./node_modules/.bin/gulp build && rm build/app.js && ./node_modules/.bin/gulp build-sw",
@@ -31,15 +31,9 @@
     "vue": "^2.5.2"
   },
   "devDependencies": {
-    "babel-core": "^6.26.0",
-    "babel-preset-env": "^1.6.1",
-    "browser-sync": "^2.18.13",
-    "gulp": "^3.9.1",
-    "gulp-babel": "^7.0.0",
-    "gulp-clean-css": "^3.9.0",
-    "gulp-concat": "^2.6.1",
-    "gulp-html-replace": "^1.6.2",
-    "gulp-uglify": "^3.0.0",
-    "sw-precache": "^5.2.0"
+    "electron": "1.7.9",
+    "electron-connect": "^0.6.2",
+    "electron-devtools-installer": "^2.2.1",
+    "gulp": "^3.9.1"
   }
 }

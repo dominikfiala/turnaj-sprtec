@@ -178,17 +178,18 @@
             class="players-list-item"
             :class="{'d-none': !playerInSearch(playerIndex)}"
             >
-            <div class="form-row mb-1">
-              <div class="col-auto pt-1" v-if="rounds.length === 0">
+            <div class="form-row mb-2">
+              <div class="col-auto" v-if="rounds.length === 0">
                 <button type="button" title="Odebrat účastníka"
                   v-on:click="removePlayer(playerIndex)"
-                  class="btn btn-sm btn-danger">
+                  class="btn btn-danger">
                   <strong>&times;</strong>
                 </button>
               </div>
-              <div class="col-auto pt-1">
+              <div class="col-auto">
                 <button type="button" title="Účast hráče v kolech"
-                   class="btn btn-sm"
+                style="width: 50px;"
+                  class="btn"
                   :class="{
                     'btn-primary': player.rounds.length === config.numberOfRounds,
                     'btn-secondary': player.rounds.length !== config.numberOfRounds,
@@ -429,7 +430,7 @@
             <tr v-for="(result, resultIndex) in tournamentResults">
               <td>
                 {{ resultIndex + 1 }}.
-                <abbr v-if="result.sharedPosition" class="text-muted" title="Výsledková shoda s předchozím hráčem v pořadí">?</abbr>
+                <abbr v-if="result.sharedPosition" class="text-muted" title="Výsledková shoda s&nbsp;předchozím hráčem v&nbsp;pořadí">?</abbr>
               </td>
               <td>{{ playerNames[result.playerIndex] }}</td>
               <td><span v-if="players[result.playerIndex].club !== -1">{{ config.clubs[players[result.playerIndex].club] }}</span></td>
@@ -481,13 +482,6 @@
               <li><strong>konkrétní výsledky zápasů hráče</strong> (včetně skóre)</li>
               <li>možnost do&nbsp;turnaje <strong>kdykoliv zapojit nového hráče</strong>, nebo ho naopak nechat z&nbsp;turnaje odstoupit (tlačítkem vlevo od příjmení hráče)</li>
               <li><strong>tiskové formátování listiny</strong> účastníků, zápasů kola a&nbsp;výsledků</li>
-            </ul>
-
-            <h2>Technické vlastnosti</h2>
-            <ul>
-              <li>aplikace <strong>funguje v moderních Internetových prohlížečích</strong> (toto se detekuje při načtení aplikace; v případě, že prohlížeč nepodporuje nezbytné funkce, aplikace se nenačte a dá o tom zprávu)</li>
-              <li>funguje i&nbsp;<strong>bez připojení k&nbsp;Internetu</strong> (pokud bylo dříve z&nbsp;Internetu načteno)</li>
-              <li><strong>stav turnaje se automaticky ukládá</strong> do paměti prohlížeče, při opětovném spuštění aplikace tedy vidíte stav turnaje, ve kterém jste jej posledně opustili (pokud použijete stejný prohlížeč na stejném počítači)</li>
             </ul>
 
             <h2>Výhody oproti programu MacMahon</h2>
@@ -617,14 +611,16 @@
     </div>
   </div>
 
-  <!-- build:js -->
+  <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
+
   <script src="../node_modules/jquery/dist/jquery.slim.js"></script>
   <script src="../node_modules/popper.js/dist/umd/popper.js"></script>
   <script src="../node_modules/bootstrap/dist/js/bootstrap.js"></script>
   <script src="../node_modules/vue/dist/vue.js"></script>
   <script src="../node_modules/file-saver/FileSaver.js"></script>
   <script src="./app.js"></script>
-  <!-- endbuild -->
+
+  <script>if (window.module) module = window.module;</script>
 </body>
 
 </html>

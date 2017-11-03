@@ -269,7 +269,7 @@ var app = new Vue({
         this.config.venue !== '' &&
         this.config.host !== '' &&
         this.config.category !== '' &&
-        this.config.date !== ''
+        this.tournamentDateValid
     },
     playersComplete: function() {
       return this.players.filter(function(player){
@@ -462,6 +462,9 @@ var app = new Vue({
     },
     tournamentDate: function() {
       return new Date(this.config.date).toLocaleDateString();
+    },
+    tournamentDateValid: function() {
+      return /^(\d{4})-(\d{2})-(\d{2})$/.test(this.config.date)
     },
 
     roundsComplete: function() {

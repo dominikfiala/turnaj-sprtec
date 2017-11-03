@@ -87,7 +87,12 @@
             <div class="col-2">
               <div class="form-group">
                 <label for="config-date">Datum konání</label>
-                <input type="date" v-model="config.date" class="form-control" id="config-date" :class="{'is-invalid': !config.date}">
+                <input type="date"
+                  placeholder="rrrr-mm-dd"
+                  v-model="config.date"
+                  class="form-control"
+                  id="config-date"
+                  :class="{'is-invalid': !tournamentDateValid}">
               </div>
             </div>
             <div class="col-2">

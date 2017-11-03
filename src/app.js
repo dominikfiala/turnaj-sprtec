@@ -1,6 +1,6 @@
 Vue.config.devtools = true
 
-var data = {
+var dataInitial = {
   state: {
     activeTab: 'config',
     activeRound: 0,
@@ -44,7 +44,10 @@ if (window.localStorage) {
   var store = window.localStorage
 
   if (store.getItem('data')) {
-    data = Object.assign(data, JSON.parse(store.getItem('data')))
+    data = Object.assign(dataInitial, JSON.parse(store.getItem('data')))
+  }
+  else {
+    data = dataInitial
   }
 }
 
@@ -84,7 +87,7 @@ var app = new Vue({
       var input = event.target
       var reader = new FileReader()
       reader.onload = () => {
-        this.$data = Object.assign(this.$data, JSON.parse(reader.result))
+        this.$data = Object.assign(dataInitial, JSON.parse(reader.result))
         $('#importTournamentModal').modal('hide')
       };
       reader.readAsText(input.files[0])
@@ -124,6 +127,7 @@ var app = new Vue({
       }) + 1
     },
     removePlayer: function(playerIndex) {
+      $('[title]').tooltip('dispose') // otherwise tooltip stays displayed
       this.players.splice(playerIndex, 1)
     },
     playerSetActive(playerIndex) {
@@ -257,6 +261,10 @@ var app = new Vue({
     },
     randomIndex: function(array) {
       return Math.floor(Math.random()*array.length)
+    },
+
+    initTooltips: function() {
+      $('[title]').tooltip({html: true, trigger: 'hover', removeOnDestroy: true})
     }
   },
   computed: {
@@ -269,7 +277,7 @@ var app = new Vue({
         this.config.venue !== '' &&
         this.config.host !== '' &&
         this.config.category !== '' &&
-        this.config.date !== ''
+        this.tournamentDateValid
     },
     playersComplete: function() {
       return this.players.filter(function(player){
@@ -277,6 +285,14 @@ var app = new Vue({
       }).length === 0 && this.players.length > 0
     },
 
+    playersSorted: function() {
+      return this.players.slice().map(function(item, index) {
+        item.playerIndex = index
+        return item
+      }).sort(function(a, b) {
+        return a.surname.localeCompare(b.surname)
+      })
+    },
     playerNames: function() {
       return this.players.map(function(player) {
         return `${player.surname.toUpperCase()} ${player.name}`
@@ -463,6 +479,9 @@ var app = new Vue({
     tournamentDate: function() {
       return new Date(this.config.date).toLocaleDateString();
     },
+    tournamentDateValid: function() {
+      return /^(\d{4})-(\d{2})-(\d{2})$/.test(this.config.date)
+    },
 
     roundsComplete: function() {
       complete = []
@@ -480,10 +499,10 @@ var app = new Vue({
     }
   },
   mounted: function() {
-    $('[title]').tooltip({html: true})
+    this.initTooltips()
   },
   updated: function() {
-    $('[title]').tooltip({html: true})
+    this.initTooltips()
   },
   watch: {
     '$data': {

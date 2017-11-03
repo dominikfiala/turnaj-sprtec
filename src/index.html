@@ -21,6 +21,10 @@
   input[type="date"] {
     height: 2.4rem;
   }
+  input[type="date"]::-webkit-clear-button,
+  input[type="date"]::-webkit-inner-spin-button {
+    display: none;
+  }
   @media print {
     body {
       font-size: 10px;
@@ -70,7 +74,7 @@
           show: state.activeTab == 'config'
         }"
         id="config">
-        <form>
+        <form class="mb-2">
           <div class="form-row">
             <div class="col-5">
               <div class="form-group">
@@ -87,7 +91,11 @@
             <div class="col-2">
               <div class="form-group">
                 <label for="config-date">Datum konání</label>
-                <input type="date" v-model="config.date" class="form-control" id="config-date" :class="{'is-invalid': !config.date}">
+                <input type="date"
+                  v-model="config.date"
+                  class="form-control"
+                  id="config-date"
+                  :class="{'is-invalid': !tournamentDateValid}">
               </div>
             </div>
             <div class="col-2">
@@ -113,7 +121,7 @@
                 <input type="number" min="3" class="form-control" id="config-date"
                   v-model.number="config.numberOfRounds"
                   :class="{'is-invalid': !config.numberOfRounds}"
-                  :disabled="rounds.length > 0"
+                  :readonly="rounds.length > 0"
                   :title="rounds.length > 0 ? 'Nelze měnit u již rozehraného turnaje' : ''">
               </div>
             </div>
@@ -123,7 +131,7 @@
                 <input type="number" min="0" step="0.5" class="form-control" id="config-point-win"
                   v-model.number="config.pointsWin"
                   :class="{'is-invalid': config.pointsWin === ''}"
-                  :disabled="rounds.length > 0"
+                  :readonly="rounds.length > 0"
                   :title="rounds.length > 0 ? 'Nelze měnit u již rozehraného turnaje' : ''">
               </div>
             </div>
@@ -133,7 +141,7 @@
                 <input type="number" min="0" step="0.5" class="form-control" id="config-point-draw"
                   v-model.number="config.pointsDraw"
                   :class="{'is-invalid': config.pointsDraw === ''}"
-                  :disabled="rounds.length > 0"
+                  :readonly="rounds.length > 0"
                   :title="rounds.length > 0 ? 'Nelze měnit u již rozehraného turnaje' : ''">
               </div>
             </div>
@@ -141,10 +149,10 @@
 
           <label>Kluby</label>
           <div class="form-row">
-            <div class="col-4 form-group" v-for="(club, clubIndex) in config.clubs">
+            <div class="col-4 form-group mb-2" v-for="(club, clubIndex) in config.clubs">
               <input type="text" v-model="config.clubs[clubIndex]" class="form-control">
             </div>
-            <div class="col-4 form-group">
+            <div class="col-4 form-group mb-2">
               <input v-on:blur="addClub" type="text" class="form-control" placeholder="Další klub">
             </div>
           </div>
@@ -283,7 +291,6 @@
           <table class="table table-sm">
             <thead>
               <tr>
-                <th>#</th>
                 <th>Hráč</th>
                 <th>Klub</th>
                 <th>Kategorie</th>
@@ -291,12 +298,11 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(player, playerIndex) in players">
-                <td>{{ playerIndex+1 }}.</td>
-                <td>{{ playerNames[playerIndex] }}</td>
+              <tr v-for="player in playersSorted">
+                <td>{{ playerNames[player.playerIndex] }}</td>
                 <td>{{ config.clubs[player.club] }}</td>
-                <td>{{ playerCategories[playerIndex].name }}</td>
-                <td><span v-if="players[playerIndex].feePaid">Zaplaceno</span></td>
+                <td>{{ playerCategories[player.playerIndex].name }}</td>
+                <td><span v-if="players[player.playerIndex].feePaid">Zaplaceno</span></td>
               </tr>
             </tbody>
           </table>

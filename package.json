@@ -1,11 +1,16 @@
 {
-  "name": "turnaj",
+  "name": "turnaj-sprtec",
   "version": "1.0.0",
   "description": "Aplikace pro řízení turnaje ve šprtci",
   "main": "main.js",
+  "build": {
+    "appId": "cz.dominikfiala.${name}",
+    "icon": "icon.ico"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "./node_modules/.bin/gulp build && rm build/app.js && ./node_modules/.bin/gulp build-sw",
+    "pack": "electron-builder --win=portable --ia32 --dir",
+    "dist": "electron-builder --win=portable --ia32",
     "serve": "./node_modules/.bin/gulp serve"
   },
   "repository": {
@@ -32,8 +37,10 @@
   },
   "devDependencies": {
     "electron": "1.7.9",
+    "electron-builder": "^19.43.4",
     "electron-connect": "^0.6.2",
     "electron-devtools-installer": "^2.2.1",
-    "gulp": "^3.9.1"
+    "gulp": "^3.9.1",
+    "gulp-copy": "^1.0.1"
   }
 }

@@ -326,8 +326,7 @@
           </div>
           <div class="col-auto">
             <button type="button" v-on:click="generateRound(state.activeRound)" class="btn btn-success" :disabled="!isTournamentReady || !isRoundReady(state.activeRound) || isRoundGenerated(state.activeRound)">Generovat zápasy</button>
-            <!-- <button type="button" v-on:click="rounds = []" class="btn btn-danger">Reset</button> -->
-            <button type="button" v-on:click="print" class="btn btn-primary">Tisk</button>
+            <button type="button" v-on:click="rounds = []" class="btn btn-danger">Reset</button>
           </div>
         </div>
 
@@ -402,15 +401,8 @@
           show: state.activeTab == 'results'
         }"
         id="results">
-        <p v-if="roundsComplete.length !== config.numberOfRounds" class="d-none d-print-block lead">
-          Průběžné výsledky, odehráno kol: {{ roundsComplete.length }}/{{ config.numberOfRounds }}
-        </p>
-        <p v-if="roundsComplete.length === config.numberOfRounds" class="d-none d-print-block lead">
-          Konečné výsledky turnaje
-        </p>
-        <p class="text-right d-print-none">
-          <button type="button" v-on:click="print" class="btn btn-primary">Tisk</button>
-        </p>
+        <p v-if="roundsComplete.length !== config.numberOfRounds" class="d-none d-print-block lead">Průběžné výsledky, odehráno kol: {{ roundsComplete.length }}/{{ config.numberOfRounds }}</p>
+        <p v-if="roundsComplete.length === config.numberOfRounds" class="d-none d-print-block lead">Konečné výsledky turnaje</p>
         <table class="table table-hover table-sm">
           <thead>
             <tr>

@@ -11,7 +11,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "pack": "electron-builder --win=portable --ia32 --dir",
     "dist": "electron-builder --win=portable --ia32",
-    "serve": "./node_modules/.bin/gulp serve"
+    "serve": "NODE_ENV=development ./node_modules/.bin/gulp serve"
   },
   "repository": {
     "type": "git",

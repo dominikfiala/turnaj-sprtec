@@ -1,8 +1,10 @@
 const {app, BrowserWindow} = require('electron')
 const path = require('path')
 const url = require('url')
-// const { default: installExtension, VUEJS_DEVTOOLS } = require('electron-devtools-installer');
-// var client = require('electron-connect').client;
+if (process.env.NODE_ENV === 'development') {
+  var { default: installExtension, VUEJS_DEVTOOLS } = require('electron-devtools-installer')
+  var client = require('electron-connect').client
+}
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -19,10 +21,13 @@ function createWindow () {
     slashes: true
   }))
 
-  // client.create(win);
-
-  // Open the DevTools.
-  win.webContents.openDevTools()
+  if (process.env.NODE_ENV === 'development') {
+    client.create(win)
+    win.webContents.openDevTools()
+    installExtension(VUEJS_DEVTOOLS)
+      .then((name) => console.log(`Added Extension:  ${name}`))
+      .catch((err) => console.log('An error occurred: ', err));
+  }
 
   // Emitted when the window is closed.
   win.on('closed', () => {
@@ -31,10 +36,6 @@ function createWindow () {
     // when you should delete the corresponding element.
     win = null
   })
-
-  // installExtension(VUEJS_DEVTOOLS)
-  //   .then((name) => console.log(`Added Extension:  ${name}`))
-  //   .catch((err) => console.log('An error occurred: ', err));
 }
 
 // This method will be called when Electron has finished

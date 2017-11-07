@@ -14,6 +14,7 @@
   input[type="date"]::-webkit-inner-spin-button {
     display: none;
   }
+
   @media print {
     body {
       font-size: 10px;
@@ -363,7 +364,7 @@
               </div>
               <select v-model="match.referee" class="form-control w-25" :class="{'is-invalid': match.referee === -1}">
                 <option :value="-1">Rozhodčí</option>
-                <option v-for="(player, playerIndex) in playerNames" :value="playerIndex">{{ player }}</option>
+                <option v-for="(player, playerIndex) in playerNames" :value="playerIndex" v-if="playerIndex != match.home && playerIndex != match.away">{{ player }}</option>
               </select>
             </div>
 
@@ -531,7 +532,8 @@
 
             <h2>Neplánované funkce</h2>
             <ul>
-              <li><strong>zabezpečení aplikace</strong>: žádné nebude, pokud chcete zamezit, aby k aplikaci kdokoliv přišel a něco do ní psal, zamkněte počítač, na kterém běží</li>
+              <li><strong>zabezpečení aplikace</strong>: pokud chcete zamezit, aby k aplikaci kdokoliv přišel a něco do ní psal, zamkněte počítač, na kterém běží</li>
+              <li><strong>kontrola duplicity účastníků</strong>: aplikace nekontroluje, zda není v účastnících hráč se stejným místem vícekrát, toto má pořadatel odhalit při prezenci hráčů, která je seřazena dle abecedy</li>
             </ul>
           </div>
         </div>

@@ -13,7 +13,7 @@ gulp.task("serve-browser", function() {
     },
     ui: false,
     open: false,
-    files: "./src/app.js",
+    files: ["./src/app.js", "./src/styles.css"],
     startPath: "src/index.html"
   });
 

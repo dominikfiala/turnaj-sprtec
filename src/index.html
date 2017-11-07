@@ -6,38 +6,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <title>Turnaj ve šprtci</title>
   <link rel="stylesheet" href="../node_modules/bootstrap/dist/css/bootstrap.css">
-  <style>
-  input[type="date"] {
-    height: 2.4rem;
-  }
-  input[type="date"]::-webkit-clear-button,
-  input[type="date"]::-webkit-inner-spin-button {
-    display: none;
-  }
-
-  @media print {
-    body {
-      font-size: 10px;
-    }
-    abbr[title] {
-      text-decoration: none;
-    }
-    abbr[title]::after {
-      content: "";
-    }
-    #m-print-none {
-      margin: 0 !important;
-    }
-  }
-  </style>
+  <link rel="stylesheet" href="./styles.css">
 </head>
 
 <body>
-  <div id="app" class="m-2">
+  <div id="app">
     <h3 class="d-none d-print-block">{{ config.name }}, {{ tournamentDate }}</h3>
 
     <!-- Application tabs -->
-    <ul class="nav nav-tabs d-print-none">
+    <ul class="app-nav nav nav-tabs d-print-none pt-2 pr-2 pl-2">
       <li class="nav-item">
         <a href="#config" :class="{active: state.activeTab == 'config', 'text-danger': !configComplete}" v-on:click="state.activeTab = 'config'" id="config-tab" data-toggle="tab" class="nav-link">Nastavení turnaje</a>
       </li>
@@ -56,7 +33,7 @@
     </ul>
 
     <!-- Application screen -->
-    <div class="tab-content m-2" id="m-print-none">
+    <div class="tab-content mx-3" id="m-print-none">
       <!-- Tournament config -->
       <div class="tab-pane"
         :class="{
@@ -147,7 +124,8 @@
             </div>
           </div>
         </form>
-        <p class="text-right">
+
+        <p class="text-right tab-footer p-2 mb-0">
           <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exportTournamentModal">Exportovat turnaj</button>
           <button type="button" class="btn btn-success" data-toggle="modal" data-target="#importTournamentModal">Importovat turnaj</button>
           <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#resetTournamentModal">Resetovat turnaj</button>
@@ -161,17 +139,6 @@
           show: state.activeTab == 'players'
         }"
         id="players">
-        <div class="mb-2 d-flex d-print-none justify-content-between">
-          <div>
-            <span class="btn pl-0">Účastníků: <strong>{{ players.length }}</strong> (kol turnaje ČP: {{ roundsPerPlayers }}<span v-if="roundsPerPlayers !== config.numberOfRounds" class="text-danger">, nastaveno: {{ config.numberOfRounds }}</span>)</span>
-          </div>
-          <form class="form-inline">
-            <input type="text" class="form-control mr-2" style="width: 175px" v-model="state.playersSearch" placeholder="Hledat účastníka">
-            <button type="button" v-on:click="addPlayer" class="btn btn-success mr-2">Přidat účastníka</button>
-            <button type="button" v-on:click="print" class="btn btn-primary">Tisk</button>
-          </form>
-        </div>
-
         <form class="d-flex d-print-none flex-column-reverse players-list">
           <div v-for="(player, playerIndex) in players"
             class="players-list-item"
@@ -276,6 +243,17 @@
           </div>
         </form>
 
+        <div class="tab-footer p-2 mb-0 d-flex d-print-none justify-content-between">
+          <div>
+            <span class="btn">Účastníků: <strong>{{ players.length }}</strong> (kol turnaje ČP: {{ roundsPerPlayers }}<span v-if="roundsPerPlayers !== config.numberOfRounds" class="text-danger">, nastaveno: {{ config.numberOfRounds }}</span>)</span>
+          </div>
+          <form class="form-inline">
+            <input type="text" class="form-control mr-2" style="width: 175px" v-model="state.playersSearch" placeholder="Hledat účastníka">
+            <button type="button" v-on:click="addPlayer" class="btn btn-success mr-2">Přidat účastníka</button>
+            <button type="button" v-on:click="print" class="btn btn-primary">Tisk</button>
+          </form>
+        </div>
+
         <!-- Print -->
         <div class="d-none d-print-block">
           <p class="lead">Listina účastníků, celkem hráčů: {{ players.length }}</p>
@@ -307,32 +285,6 @@
           show: state.activeTab == 'matches'
         }"
         id="matches">
-        <!-- Rounds tabs -->
-        <div class="row d-print-none">
-          <div class="col">
-            <div class="nav nav-pills mb-2">
-              <a href="#"
-                class="nav-link"
-                :class="{active: state.activeRound === -1}"
-                v-on:click="state.activeRound = -1">Všechny</a>
-              <a v-for="round in config.numberOfRounds"
-                class="nav-link"
-                :class="{active: state.activeRound === round - 1}"
-                :id="`rounds-tab-${round}-tab`"
-                data-toggle="pill"
-                :href="`#rounds-tab-${round - 1}`"
-                v-on:click="state.activeRound = round - 1"
-              >{{round}}. kolo</a>
-            </div>
-          </div>
-          <div class="col-auto">
-            <button type="button" v-on:click="generateRound(state.activeRound)" class="btn btn-success" :disabled="!isTournamentReady || !isRoundReady(state.activeRound) || isRoundGenerated(state.activeRound)">Generovat zápasy</button>
-            <!-- <button type="button" v-on:click="rounds = []" class="btn btn-danger">Reset</button> -->
-            <button type="button" v-on:click="print" class="btn btn-primary">Tisk</button>
-          </div>
-        </div>
-
-        <!-- Round results -->
         <div class="tab-content" id="rounds-tabContent">
           <p class="d-none d-print-block lead">Zápasy<span v-if="state.activeRound > -1"> {{ state.activeRound+1 }}. kola</span></p>
           <p class="alert alert-warning"
@@ -394,6 +346,30 @@
             <p v-if="round.bye !== -1">Volné kolo: <strong>{{ playerNames[round.bye] }}</strong></p>
           </div>
         </div>
+        <div class="tab-footer p-2 mb-0 row d-print-none">
+          <div class="col">
+            <div class="nav nav-pills">
+              <span class="nav-link">Kolo:</span>
+              <a href="#"
+                class="nav-link"
+                :class="{active: state.activeRound === -1}"
+                v-on:click="state.activeRound = -1">Vše</a>
+              <a v-for="round in config.numberOfRounds"
+                class="nav-link"
+                :class="{active: state.activeRound === round - 1}"
+                :id="`rounds-tab-${round}-tab`"
+                data-toggle="pill"
+                :href="`#rounds-tab-${round - 1}`"
+                v-on:click="state.activeRound = round - 1"
+              >{{round}}.</a>
+            </div>
+          </div>
+          <div class="col-auto">
+            <button type="button" v-on:click="generateRound(state.activeRound)" class="btn btn-success" :disabled="!isTournamentReady || !isRoundReady(state.activeRound) || isRoundGenerated(state.activeRound)">Generovat zápasy</button>
+            <!-- <button type="button" v-on:click="rounds = []" class="btn btn-danger">Reset</button> -->
+            <button type="button" v-on:click="print" class="btn btn-primary">Tisk</button>
+          </div>
+        </div>
       </div>
 
       <!-- Results tab -->
@@ -408,9 +384,6 @@
         </p>
         <p v-if="roundsComplete.length === config.numberOfRounds" class="d-none d-print-block lead">
           Konečné výsledky turnaje
-        </p>
-        <p class="text-right d-print-none">
-          <button type="button" v-on:click="print" class="btn btn-primary">Tisk</button>
         </p>
         <table class="table table-hover table-sm">
           <thead>
@@ -462,6 +435,10 @@
             </tr>
           </tbody>
         </table>
+
+        <p class="tab-footer p-2 mb-0 text-right d-print-none">
+          <button type="button" v-on:click="print" class="btn btn-primary">Tisk</button>
+        </p>
       </div>
 
       <!-- About app tab -->
@@ -471,71 +448,68 @@
           show: state.activeTab == 'about-app'
         }"
         id="about-app">
+        <div class="container px-5">
+          <h1>Turnaj ve&nbsp;šprtci</h1>
+          <p class="lead">Webová aplikace pro&nbsp;řízení šprtcových turnajů</p>
 
-        <h1>Turnaj ve šprtci</h1>
-        <p class="lead">Webová aplikace pro řízení šprtcových turnajů</p>
+          <h2>Vlastnosti</h2>
+          <ul>
+            <li><strong>generování vzájemných zápasů</strong> bere v&nbsp;potaz průběžné výsledky a&nbsp;volná kola při&nbsp;lichém počtu hráčů</li>
+            <li><strong>určení kategorií účastníků</strong>&nbsp;dle jejich pohlaví a&nbsp;data narození (bez vyplnění těchto údajů automaticky kategorie "muži")</li>
+            <li><strong>počítání odpískaných zápasů</strong> účastníkem (časem kontrola oproti minimu aktivit)</li>
+            <li>export a&nbsp;import stavu turnaje (např. pro&nbsp;přípravu startovací listiny předem a&nbsp;následné řízení turnaje z&nbsp;jiného počítače)</li>
+            <li><strong>určení vítězů kategorií</strong> ve&nbsp;výsledkové listině (ozanačeno tučným textem)</li>
+            <li><strong>konkrétní výsledky zápasů hráče</strong> (včetně skóre)</li>
+            <li>možnost do&nbsp;turnaje <strong>kdykoliv zapojit nového hráče</strong>, nebo ho naopak nechat z&nbsp;turnaje odstoupit (tlačítkem vlevo od&nbsp;příjmení hráče)</li>
+            <li><strong>tiskové formátování listiny</strong> účastníků, zápasů kola a&nbsp;výsledků</li>
+          </ul>
 
-        <div class="row">
-          <div class="col-lg">
-            <h2>Vlastnosti</h2>
-            <ul>
-              <li><strong>generování vzájemných zápasů</strong> bere v&nbsp;potaz průběžné výsledky a&nbsp;volná kola při&nbsp;lichém počtu hráčů</li>
-              <li><strong>určení kategorií účastníků</strong>&nbsp;dle jejich pohlaví a&nbsp;data narození (bez vyplnění těchto údajů automaticky kategorie "muži")</li>
-              <li><strong>počítání odpískaných zápasů</strong> účastníkem (časem kontrola oproti minimu aktivit)</li>
-              <li>export a&nbsp;import stavu turnaje (např. pro&nbsp;přípravu startovací listiny předem a&nbsp;následné řízení turnaje z&nbsp;jiného počítače)</li>
-              <li><strong>určení vítězů kategorií</strong> ve&nbsp;výsledkové listině (ozanačeno tučným textem)</li>
-              <li><strong>konkrétní výsledky zápasů hráče</strong> (včetně skóre)</li>
-              <li>možnost do&nbsp;turnaje <strong>kdykoliv zapojit nového hráče</strong>, nebo ho naopak nechat z&nbsp;turnaje odstoupit (tlačítkem vlevo od příjmení hráče)</li>
-              <li><strong>tiskové formátování listiny</strong> účastníků, zápasů kola a&nbsp;výsledků</li>
-            </ul>
+          <h2>Rozhodující kritéria pořadí účastníků</h2>
+          <ol>
+            <li>body</li>
+            <li>body soupeřů</li>
+            <li>body soupeřů soupeřů</li>
+            <li>vstřelené branky (max. 5 na&nbsp;zápas)</li>
+          </ol>
+          <p>Pokud je&nbsp;mezi hráči shoda ve&nbsp;všech výše zmíněných kritériích, jedná se&nbsp;o&nbsp;výsledkovou shodu (ve výsledcích zvýrazněno šedým otazníkem).</p>
 
-            <h2>Výhody oproti programu MacMahon</h2>
-            <ul>
-              <li>čeština</li>
-              <li>není třeba instalace Javy, funguje ve&nbsp;webovém prohlížeči</li>
-              <li>funkce pouze pro&nbsp;šprtcové turnaje, žádný balast kolem</li>
-              <li>není třeba zadávat magické číslo Kyu 35</li>
-              <li>práce s&nbsp;kategoriemi hráče</li>
-            </ul>
+          <h2>Algoritmus generování zápasů v&nbsp;kole</h2>
+          <ol>
+            <li>dá se&nbsp;do&nbsp;hromady seznam hráčů kola</li>
+            <li>hromada se&nbsp;náhodně zamíchá</li>
+            <li>hromada se&nbsp;seřadí podle rozhodujících kritérií (viz výše)</li>
+            <li>v případě lichého počtu hráčů v&nbsp;hromadě se&nbsp;určí volné kolo náhodnému hráči ze&nbsp;spodní poloviny hromady a&nbsp;z&nbsp;hromady se&nbsp;vyjme (pokud už všichni hráči ze&nbsp;spodní poloviny volné kolo měli, vybírá se&nbsp;z&nbsp;celé hromady)</li>
+            <li>program vezme prvního hráče v&nbsp;hromadě a&nbsp;hledá&nbsp;mu od&nbsp;vrchu soupeře, se&nbsp;kterým ještě nehrál, přiřadí je&nbsp;do&nbsp;vzájemného zápasu a&nbsp;oba vyjme z&nbsp;hromady</li>
+            <li>předchozí krok se&nbsp;opakuje, dokud se&nbsp;nenapárují všichni hráči kola</li>
+            <li>ve výjimečných případech, kdy&nbsp;je&nbsp;v&nbsp;kole málo účastníků, se&nbsp;může stát, že&nbsp;generování kola skoční chybou, protože hráče není možné napárovat</li>
+          </ol>
 
-            <h2>Autor</h2>
-            <p>Vyrobil <strong>Dominik Fiala</strong> (<a href="mailto:domo.fiala@gmail.com">domo.fiala@gmail.com</a>) v&nbsp;roce 2017 a&nbsp;myslel při&nbsp;tom na&nbsp;všechny, kdo kdy&nbsp;pořádali šprtcový turnaj. Psali výsledky na&nbsp;papír, do&nbsp;programu MacMahon, a&nbsp;následně ještě dvakrát do&nbsp;Excelu&hellip;</p>
-          </div>
+          <h2>Návrhy pro&nbsp;zlepšení</h2>
+          <ul>
+            <li>filtrování zápasů dle účastníka</li>
+            <li>možnost zanést tzv. zapisovače, tedy účastníky, kteří mají aktivitu za zápis rozhodčích</li>
+            <li>export výsledků turnaje do&nbsp;souboru CSV (možné následně nahrát např. do&nbsp;Excel a&nbsp;archivovat)</li>
+            <li><strong>účastníci bez splněných aktivit</strong> zvýraznění ve&nbsp;výsledcích</li>
+            <li>vyhnout se&nbsp;vzájemným zápasům hráčů stejného klubu?</li>
+            <li>důsledné generování kola (vyzkoušet všechny možné kombinace volného kola, zatím generuje pouze jednou a&nbsp;pokud neposkládá, je&nbsp;potřeba další pokus o&nbsp;generování)</li>
+          </ul>
 
-          <div class="col-lg">
-            <h2>Rozhodující kritéria pořadí účastníků</h2>
-            <ol>
-              <li>body</li>
-              <li>body soupeřů</li>
-              <li>body soupeřů soupeřů</li>
-              <li>vstřelené branky (max. 5 na&nbsp;zápas)</li>
-            </ol>
-            <p>Pokud je&nbsp;mezi hráči shoda ve&nbsp;všech výše zmíněných kritériích, jedná se&nbsp;o&nbsp;výsledkovou shodu (ve výsledcích zvýrazněno šedým otazníkem).</p>
+          <h2>Neplánované funkce</h2>
+          <ul>
+            <li><strong>zabezpečení aplikace</strong>: pokud chcete zamezit, aby&nbsp;k&nbsp;aplikaci kdokoliv přišel a&nbsp;něco do&nbsp;ní psal, zamkněte počítač, na&nbsp;kterém běží</li>
+            <li><strong>kontrola duplicity účastníků</strong>: aplikace nekontroluje, zda není v&nbsp;účastnících hráč se&nbsp;stejným jménem vícekrát, toto má pořadatel odhalit při&nbsp;prezenci hráčů, která&nbsp;je&nbsp;seřazena&nbsp;dle abecedy</li>
+          </ul>
+        </div>
 
-            <h2>Algoritmus generování zápasů v&nbsp;kole</h2>
-            <ol>
-              <li>dá se&nbsp;do&nbsp;hromady seznam hráčů kola</li>
-              <li>hromada se&nbsp;náhodně zamíchá</li>
-              <li>hromada se&nbsp;seřadí podle rozhodujících kritérií (viz výše)</li>
-              <li>v případě lichého počtu hráčů v&nbsp;hromadě se&nbsp;určí volné kolo náhodnému hráči ze&nbsp;spodní poloviny hromady a&nbsp;z&nbsp;hromady se&nbsp;vyjme (pokud už všichni hráči ze&nbsp;spodní poloviny volné kolo měli, vybírá se&nbsp;z&nbsp;celé hromady)</li>
-              <li>program vezme prvního hráče v&nbsp;hromadě a&nbsp;hledá&nbsp;mu od&nbsp;vrchu soupeře, se&nbsp;kterým ještě nehrál, následně oba vyjme z&nbsp;hromady</li>
-              <li>předchozí krok se&nbsp;opakuje, dokud se&nbsp;nenapárují všichni hráči kola</li>
-            </ol>
 
-            <h2>Návrhy pro&nbsp;zlepšení</h2>
-            <ul>
-              <li>export výsledků turnaje do souboru CSV (možné následně nahrát např. do Excel a archivovat)</li>
-              <li><strong>účastníci bez splněných aktivit</strong> zvýraznění ve&nbsp;výsledcích</li>
-              <li>vyhnout se&nbsp;vzájemným zápasům hráčů stejného klubu?</li>
-              <li>důsledné generování kola (vyzkoušet všechny možné kombinace volného kola, zatím generuje pouze jednou a&nbsp;pokud neposkládá, je&nbsp;potřeba další pokus o&nbsp;generování)</li>
-            </ul>
-
-            <h2>Neplánované funkce</h2>
-            <ul>
-              <li><strong>zabezpečení aplikace</strong>: pokud chcete zamezit, aby k aplikaci kdokoliv přišel a něco do ní psal, zamkněte počítač, na kterém běží</li>
-              <li><strong>kontrola duplicity účastníků</strong>: aplikace nekontroluje, zda není v účastnících hráč se stejným místem vícekrát, toto má pořadatel odhalit při prezenci hráčů, která je seřazena dle abecedy</li>
-            </ul>
-          </div>
+        <div class="tab-footer d-flex justify-content-between p-2 mb-0 d-print-none">
+          <span class="btn">
+            Autor aplikace:
+            <strong>Dominik Fiala</strong>,
+            <a href="mailto:domo.fiala@gmail.com">domo.fiala@gmail.com</a>,
+            <a href="tel:+420721090491">+420 721 090 491</a>
+          </span>
+          <button type="button" v-on:click="print" class="btn btn-primary">Tisk</button>
         </div>
       </div>
 

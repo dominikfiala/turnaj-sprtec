@@ -1,0 +1,54 @@
+.app-nav {
+  position: fixed;
+  z-index: 2;
+  top: 0;
+  right: 0;
+  left: 0;
+  background-color: var(--light);
+}
+.tab-content {
+  margin-top: 60px;
+  margin-bottom: 60px;
+}
+.tab-footer {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  border-top: 1px solid #ddd;
+  background-color: var(--light);
+}
+
+input[type="date"] {
+  height: 2.4rem;
+}
+input[type="date"]::-webkit-clear-button,
+input[type="date"]::-webkit-inner-spin-button {
+  display: none;
+}
+
+.table th {
+  border-top: none;
+}
+
+.container{
+  max-width: 800px;
+}
+
+@media print {
+  body {
+    font-size: 10px;
+  }
+  abbr[title] {
+    text-decoration: none;
+  }
+  abbr[title]::after {
+    content: "";
+  }
+  #m-print-none {
+    margin: 0 !important;
+  }
+  #p-print-none {
+    padding: 0 !important;
+  }
+}

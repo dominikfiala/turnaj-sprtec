@@ -53,4 +53,7 @@ input[type="date"]::-webkit-inner-spin-button {
   #p-print-none {
     padding: 0 !important;
   }
+  .table-sm th, .table-sm td {
+    padding: 0;
+  }
 }

@@ -14,8 +14,28 @@ var dataInitial = {
     category: 'Expres',
     numberOfRounds: 5,
     date: new Date().toISOString().slice(0, 10),
+    category: -1,
     categories: [
-      'Expres', 'ČP12', 'ČP24', 'ČP36', 'Czech Open'
+      {
+        title: 'Expres',
+        points: [40, 34, 29, 25, 22, 20, 18, 16, 14, 12, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+      },
+      {
+        title: 'ČP12',
+        points: [160, 145, 133, 123, 114, 106, 99, 93, 88, 83, 79, 75, 71, 67, 64, 61, 58, 55, 52, 49, 46, 43, 41, 39, 37, 35, 33, 31, 29, 27, 25, 23, 21, 19, 17, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+      },
+      {
+        title: 'ČP24',
+        points: [200, 185, 173, 163, 154, 146, 139, 133, 128, 123, 119, 115, 111, 107, 104, 101, 98, 95, 92, 89, 86, 83, 81, 79, 77, 75, 73, 71, 69, 67, 65, 63, 61, 59, 57, 55, 53, 51, 49, 47, 45, 43, 41, 39, 37, 35, 34, 33, 32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11]
+      },
+      {
+        title: 'ČP36',
+        points: [340, 325, 313, 303, 294, 286, 279, 273, 268, 263, 259, 256, 253, 250, 247, 244, 241, 238, 235, 232, 229, 227, 225, 223, 221, 219, 217, 215, 213, 211, 209, 207, 205, 203, 201, 199, 197, 195, 193, 191, 188, 186, 184, 182, 180, 178, 176, 174, 172, 170, 168, 166, 164, 162, 160, 158, 156, 154, 152, 150, 148, 146, 144, 142, 140, 138, 136, 134, 132, 130, 128, 126, 124, 122, 120, 118, 116, 114, 112, 110, 108, 106, 104, 102, 100, 98, 96, 94, 92, 90, 88, 86, 84, 82, 80, 78, 76, 74, 72, 70, 68, 67, 66, 65, 64, 63, 62, 61, 60, 59, 58, 57, 56, 55, 54, 53, 52, 51, 50, 49, 48, 47, 46, 45, 44, 43, 42, 41]
+      },
+      {
+        title: 'Czech Open',
+        points: [340, 325, 313, 303, 294, 286, 279, 273, 268, 263, 259, 256, 253, 250, 247, 244, 241, 238, 235, 232, 229, 227, 225, 223, 221, 219, 217, 215, 213, 211, 209, 207, 205, 203, 201, 199, 197, 195, 193, 191, 188, 186, 184, 182, 180, 178, 176, 174, 172, 170, 168, 166, 164, 162, 160, 158, 156, 154, 152, 150, 148, 146, 144, 142, 140, 138, 136, 134, 132, 130, 128, 126, 124, 122, 120, 118, 116, 114, 112, 110, 108, 106, 104, 102, 100, 98, 96, 94, 92, 90, 88, 86, 84, 82, 80, 78, 76, 74, 72, 70, 68, 67, 66, 65, 64, 63, 62, 61, 60, 59, 58, 57, 56, 55, 54, 53, 52, 51, 50, 49, 48, 47, 46, 45, 44, 43, 42, 41]
+      }
     ],
     pointsWin: 2,
     pointsDraw: 1,
@@ -204,7 +224,11 @@ var app = new Vue({
           // console.log('zkousim hosta ', awayCandidate.playerIndex);
 
           if (!awayCandidate) {
-            alert('Nepodařilo se najít kombinace dostupných hráčů, prosím zkuste zápasy generovat znovu. Nejsou opravdu všechny kombinace vyčerpány?')
+            var alert = 'Nepodařilo se najít kombinace dostupných hráčů, prosím zkuste zápasy generovat znovu. Nejsou opravdu všechny kombinace vyčerpány?\n'
+            round.matches.forEach((match) => {
+              alert += this.playerNames[match.home] +' vs '+this.playerNames[match.away] +'\n'
+            })
+            window.alert(alert)
             return
           }
 
@@ -457,7 +481,7 @@ var app = new Vue({
       results.sort(this.fieldSorter(['-points', '-oppontentsPoints', '-opponentsOpponentsPoints', '-goalsForSort']))
 
       var previousResult = null
-      results.forEach((result) =>  {
+      results.forEach((result, resultIndex) =>  {
         // check category winner
         var category = this.playerCategories[result.playerIndex]
         if (!categoryWinner[category.shortcut]) {
@@ -475,6 +499,23 @@ var app = new Vue({
           result.sharedPosition = true
         }
         previousResult = result
+
+        // assign CP points
+        if (this.config.category !== -1) {
+          var categoryPoints = this.config.categories[this.config.category].points
+
+          var playersCount = this.players.length
+          var playersCountBase = categoryPoints.length
+          var playersDiff = playersCount - playersCountBase
+
+          var pointsBase = categoryPoints[resultIndex]
+          // pokud umisteni neni v bodovaci tabulce, vezmu posledni bodovane misto
+          // a odectu od nej body za kazdeho ucastnika navic
+          if (!pointsBase) {
+            pointsBase = categoryPoints[playersCountBase-1] - resultIndex + playersCount - playersDiff - 1
+          }
+          result.cpPoints = pointsBase + playersDiff
+        }
       })
 
       return results

@@ -68,8 +68,9 @@
             <div class="col-2">
               <div class="form-group">
                 <label for="config-category">Kategorie</label>
-                <select v-model="config.category" class="form-control" id="config-category" :class="{'is-invalid': !config.category}">
-                  <option v-for="category in config.categories">{{ category }}</option>
+                <select v-model="config.category" class="form-control" id="config-category">
+                  <option :value="-1">Nezařazeno do ČP</option>
+                  <option v-for="(category, categoryIndex) in config.categories" :value="categoryIndex">{{ category.title }}</option>
                 </select>
               </div>
             </div>
@@ -245,7 +246,13 @@
 
         <div class="tab-footer p-2 mb-0 d-flex d-print-none justify-content-between">
           <div>
-            <span class="btn">Účastníků: <strong>{{ players.length }}</strong> (kol turnaje ČP: {{ roundsPerPlayers }}<span v-if="roundsPerPlayers !== config.numberOfRounds" class="text-danger">, nastaveno: {{ config.numberOfRounds }}</span>)</span>
+            <span class="btn text-nowrap">
+              Účastníků: <strong>{{ players.length }}</strong>
+              <span v-if="config.category != -1">
+                (kol turnaje ČP: {{ roundsPerPlayers }}
+                <span v-if="roundsPerPlayers !== config.numberOfRounds"> &ndash; <span class="text-danger">nastaveno: {{ config.numberOfRounds }}</span></span>)
+              </span>
+            </span>
           </div>
           <form class="form-inline">
             <input type="text" class="form-control mr-2" style="width: 175px" v-model="state.playersSearch" placeholder="Hledat účastníka">
@@ -400,6 +407,7 @@
               <th class="text-center"><abbr title="Body soupeřů">BS</abbr></th>
               <th class="text-center"><abbr title="Body soupeřů soupeřů">BSS</abbr></th>
               <th class="text-center" colspan="3">Skóre</th>
+              <th v-if="config.category !== -1" class="text-center"><abbr title="Body Českého poháru">ČP</abbr></th>
               <th class="text-center"><abbr title="Rozhodčí">R</abbr></th>
               <th v-if="rounds.length > 0" :colspan="config.numberOfRounds" class="text-center">Zápasy {{ rounds.legnth }}</th>
             </tr>
@@ -413,8 +421,7 @@
               <td>{{ playerNames[result.playerIndex] }}</td>
               <td><span v-if="players[result.playerIndex].club !== -1">{{ config.clubs[players[result.playerIndex].club] }}</span></td>
               <td class="text-center" :title="playerCategories[result.playerIndex].name">
-                <strong v-if="result.categoryWinner">{{ playerCategories[result.playerIndex].shortcut }}</strong>
-                <span v-if="!result.categoryWinner">{{ playerCategories[result.playerIndex].shortcut }}</span>
+                {{ playerCategories[result.playerIndex].shortcut }}<span v-if="result.categoryWinner">!</span>
               </td>
               <td class="text-center">{{ result.matches }}</td>
               <td class="text-center">{{ result.wins }}</td>
@@ -426,6 +433,7 @@
               <td class="text-right">{{ result.goalsFor }}</td>
               <td class="text-center">:</td>
               <td>{{ result.goalsAgainst }}</td>
+              <td v-if="config.category !== -1" class="text-center">{{ result.cpPoints }}</td>
               <td class="text-center">{{ result.referee }}</td>
               <td v-if="result.results" v-for="match in result.results">
                 <span v-if="typeof(match) == 'undefined'">&mdash;</span>

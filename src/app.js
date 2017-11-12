@@ -176,7 +176,7 @@ var app = new Vue({
       }
 
       // clone results array and filter unavailable players
-      var availablePlayers = this.tournamentResults.slice().filter((player) => {
+      var availablePlayers = this.playerStats.slice().filter((player) => {
         return this.players[player.playerIndex].rounds.indexOf(roundIndex) !== -1
       })
 
@@ -211,33 +211,42 @@ var app = new Vue({
         }
       }
 
-      // make pairs
-      while (availablePlayers.length > 1) {
-        var home = availablePlayers.shift()
-        // console.log('volno', round.bye);
-        // console.log('zapasy', round.matches);
-        // console.log('domaci', home.playerIndex);
+      availablePlayers = this.shuffle(availablePlayers)
+      availablePlayers.sort(this.fieldSorter(['-points']))
+      round.matches = this.generateMatches(availablePlayers, 0, 0)
+
+      this.$set(this.rounds, roundIndex, round)
+    },
+    generateMatches: function(players, switchIndex, switchDiff) {
+      var playersOrig = players.slice()
+
+      if (switchDiff > 0) {
+        var switchedPlayer = players[switchIndex]
+        if (!switchedPlayer) {
+          this.generateMatches(playersOrig, 0, switchDiff++)
+        }
+      }
+
+      var matches = []
+
+      while (players.length > 1) {
+        var home = players.shift()
         var away = false
         var awayCandidateIndex = 0
+
         while (!away) {
-          var awayCandidate = availablePlayers[awayCandidateIndex]
-          // console.log('zkousim hosta ', awayCandidate.playerIndex);
+          console.log('micham hrace', switchIndex, switchDiff)
+          var awayCandidate = players[awayCandidateIndex]
 
           if (!awayCandidate) {
-            var alert = 'Nepodařilo se najít kombinace dostupných hráčů, prosím zkuste zápasy generovat znovu. Nejsou opravdu všechny kombinace vyčerpány?\n'
-            round.matches.forEach((match) => {
-              alert += this.playerNames[match.home] +' vs '+this.playerNames[match.away] +'\n'
-            })
-            window.alert(alert)
-            return
+            this.generateMatches(playersOrig, 0, switchDiff++)
           }
 
           if (!this.playersMutualMatch(home.playerIndex, awayCandidate.playerIndex)) {
             away = awayCandidate
-            availablePlayers.splice(awayCandidateIndex, 1)
+            players.splice(awayCandidateIndex, 1)
           }
 
-          // console.log('uz spolu hrali');
           awayCandidateIndex++
         }
 
@@ -248,11 +257,12 @@ var app = new Vue({
           away_score: '',
           referee: -1
         }
-        round.matches.push(match)
+
+        matches.push(match)
       }
 
-      this.$set(this.rounds, roundIndex, round)
-    },
+      return matches
+    }
     isRoundReady: function(roundIndex) {
       return roundIndex === 0 || (roundIndex > 0 && this.isRoundComplete(roundIndex - 1))
     },
@@ -285,6 +295,24 @@ var app = new Vue({
     },
     randomIndex: function(array) {
       return Math.floor(Math.random()*array.length)
+    },
+    shuffle: function(array) {
+      var currentIndex = array.length, temporaryValue, randomIndex;
+
+      // While there remain elements to shuffle...
+      while (0 !== currentIndex) {
+
+        // Pick a remaining element...
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex -= 1;
+
+        // And swap it with the current element.
+        temporaryValue = array[currentIndex];
+        array[currentIndex] = array[randomIndex];
+        array[randomIndex] = temporaryValue;
+      }
+
+      return array;
     },
 
     initTooltips: function() {

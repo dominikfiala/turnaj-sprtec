@@ -214,6 +214,10 @@ var app = new Vue({
       availablePlayers = this.shuffle(availablePlayers)
       availablePlayers.sort(this.fieldSorter(['-points']))
       round.matches = this.generateMatches(availablePlayers, 0, 0)
+      if (round.matches === false) {
+        window.alert('Nelze napárovat hráče, všechny kombinace jsou již vyčerpány');
+        return
+      }
 
       this.$set(this.rounds, roundIndex, round)
     },
@@ -221,10 +225,12 @@ var app = new Vue({
       var playersOrig = players.slice()
 
       if (switchDiff > 0) {
-        var switchedPlayer = players[switchIndex]
-        if (!switchedPlayer) {
-          this.generateMatches(playersOrig, 0, switchDiff++)
-        }
+        console.log('prohazuji ', switchIndex, switchDiff)
+        console.log('pred ', playersOrig.slice());
+        var switchedPlayer = players.splice(switchIndex, 1)
+        players.splice(switchIndex + switchDiff == playersOrig.length ? 0 : switchIndex + switchDiff, 0, switchedPlayer[0])
+        console.log('po ', players.slice());
+        switchIndex++
       }
 
       var matches = []
@@ -235,21 +241,33 @@ var app = new Vue({
         var awayCandidateIndex = 0
 
         while (!away) {
-          console.log('micham hrace', switchIndex, switchDiff)
           var awayCandidate = players[awayCandidateIndex]
-
           if (!awayCandidate) {
-            this.generateMatches(playersOrig, 0, switchDiff++)
+            if (switchDiff === playersOrig.length) {
+              return false
+            }
+            if (switchIndex - 1 + switchDiff == playersOrig.length || (switchIndex == 0 && switchDiff == 0)) {
+              console.log('navysuji diff', playersOrig.length, switchIndex, switchDiff)
+              switchIndex = 0
+              switchDiff++
+            }
+            console.log('nenasel jsem soupere, zkusim prohodit', switchIndex, switchDiff)
+            return this.generateMatches(playersOrig, switchIndex, switchDiff)
           }
 
           if (!this.playersMutualMatch(home.playerIndex, awayCandidate.playerIndex)) {
             away = awayCandidate
             players.splice(awayCandidateIndex, 1)
           }
+          else {
+            console.log('uz hrali', home.playerIndex, awayCandidate.playerIndex);
+
+          }
 
           awayCandidateIndex++
         }
 
+        console.log('zapas ', home.playerIndex, away.playerIndex);
         var match = {
           home: home.playerIndex,
           away: away.playerIndex,
@@ -262,7 +280,7 @@ var app = new Vue({
       }
 
       return matches
-    }
+    },
     isRoundReady: function(roundIndex) {
       return roundIndex === 0 || (roundIndex > 0 && this.isRoundComplete(roundIndex - 1))
     },

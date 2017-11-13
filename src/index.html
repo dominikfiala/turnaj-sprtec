@@ -418,7 +418,7 @@
                 {{ resultIndex + 1 }}.
                 <abbr v-if="result.sharedPosition" class="text-muted" title="Výsledková shoda s&nbsp;předchozím hráčem v&nbsp;pořadí">?</abbr>
               </td>
-              <td>{{ playerNames[result.playerIndex] }}</td>
+              <td>{{result.playerIndex}} {{ playerNames[result.playerIndex] }}</td>
               <td><span v-if="players[result.playerIndex].club !== -1">{{ config.clubs[players[result.playerIndex].club] }}</span></td>
               <td class="text-center" :title="playerCategories[result.playerIndex].name">
                 {{ playerCategories[result.playerIndex].shortcut }}<span v-if="result.categoryWinner">!</span>

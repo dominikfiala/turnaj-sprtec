@@ -50,6 +50,7 @@ gulp.task('build-copy', function () {
       "node_modules/bootstrap/dist/js/bootstrap.js",
       "node_modules/vue/dist/vue.js",
       "node_modules/file-saver/FileSaver.js",
+      "node_modules/munkres-js/munkres.js",
       "src/app.js",
       "src/main.js",
       "src/index.html",

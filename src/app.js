@@ -14,28 +14,8 @@ var dataInitial = {
     category: 'Expres',
     numberOfRounds: 5,
     date: new Date().toISOString().slice(0, 10),
-    category: -1,
     categories: [
-      {
-        title: 'Expres',
-        points: [40, 34, 29, 25, 22, 20, 18, 16, 14, 12, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
-      },
-      {
-        title: 'ČP12',
-        points: [160, 145, 133, 123, 114, 106, 99, 93, 88, 83, 79, 75, 71, 67, 64, 61, 58, 55, 52, 49, 46, 43, 41, 39, 37, 35, 33, 31, 29, 27, 25, 23, 21, 19, 17, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
-      },
-      {
-        title: 'ČP24',
-        points: [200, 185, 173, 163, 154, 146, 139, 133, 128, 123, 119, 115, 111, 107, 104, 101, 98, 95, 92, 89, 86, 83, 81, 79, 77, 75, 73, 71, 69, 67, 65, 63, 61, 59, 57, 55, 53, 51, 49, 47, 45, 43, 41, 39, 37, 35, 34, 33, 32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11]
-      },
-      {
-        title: 'ČP36',
-        points: [340, 325, 313, 303, 294, 286, 279, 273, 268, 263, 259, 256, 253, 250, 247, 244, 241, 238, 235, 232, 229, 227, 225, 223, 221, 219, 217, 215, 213, 211, 209, 207, 205, 203, 201, 199, 197, 195, 193, 191, 188, 186, 184, 182, 180, 178, 176, 174, 172, 170, 168, 166, 164, 162, 160, 158, 156, 154, 152, 150, 148, 146, 144, 142, 140, 138, 136, 134, 132, 130, 128, 126, 124, 122, 120, 118, 116, 114, 112, 110, 108, 106, 104, 102, 100, 98, 96, 94, 92, 90, 88, 86, 84, 82, 80, 78, 76, 74, 72, 70, 68, 67, 66, 65, 64, 63, 62, 61, 60, 59, 58, 57, 56, 55, 54, 53, 52, 51, 50, 49, 48, 47, 46, 45, 44, 43, 42, 41]
-      },
-      {
-        title: 'Czech Open',
-        points: [340, 325, 313, 303, 294, 286, 279, 273, 268, 263, 259, 256, 253, 250, 247, 244, 241, 238, 235, 232, 229, 227, 225, 223, 221, 219, 217, 215, 213, 211, 209, 207, 205, 203, 201, 199, 197, 195, 193, 191, 188, 186, 184, 182, 180, 178, 176, 174, 172, 170, 168, 166, 164, 162, 160, 158, 156, 154, 152, 150, 148, 146, 144, 142, 140, 138, 136, 134, 132, 130, 128, 126, 124, 122, 120, 118, 116, 114, 112, 110, 108, 106, 104, 102, 100, 98, 96, 94, 92, 90, 88, 86, 84, 82, 80, 78, 76, 74, 72, 70, 68, 67, 66, 65, 64, 63, 62, 61, 60, 59, 58, 57, 56, 55, 54, 53, 52, 51, 50, 49, 48, 47, 46, 45, 44, 43, 42, 41]
-      }
+      'Expres', 'ČP12', 'ČP24', 'ČP36', 'Czech Open'
     ],
     pointsWin: 2,
     pointsDraw: 1,
@@ -211,75 +191,56 @@ var app = new Vue({
         }
       }
 
-      availablePlayers = this.shuffle(availablePlayers)
-      availablePlayers.sort(this.fieldSorter(['-points']))
-      round.matches = this.generateMatches(availablePlayers, 0, 0)
-      if (round.matches === false) {
-        window.alert('Nelze napárovat hráče, všechny kombinace jsou již vyčerpány');
-        return
+      var maxDiff = (roundIndex + 1) * this.config.pointsWin
+
+      // prepare matrix
+      var matrix = [];
+      for (var i = 0; i < availablePlayers.length; i++) {
+        matrix[i] = new Array(availablePlayers.length);
+        matrix[i].fill(0)
       }
 
-      this.$set(this.rounds, roundIndex, round)
-    },
-    generateMatches: function(players, switchIndex, switchDiff) {
-      var playersOrig = players.slice()
+      // fill matrix with players points diff
+      for (var y = 0; y < availablePlayers.length; y++) {
+        var playerY = availablePlayers[y]
 
-      if (switchDiff > 0) {
-        console.log('prohazuji ', switchIndex, switchDiff)
-        console.log('pred ', playersOrig.slice());
-        var switchedPlayer = players.splice(switchIndex, 1)
-        players.splice(switchIndex + switchDiff == playersOrig.length ? 0 : switchIndex + switchDiff, 0, switchedPlayer[0])
-        console.log('po ', players.slice());
-        switchIndex++
-      }
+        for (var x = 0; x < availablePlayers.length; x++) {
+          var playerX = availablePlayers[x]
 
-      var matches = []
-
-      while (players.length > 1) {
-        var home = players.shift()
-        var away = false
-        var awayCandidateIndex = 0
-
-        while (!away) {
-          var awayCandidate = players[awayCandidateIndex]
-          if (!awayCandidate) {
-            if (switchDiff === playersOrig.length) {
-              return false
-            }
-            if (switchIndex - 1 + switchDiff == playersOrig.length || (switchIndex == 0 && switchDiff == 0)) {
-              console.log('navysuji diff', playersOrig.length, switchIndex, switchDiff)
-              switchIndex = 0
-              switchDiff++
-            }
-            console.log('nenasel jsem soupere, zkusim prohodit', switchIndex, switchDiff)
-            return this.generateMatches(playersOrig, switchIndex, switchDiff)
+          if (x === y) {
+            matrix[x][y] = maxDiff
           }
-
-          if (!this.playersMutualMatch(home.playerIndex, awayCandidate.playerIndex)) {
-            away = awayCandidate
-            players.splice(awayCandidateIndex, 1)
+          else if (playerY.opponents.indexOf(x) !== -1) {
+            matrix[x][y] = maxDiff
+            matrix[y][x] = maxDiff
           }
           else {
-            console.log('uz hrali', home.playerIndex, awayCandidate.playerIndex);
-
+            var value = Math.abs(playerX.points - playerY.points)
+            matrix[x][y] = value
+            matrix[y][x] = value
           }
-
-          awayCandidateIndex++
         }
-
-        console.log('zapas ', home.playerIndex, away.playerIndex);
-        var match = {
-          home: home.playerIndex,
-          away: away.playerIndex,
-          home_score: '',
-          away_score: '',
-          referee: -1
-        }
-
-        matches.push(match)
       }
 
-      return matches
+      // console.table(matrix)
+      // console.table(computeMunkres(matrix))
+      // return
+
+      // make pairing
+      var rawPairing = computeMunkres(matrix)
+      rawPairing.forEach(pairing => {
+        if (pairing[0] < pairing[1]) {
+          round.matches.push({
+            home: pairing[0],
+            home_score: '',
+            away: pairing[1],
+            away_score: '',
+            referee: -1
+          })
+        }
+      })
+
+      this.$set(this.rounds, roundIndex, round)
     },
     isRoundReady: function(roundIndex) {
       return roundIndex === 0 || (roundIndex > 0 && this.isRoundComplete(roundIndex - 1))
@@ -313,24 +274,6 @@ var app = new Vue({
     },
     randomIndex: function(array) {
       return Math.floor(Math.random()*array.length)
-    },
-    shuffle: function(array) {
-      var currentIndex = array.length, temporaryValue, randomIndex;
-
-      // While there remain elements to shuffle...
-      while (0 !== currentIndex) {
-
-        // Pick a remaining element...
-        randomIndex = Math.floor(Math.random() * currentIndex);
-        currentIndex -= 1;
-
-        // And swap it with the current element.
-        temporaryValue = array[currentIndex];
-        array[currentIndex] = array[randomIndex];
-        array[randomIndex] = temporaryValue;
-      }
-
-      return array;
     },
 
     initTooltips: function() {
@@ -466,11 +409,19 @@ var app = new Vue({
           awayPlayer.matches++
           homePlayer.results[roundIndex] = {
             opponent: match.away,
+            result:
+              (match.home_score > match.away_score) ? '+' :
+              (match.home_score < match.away_score) ? '-' :
+              '=',
             goalsFor: match.home_score,
             goalsAgainst: match.away_score
           }
           awayPlayer.results[roundIndex] = {
             opponent: match.home,
+            result:
+              (match.away_score > match.home_score) ? '+' :
+              (match.away_score < match.home_score) ? '-' :
+              '=',
             goalsFor: match.away_score,
             goalsAgainst: match.home_score
           }
@@ -527,7 +478,7 @@ var app = new Vue({
       results.sort(this.fieldSorter(['-points', '-oppontentsPoints', '-opponentsOpponentsPoints', '-goalsForSort']))
 
       var previousResult = null
-      results.forEach((result, resultIndex) =>  {
+      results.forEach((result) =>  {
         // check category winner
         var category = this.playerCategories[result.playerIndex]
         if (!categoryWinner[category.shortcut]) {
@@ -545,23 +496,6 @@ var app = new Vue({
           result.sharedPosition = true
         }
         previousResult = result
-
-        // assign CP points
-        if (this.config.category !== -1) {
-          var categoryPoints = this.config.categories[this.config.category].points
-
-          var playersCount = this.players.length
-          var playersCountBase = categoryPoints.length
-          var playersDiff = playersCount - playersCountBase
-
-          var pointsBase = categoryPoints[resultIndex]
-          // pokud umisteni neni v bodovaci tabulce, vezmu posledni bodovane misto
-          // a odectu od nej body za kazdeho ucastnika navic
-          if (!pointsBase) {
-            pointsBase = categoryPoints[playersCountBase-1] - resultIndex + playersCount - playersDiff - 1
-          }
-          result.cpPoints = pointsBase + playersDiff
-        }
       })
 
       return results

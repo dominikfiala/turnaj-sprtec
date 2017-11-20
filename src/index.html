@@ -409,7 +409,7 @@
               <th class="text-center" colspan="3">Skóre</th>
               <th v-if="config.category !== -1" class="text-center"><abbr title="Body Českého poháru">ČP</abbr></th>
               <th class="text-center"><abbr title="Rozhodčí">R</abbr></th>
-              <th v-if="rounds.length > 0" :colspan="config.numberOfRounds" class="text-center">Zápasy {{ rounds.legnth }}</th>
+              <th v-if="rounds.length > 0" class="text-center">Zápasy {{ rounds.legnth }}</th>
             </tr>
           </thead>
           <tbody>
@@ -418,7 +418,7 @@
                 {{ resultIndex + 1 }}.
                 <abbr v-if="result.sharedPosition" class="text-muted" title="Výsledková shoda s&nbsp;předchozím hráčem v&nbsp;pořadí">?</abbr>
               </td>
-              <td>{{result.playerIndex}} {{ playerNames[result.playerIndex] }}</td>
+              <td>{{ playerNames[result.playerIndex] }}</td>
               <td><span v-if="players[result.playerIndex].club !== -1">{{ config.clubs[players[result.playerIndex].club] }}</span></td>
               <td class="text-center" :title="playerCategories[result.playerIndex].name">
                 {{ playerCategories[result.playerIndex].shortcut }}<span v-if="result.categoryWinner">!</span>
@@ -435,10 +435,14 @@
               <td>{{ result.goalsAgainst }}</td>
               <td v-if="config.category !== -1" class="text-center">{{ result.cpPoints }}</td>
               <td class="text-center">{{ result.referee }}</td>
-              <td v-if="result.results" v-for="match in result.results">
-                <span v-if="typeof(match) == 'undefined'">&mdash;</span>
-                <span v-if="typeof(match) == 'object' && match.opponent === -1">volno</span>
-                <span v-if="typeof(match) == 'object' && match.opponent !== -1">{{playerPlacementByIndex(match.opponent)}} ({{ match.goalsFor }}:{{ match.goalsAgainst }})</span>
+              <td v-if="result.results">
+                <span v-for="match in result.results" class="pr-1">
+                  <span v-if="typeof(match) == 'undefined'">&mdash;</span>
+                  <span v-if="typeof(match) == 'object' && match.opponent === -1">volno</span>
+                  <abbr v-if="typeof(match) == 'object' && match.opponent !== -1" :title="playerNames[match.opponent]">
+                    {{ playerPlacementByIndex(match.opponent) }}{{ match.result }}&nbsp;<span class="text-muted">({{ match.goalsFor }}:{{ match.goalsAgainst }})</span>
+                  </abbr>
+                </span>
               </td>
             </tr>
           </tbody>
@@ -606,7 +610,7 @@
   <script src="../node_modules/bootstrap/dist/js/bootstrap.js"></script>
   <script src="../node_modules/vue/dist/vue.js"></script>
   <script src="../node_modules/file-saver/FileSaver.js"></script>
-  <script src="../node_modules/js-combinatorics/combinatorics.js"></script>
+  <script src="../node_modules/munkres-js/munkres.js"></script>
   <script src="./app.js"></script>
 
   <script>if (window.module) module = window.module;</script>

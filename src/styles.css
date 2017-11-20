@@ -29,6 +29,10 @@ input[type="date"]::-webkit-inner-spin-button {
   display: none;
 }
 
+abbr[title], abbr[data-original-title] {
+  text-decoration: none;
+}
+
 .table th {
   border-top: none;
 }

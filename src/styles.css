@@ -1,8 +1,17 @@
 @import url('./bootstrap.cosmo.css');
+html {
+    overflow: hidden;
+    height: 100%;
+}
+
+body {
+    height: 100%;
+    overflow: auto;
+}
 
 .app-nav {
   position: fixed;
-  z-index: 2;
+  z-index: 3;
   top: 0;
   right: 0;
   left: 0;
@@ -14,6 +23,7 @@
 }
 .tab-footer {
   position: fixed;
+  z-index: 3;
   bottom: 0;
   right: 0;
   left: 0;

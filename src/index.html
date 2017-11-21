@@ -317,7 +317,7 @@
               <input type="text" readonly tabindex="-1" class="form-control-plaintext" style="flex: 1"
                 :value="playerNames[match.away]">
               <div class="input-group mr-2" style="width: 150px">
-                <input v-model.number="match.home_score" type="number" class="form-control" :class="{'is-invalid': match.home_score === ''}" min="0">
+                <input v-model.number="match.home_score" type="number" class="form-control text-right" :class="{'is-invalid': match.home_score === ''}" min="0">
                 <span class="input-group-addon">:</span>
                 <input v-model.number="match.away_score" type="number" class="form-control" :class="{'is-invalid': match.away_score === ''}" min="0">
               </div>

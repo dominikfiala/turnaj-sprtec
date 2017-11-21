@@ -226,7 +226,7 @@
             <div :class="{'d-none': playerIndex !== state.activePlayer}">
               <div class="form-check form-check-inline">
                 <label class="form-check-label pl-0">
-                  Účast hráče v kolech:
+                  {{ playerNames[playerIndex] }} se účastní kol č.:
                 </label>
               </div>
               <div class="form-check form-check-inline"
@@ -350,7 +350,19 @@
                 </tbody>
               </table>
             </div>
+
             <p v-if="round.bye !== -1">Volné kolo: <strong>{{ playerNames[round.bye] }}</strong></p>
+
+            <div class="d-flex">
+              <select v-model="round.refereeCheck[0]" :class="{'is-invalid': round.refereeCheck[0] === -1}" class="form-control mr-2">
+                <option :value="-1">1. zapisovatel rozhodčích</option>
+                <option v-for="(player, playerIndex) in playerNames" :value="playerIndex">{{ player }}</option>
+              </select>
+              <select v-model="round.refereeCheck[1]" :class="{'is-invalid': round.refereeCheck[1] === -1}" class="form-control">
+                <option :value="-1">2. zapisovatel rozhodčích</option>
+                <option v-for="(player, playerIndex) in playerNames" :value="playerIndex">{{ player }}</option>
+              </select>
+            </div>
           </div>
         </div>
         <div class="tab-footer p-2 mb-0 row d-print-none">
@@ -460,59 +472,119 @@
           show: state.activeTab == 'about-app'
         }"
         id="about-app">
-        <div class="container px-5">
-          <h1>Turnaj ve&nbsp;šprtci</h1>
-          <p class="lead">Webová aplikace pro&nbsp;řízení šprtcových turnajů</p>
+        <div class="container">
+          <div class="row">
+            <div class="col-3">
+              <ul id="about-app-nav" class="nav flex-column position-fixed">
+                <li class="nav-item">
+                  <strong class="nav-link">Navigace</strong>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="#vlastnosti">Vlastnosti</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="#fungovani">Fungování</a>
+                </li>
+                <li class="nav-item ml-2">
+                  <a class="nav-link" href="#poradi">Pořadí účastníků</a>
+                </li>
+                <li class="nav-item ml-2">
+                  <a class="nav-link" href="#parovani">Párování soupeřů</a>
+                </li>
+                <li class="nav-item ml-2">
+                  <a class="nav-link" href="#stav">Ukládání stavu turnaje</a>
+                </li>
+                <li class="nav-item ml-2">
+                  <a class="nav-link" href="#nastaveni">Nastavení turnaje</a>
+                </li>
+                <li class="nav-item ml-2">
+                  <a class="nav-link" href="#ucastnici">Účastníci</a>
+                </li>
+                <li class="nav-item ml-2">
+                  <a class="nav-link" href="#vysledky">Výsledky</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="#navrhy">Návrhy pro&nbsp;zlepšení</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="#neplanovane">Neplánované funkce</a>
+                </li>
+              </ul>
+            </div>
 
-          <h2>Vlastnosti</h2>
-          <ul>
-            <li><strong>generování vzájemných zápasů</strong> bere v&nbsp;potaz průběžné výsledky a&nbsp;volná kola při&nbsp;lichém počtu hráčů</li>
-            <li><strong>určení kategorií účastníků</strong>&nbsp;dle jejich pohlaví a&nbsp;data narození (bez vyplnění těchto údajů automaticky kategorie "muži")</li>
-            <li><strong>počítání odpískaných zápasů</strong> účastníkem (časem kontrola oproti minimu aktivit)</li>
-            <li>export a&nbsp;import stavu turnaje (např. pro&nbsp;přípravu startovací listiny předem a&nbsp;následné řízení turnaje z&nbsp;jiného počítače)</li>
-            <li><strong>určení vítězů kategorií</strong> ve&nbsp;výsledkové listině (ozanačeno tučným textem)</li>
-            <li><strong>konkrétní výsledky zápasů hráče</strong> (včetně skóre)</li>
-            <li>možnost do&nbsp;turnaje <strong>kdykoliv zapojit nového hráče</strong>, nebo ho naopak nechat z&nbsp;turnaje odstoupit (tlačítkem vlevo od&nbsp;příjmení hráče)</li>
-            <li><strong>tiskové formátování listiny</strong> účastníků, zápasů kola a&nbsp;výsledků</li>
-          </ul>
+            <div class="col">
+              <h1>Turnaj ve&nbsp;šprtci</h1>
+              <p class="lead">Webová aplikace pro&nbsp;řízení šprtcových turnajů</p>
 
-          <h2>Rozhodující kritéria pořadí účastníků</h2>
-          <ol>
-            <li>body</li>
-            <li>body soupeřů</li>
-            <li>body soupeřů soupeřů</li>
-            <li>vstřelené branky (max. 5 na&nbsp;zápas)</li>
-          </ol>
-          <p>Pokud je&nbsp;mezi hráči shoda ve&nbsp;všech výše zmíněných kritériích, jedná se&nbsp;o&nbsp;výsledkovou shodu (ve výsledcích zvýrazněno šedým otazníkem).</p>
+              <h2 id="vlastnosti">Vlastnosti</h2>
+              <ul>
+                <li><strong>generování vzájemných zápasů</strong> bere v&nbsp;potaz průběžné výsledky a&nbsp;volná kola při&nbsp;lichém počtu hráčů</li>
+                <li><strong>určení kategorií účastníků</strong>&nbsp;dle jejich pohlaví a&nbsp;data narození (bez vyplnění těchto údajů automaticky kategorie "muži")</li>
+                <li><strong>počítání odpískaných zápasů</strong> účastníkem (časem kontrola oproti minimu aktivit)</li>
+                <li>export a&nbsp;import stavu turnaje (např. pro&nbsp;přípravu startovací listiny předem a&nbsp;následné řízení turnaje z&nbsp;jiného počítače)</li>
+                <li><strong>určení vítězů kategorií</strong> ve&nbsp;výsledkové listině (ozanačeno tučným textem)</li>
+                <li><strong>konkrétní výsledky zápasů hráče</strong> (včetně skóre)</li>
+                <li>možnost do&nbsp;turnaje <strong>kdykoliv zapojit nového hráče</strong>, nebo ho naopak nechat z&nbsp;turnaje odstoupit (tlačítkem vlevo od&nbsp;příjmení hráče)</li>
+                <li><strong>tiskové formátování</strong> listiny účastníků, zápasů kola a&nbsp;výsledků</li>
+                <li>možnost <strong>nastavení bodového zisku</strong> za&nbsp;výhru a&nbsp;remízu</li>
+                <li>okamžité <strong>určení bodového zisku Českého poháru</strong></li>
+              </ul>
 
-          <h2>Algoritmus generování zápasů v&nbsp;kole</h2>
-          <ol>
-            <li>dá se&nbsp;do&nbsp;hromady seznam hráčů kola</li>
-            <li>hromada se&nbsp;náhodně zamíchá</li>
-            <li>hromada se&nbsp;seřadí podle rozhodujících kritérií (viz výše)</li>
-            <li>v případě lichého počtu hráčů v&nbsp;hromadě se&nbsp;určí volné kolo náhodnému hráči ze&nbsp;spodní poloviny hromady a&nbsp;z&nbsp;hromady se&nbsp;vyjme (pokud už všichni hráči ze&nbsp;spodní poloviny volné kolo měli, vybírá se&nbsp;z&nbsp;celé hromady)</li>
-            <li>program vezme prvního hráče v&nbsp;hromadě a&nbsp;hledá&nbsp;mu od&nbsp;vrchu soupeře, se&nbsp;kterým ještě nehrál, přiřadí je&nbsp;do&nbsp;vzájemného zápasu a&nbsp;oba vyjme z&nbsp;hromady</li>
-            <li>předchozí krok se&nbsp;opakuje, dokud se&nbsp;nenapárují všichni hráči kola</li>
-            <li>ve výjimečných případech, kdy&nbsp;je&nbsp;v&nbsp;kole málo účastníků, se&nbsp;může stát, že&nbsp;generování kola skoční chybou, protože hráče není možné napárovat</li>
-          </ol>
+              <h2 id="fungovani">Fungování</h2>
 
-          <h2>Návrhy pro&nbsp;zlepšení</h2>
-          <ul>
-            <li>filtrování zápasů dle účastníka</li>
-            <li>možnost zanést tzv. zapisovače, tedy účastníky, kteří mají aktivitu za zápis rozhodčích</li>
-            <li>export výsledků turnaje do&nbsp;souboru CSV (možné následně nahrát např. do&nbsp;Excel a&nbsp;archivovat)</li>
-            <li><strong>účastníci bez splněných aktivit</strong> zvýraznění ve&nbsp;výsledcích</li>
-            <li>vyhnout se&nbsp;vzájemným zápasům hráčů stejného klubu?</li>
-            <li>důsledné generování kola (vyzkoušet všechny možné kombinace volného kola, zatím generuje pouze jednou a&nbsp;pokud neposkládá, je&nbsp;potřeba další pokus o&nbsp;generování)</li>
-          </ul>
+              <h3 id="poradi">Pořadí účastníků</h3>
+              <p>Rozhodující kritéria pořadí účastníků jsou následující:</p>
+              <ol>
+                <li>body</li>
+                <li>body soupeřů</li>
+                <li>body soupeřů soupeřů</li>
+                <li>vstřelené branky (max. 5 na&nbsp;zápas)</li>
+              </ol>
+              <p>Pokud je&nbsp;mezi hráči shoda ve&nbsp;všech výše zmíněných kritériích, jedná se&nbsp;o&nbsp;výsledkovou shodu (ve výsledcích zvýrazněno šedým otazníkem).</p>
 
-          <h2>Neplánované funkce</h2>
-          <ul>
-            <li><strong>zabezpečení aplikace</strong>: pokud chcete zamezit, aby&nbsp;k&nbsp;aplikaci kdokoliv přišel a&nbsp;něco do&nbsp;ní psal, zamkněte počítač, na&nbsp;kterém běží</li>
-            <li><strong>kontrola duplicity účastníků</strong>: aplikace nekontroluje, zda není v&nbsp;účastnících hráč se&nbsp;stejným jménem vícekrát, toto má pořadatel odhalit při&nbsp;prezenci hráčů, která&nbsp;je&nbsp;seřazena&nbsp;dle abecedy</li>
-          </ul>
+              <h3 id="parovani">Párování soupeřů</h3>
+              <p>Hráči se&nbsp;do&nbsp;vzájemných utkání párují tzv. maďarským algoritmem (<a href="https://en.wikipedia.org/wiki/Hungarian_algorithm">článek na&nbsp;Wikipedii</a>, anglicky). Ten &ndash; stručně řečeno &ndash; vytvoří všechny možné kombinace dvou hráčů (kteří se&nbsp;generovaného kola účastní a&nbsp;nesehráli dříve vzájemný zápas). Těmto potenciálním párům přiřadí bodový rozdíl daných hráčů a&nbsp;násedně z&nbsp;nich vybere tak, aby&nbsp;se&nbsp;kola účastnili všichni hráči a&nbsp;zároveň byl&nbsp;bodový rozdíl všech párů co&nbsp;nejnižší.</p>
+              <p>Pokud je&nbsp;hráčů v&nbsp;kole lichý počet, je&nbsp;náhodně vybrán jeden hráč ze&nbsp;spodní poloviny průběžného pořadí, a&nbsp;tomu je&nbsp;přiřazeno volné kolo. Volné kolo může během turnaje dostat pouze jeden hráč. Záměrně se&nbsp;volné kolo neuděluje nejhoršímu hráči v&nbsp;průběžném pořadí, protože v&nbsp;případě pozdního zapojení hráče do&nbsp;turnaje by&nbsp;bylo více než pravděpodobné, že&nbsp;právě takový hráč dostane hned ve&nbsp;svém prvním kole volno.</p>
+
+              <h3 id="stav">Ukládání stavu turnaje</h3>
+              <p>Po&nbsp;spuštění aplikace je&nbsp;stav turnaje takový, jaký byl&nbsp;před&nbsp;ukončením aplikace. Stav turnaje není třeba ukládat, ukládání se&nbsp;děje automaticky. Pro&nbsp;zahájení nového turnaje je&nbsp;potřeba stav aplikace resetovat. Lze využít exportu a&nbsp;importu stavu turnaje &ndsash; např. pro&nbsp;přípravu startovní listiny den před&nbsp;turnajem a&nbsp;následné zaslání stavu turnaje s&nbsp;vyplněnými účastníky do&nbsp;aplikace v&nbsp;jiném počítači, na&nbsp;kterém se&nbsp;turnaj odřídí.</p>
+
+              <h3 id="nastaveni">Nastavení turnaje</h3>
+              <p>Důležité nastavení turnaje:</p>
+              <ul>
+                <li><strong>datum konání</strong>: v&nbsp;kombinaci s&nbsp;vyplněním pohlaví a&nbsp;roku narození účastníka se&nbsp;určuje jeho hráčská kategorie</li>
+                <li><strong>kategorie turnaje</strong>: určuje bodoví zisk Českého poháru a&nbsp;nutný počet kol turnaje&nbsp;dle počtu účastníků</li>
+                <li><strong>počet kol, body za&nbsp;výhru a&nbsp;remízu</strong>: nastavte pečlivě před&nbsp;zahájením turnaje, po&nbsp;zahájení turnaje již nelze měnit</li>
+              </ul>
+              <p>Další klub lze přidat tak, že&nbsp;do&nbsp;pole "Další klub" vyplníte jeho název a&nbsp;následně pouze kliknete myší mimo toto pole.</p>
+
+              <h3 id="ucastnici">Účastníci</h3>
+              <p>U účastníků je&nbsp;nezbytné vyplnit jejich jméno a&nbsp;příjmení, volitelně další pole. Bez vyplnění jména a&nbsp;příjmení všech účasntíků nelze turnaj zahájit a&nbsp;tito jsou zvýrazněni červeným obrysem polí pro&nbsp;vyplnění jména.</p>
+              <p>Účast hráče v&nbsp;kolech se&nbsp;řídí po&nbsp;kliknutí na&nbsp;tlačítko vlevo od&nbsp;jeho příjmení. Využijte např. pro&nbsp;vyřazení účastníka z&nbsp;následujících kol v&nbsp;případě, že&nbsp;turnaj předčasně opouští.</p>
+              <p>Na&nbsp;základě datumu konání turnaje, pohlaví účastníka a&nbsp;roku narození se&nbsp;určuje hráčská kategorie účasníka. Pokud není vyplněno, aplikace účastníka automaticky považuje za&nbsp;muže (vychází z&nbsp;předpokladu, že&nbsp;se&nbsp;turnajů účastní nejvíce mužů).</p>
+
+              <h3 id="vysledky">Výsledky</h3>
+              <p>Do&nbsp;průběžných výsledků se&nbsp;započítává poslední kolo vždy až po&nbsp;jeho kompletním vyplnění na&nbsp;záložce "Zápasy". Nezbytné je&nbsp;vyplnění výsledku zápasu, rozhodčí volitelně. Nevyplněné zápasy jsou zvýrazněny červeným obrysem pro&nbsp;vyplnění výsledku.</p>
+              <p>Ve&nbsp;výsledkové listině jsou šedým otazníkem označeny nejasné umístění (výsledková shoda ve&nbsp;všech kritériích).</p>
+              <p>Šedým vykřičníkem jsou označeni vítězové jednotlivých hráčských kateogirií, pokud má aplikace dostatek údajů k&nbsp;jejich určení (datum konání turnaje, pohlaví a&nbsp;datum narození účastníků).</p>
+
+              <h2 id="navrhy">Návrhy pro&nbsp;zlepšení</h2>
+              <ul>
+                <li>filtrování zápasů&nbsp;dle účastníka</li>
+                <li>export výsledků turnaje do&nbsp;souboru CSV (možné následně nahrát např. do&nbsp;Excel a&nbsp;archivovat)</li>
+                <li><strong>účastníci bez splněných aktivit</strong> zvýraznění ve&nbsp;výsledcích</li>
+                <li>vyhnout se&nbsp;vzájemným zápasům hráčů stejného klubu?</li>
+                <li>kontrolní součty vybraného a&nbsp;celkového startovného turnaje</li>
+              </ul>
+
+              <h2 id="neplanovane">Neplánované funkce</h2>
+              <ul>
+                <li><strong>zabezpečení aplikace</strong>: pokud chcete zamezit, aby&nbsp;k&nbsp;aplikaci kdokoliv přišel a&nbsp;něco do&nbsp;ní psal, zamkněte počítač, na&nbsp;kterém běží</li>
+                <li><strong>kontrola duplicity účastníků</strong>: aplikace nekontroluje, zda není v&nbsp;účastnících hráč se&nbsp;stejným jménem vícekrát, toto má pořadatel odhalit při&nbsp;prezenci hráčů, která&nbsp;je&nbsp;seřazena&nbsp;dle abecedy</li>
+              </ul>
+            </div>
+          </div>
         </div>
-
 
         <div class="tab-footer d-flex justify-content-between p-2 mb-0 d-print-none">
           <span class="btn">
@@ -611,6 +683,7 @@
   <script src="../node_modules/vue/dist/vue.js"></script>
   <script src="../node_modules/file-saver/FileSaver.js"></script>
   <script src="../node_modules/munkres-js/munkres.js"></script>
+  <script src="../node_modules/scroll-js/scroll.js"></script>
   <script src="./app.js"></script>
 
   <script>if (window.module) module = window.module;</script>

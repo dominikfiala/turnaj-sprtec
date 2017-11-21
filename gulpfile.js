@@ -33,12 +33,12 @@ gulp.task('serve', function () {
 
 gulp.task('build-manifest', function () {
   return gulp
-    .src("app/package.json")
+    .src("build/package.json")
     .pipe(jeditor(function(json) {
       delete json.dependencies;
       return json;
     }))
-    .pipe(gulp.dest("app"));
+    .pipe(gulp.dest("build"));
 });
 
 gulp.task('build-copy', function () {
@@ -57,7 +57,7 @@ gulp.task('build-copy', function () {
       "src/icon.ico",
       "package.json"
     ])
-    .pipe(gulpCopy('app'));
+    .pipe(gulpCopy('build'));
 });
 
 gulp.task('build', gulp.series('build-copy', 'build-manifest'))

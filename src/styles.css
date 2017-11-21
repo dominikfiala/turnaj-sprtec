@@ -1,12 +1,12 @@
 @import url('./bootstrap.cosmo.css');
 html {
-    overflow: hidden;
-    height: 100%;
+  overflow: hidden;
+  height: 100%;
 }
 
 body {
-    height: 100%;
-    overflow: auto;
+  height: 100%;
+  overflow: auto;
 }
 
 .app-nav {
@@ -47,9 +47,6 @@ abbr[title], abbr[data-original-title] {
   border-top: none;
 }
 
-.container{
-  max-width: 800px;
-}
 
 @media print {
   body {

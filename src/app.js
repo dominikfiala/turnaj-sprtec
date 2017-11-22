@@ -189,7 +189,7 @@ var app = new Vue({
       if (availablePlayers.length % 2 === 1) {
         // get bottom half of player results
         var byeCandidates = this.tournamentResults.slice(Math.floor(availablePlayers.length / 2), availablePlayers.length)
-        
+
         // look for possible players
         while (round.bye === -1) {
           // if bye not available for player from bottom line
@@ -213,47 +213,37 @@ var app = new Vue({
 
       var maxDiff = (roundIndex + 1) * this.config.pointsWin
 
-      // prepare matrix
-      var matrix = [];
-      for (var i = 0; i < availablePlayers.length; i++) {
-        matrix[i] = new Array(availablePlayers.length);
-        matrix[i].fill(0)
-      }
-
-      // fill matrix with players points diff
-      for (var y = 0; y < availablePlayers.length; y++) {
-        var playerY = availablePlayers[y]
-
-        for (var x = 0; x < availablePlayers.length; x++) {
-          var playerX = availablePlayers[x]
-
-          if (x === y) {
-            matrix[x][y] = maxDiff
+      var possiblePairs = []
+      availablePlayers.forEach(player => {
+        availablePlayers.forEach(opponent => {
+          if (
+            player.playerIndex !== opponent.playerIndex // &&
+            // player.opponents.indexOf(opponent.playerIndex) === -1
+          ) {
+            var match = [player.playerIndex, opponent.playerIndex]
+            match.sort(function(a, b) {
+              return a - b;
+            })
+            if (player.opponents.indexOf(opponent.playerIndex) === -1) {
+              match.push(maxDiff - Math.abs(player.points - opponent.points))
+            }
+            else {
+              match.push(0)
+            }
+            if (this.searchForArray(possiblePairs, match) === -1) {
+              possiblePairs.push(match)
+            }
           }
-          else if (playerY.opponents.indexOf(x) !== -1) {
-            matrix[x][y] = maxDiff
-            matrix[y][x] = maxDiff
-          }
-          else {
-            var value = Math.abs(playerX.points - playerY.points)
-            matrix[x][y] = value
-            matrix[y][x] = value
-          }
-        }
-      }
+        })
+      })
 
-      // console.table(matrix)
-      // console.table(computeMunkres(matrix))
-      // return
-
-      // make pairing
-      var rawPairing = computeMunkres(matrix)
-      rawPairing.forEach(pairing => {
-        if (pairing[0] < pairing[1]) {
+      var rawPairing = edmondsBlossom(possiblePairs)
+      rawPairing.forEach((match, index) => {
+        if (match !== -1 && match < index) {
           round.matches.push({
-            home: pairing[0],
+            home: match,
             home_score: '',
-            away: pairing[1],
+            away: index,
             away_score: '',
             referee: -1
           })
@@ -294,6 +284,18 @@ var app = new Vue({
     },
     randomIndex: function(array) {
       return Math.floor(Math.random()*array.length)
+    },
+    searchForArray: function(haystack, needle) {
+      var i, j, current;
+      for (i = 0; i < haystack.length; ++i) {
+        if (needle.length === haystack[i].length) {
+          current = haystack[i];
+          for (j = 0; j < needle.length && needle[j] === current[j]; ++j);
+          if (j === needle.length)
+            return i;
+        }
+      }
+      return -1;
     },
 
     initTooltips: function() {

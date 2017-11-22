@@ -338,7 +338,7 @@
               <div class="d-flex mb-2" v-for="(refereeCheck, refereeCheckIndex) in round.refereeCheck">
                 <input type="text" readonly tabindex="-1"
                   class="form-control-plaintext text-right mr-2" style="flex: 1"
-                  value="Zapisovatel rozhodčích">
+                  value="Zapisovatel rozhodčích:">
                 <select v-model="round.refereeCheck[refereeCheckIndex]"
                   :class="{'is-invalid': round.refereeCheck[refereeCheckIndex] === -1}" class="w-25 form-control">
                   <option :value="-1">Zapisovatel rozhodčích</option>
@@ -443,7 +443,7 @@
                 {{ resultIndex + 1 }}.
                 <abbr v-if="result.sharedPosition" class="text-muted" title="Výsledková shoda s&nbsp;předchozím hráčem v&nbsp;pořadí">?</abbr>
               </td>
-              <td>{{ result.playerIndex }} {{ playerNames[result.playerIndex] }}</td>
+              <td>{{ playerNames[result.playerIndex] }}</td>
               <td><span v-if="players[result.playerIndex].club !== -1">{{ config.clubs[players[result.playerIndex].club] }}</span></td>
               <td class="text-center" :title="playerCategories[result.playerIndex].name">
                 {{ playerCategories[result.playerIndex].shortcut }}<span v-if="result.categoryWinner">!</span>
@@ -455,7 +455,7 @@
               <td class="text-center"><strong>{{ result.points }}</strong></td>
               <td class="text-center">{{ result.opponentsPoints }}</td>
               <td class="text-center">{{ result.opponentsOpponentsPoints }}</td>
-              <td class="text-right">{{ result.goalsFor }}</td>
+              <td :title="'Z toho jako rozhodující kritérium: ' + result.goalsForSort" class="text-right">{{ result.goalsFor }}</td>
               <td class="text-center">:</td>
               <td>{{ result.goalsAgainst }}</td>
               <td v-if="config.category !== -1" class="text-center">{{ result.cpPoints }}</td>
@@ -691,6 +691,7 @@
     </div>
   </div>
 
+
   <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
 
   <script src="../node_modules/jquery/dist/jquery.slim.js"></script>
@@ -698,7 +699,7 @@
   <script src="../node_modules/bootstrap/dist/js/bootstrap.js"></script>
   <script src="../node_modules/vue/dist/vue.js"></script>
   <script src="../node_modules/file-saver/FileSaver.js"></script>
-  <script src="../node_modules/munkres-js/munkres.js"></script>
+  <script src="./edmonds-blossom.js"></script>
   <script src="./app.js"></script>
 
   <script>if (window.module) module = window.module;</script>

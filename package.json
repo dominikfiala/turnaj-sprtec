@@ -1,4 +1,4 @@
-{
+qnpm{
   "name": "turnaj-sprtec",
   "version": "1.0.0",
   "description": "Aplikace pro řízení turnaje ve šprtci",
@@ -31,7 +31,6 @@
     "exceljs": "^0.6.2",
     "file-saver": "^1.3.3",
     "jquery": "^3.2.1",
-    "munkres-js": "^1.2.2",
     "popper.js": "^1.12.6",
     "vue": "^2.5.2"
   },

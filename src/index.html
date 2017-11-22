@@ -33,7 +33,7 @@
     </ul>
 
     <!-- Application screen -->
-    <div class="tab-content mx-3" id="m-print-none">
+    <div class="tab-content" id="m-print-none">
       <!-- Tournament config -->
       <div class="tab-pane"
         :class="{
@@ -475,9 +475,12 @@
         <div class="container">
           <div class="row">
             <div class="col-3">
-              <ul id="about-app-nav" class="nav flex-column position-fixed">
+              <ul class="about-app-nav nav flex-column flex-nowrap position-fixed">
                 <li class="nav-item">
                   <strong class="nav-link">Navigace</strong>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="#uvod">Úvod</a>
                 </li>
                 <li class="nav-item">
                   <a class="nav-link" href="#vlastnosti">Vlastnosti</a>
@@ -513,7 +516,7 @@
             </div>
 
             <div class="col">
-              <h1>Turnaj ve&nbsp;šprtci</h1>
+              <h1 id="uvod">Turnaj ve&nbsp;šprtci</h1>
               <p class="lead">Webová aplikace pro&nbsp;řízení šprtcových turnajů</p>
 
               <h2 id="vlastnosti">Vlastnosti</h2>

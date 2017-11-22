@@ -7,7 +7,7 @@ html {
 
 body {
   height: 100%;
-  overflow: auto;
+  overflow-y: auto;
   position: relative;
 }
 
@@ -21,12 +21,12 @@ body {
 }
   .about-app-nav {
     height: calc(100vh - 118px);
-    overflow: scroll;
+    overflow-y: auto;
   }
 
-.tab-content {
+.app-content {
   position: absolute;
-  overflow: scroll;
+  overflow-y: auto;
   top: 48px;
   left: 0;
   right: 0;

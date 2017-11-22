@@ -188,8 +188,8 @@ var app = new Vue({
       // assign a bye if round players count odd
       if (availablePlayers.length % 2 === 1) {
         // get bottom half of player results
-        var byeCandidates = availablePlayers.slice(Math.floor(availablePlayers.length / 2), availablePlayers.length)
-
+        var byeCandidates = this.tournamentResults.slice(Math.floor(availablePlayers.length / 2), availablePlayers.length)
+        
         // look for possible players
         while (round.bye === -1) {
           // if bye not available for player from bottom line

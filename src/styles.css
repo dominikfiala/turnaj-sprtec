@@ -23,9 +23,9 @@ body {
     height: calc(100vh - 118px);
     overflow: scroll;
   }
-  
+
 .tab-content {
-  position: fixed;
+  position: absolute;
   overflow: scroll;
   top: 48px;
   left: 0;

@@ -1,3 +1,4 @@
+var shell = require('electron').shell
 Vue.config.devtools = true
 
 var dataInitial = {
@@ -574,6 +575,11 @@ var app = new Vue({
   },
   mounted: function() {
     this.initTooltips()
+
+    $(document).on('click', 'a[href^="http"]', function(event) {
+      event.preventDefault();
+      shell.openExternal(this.href);
+    });
   },
   updated: function() {
     this.initTooltips()

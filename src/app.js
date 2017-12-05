@@ -475,14 +475,18 @@ var app = new Vue({
       })
 
       // sum opponents points
-      results.forEach(function(player) {
-        player.opponentsPoints += results.reduce(function(accumulator, opponent) {
+      results.forEach(player => {
+        player.opponentsPoints += results.reduce((accumulator, opponent) => {
           if (player.opponents.indexOf(opponent.playerIndex) !== -1) {
-            return accumulator + opponent.points
+            accumulator += opponent.points
+
+            // opponents points compensation for opponents that didnt play all the rounds
+            if (opponent.matches < this.roundsComplete.length) {
+              accumulator += (this.roundsComplete.length - opponent.matches) * this.config.pointsDraw
+            }
           }
-          else {
-            return accumulator
-          }
+
+          return accumulator
         }, 0)
       })
 
@@ -504,7 +508,7 @@ var app = new Vue({
       var categoryWinner = []
 
       // sort player stats
-      results.sort(this.fieldSorter(['-points', '-oppontentsPoints', '-opponentsOpponentsPoints', '-goalsForSort']))
+      results.sort(this.fieldSorter(['-points', '-oppontentsPoints', '-goalsForSort', '-opponentsOpponentsPoints']))
 
       var previousResult = null
       results.forEach((result, resultIndex) =>  {

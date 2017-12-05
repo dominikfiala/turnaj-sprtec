@@ -1,4 +1,9 @@
-var shell = require('electron').shell
+var env = typeof(process) !== 'undefined' ? 'electron' : 'browser'
+
+if (env === 'electron') {
+  var shell = require('electron').shell
+}
+
 Vue.config.devtools = true
 
 var dataInitial = {
@@ -576,10 +581,12 @@ var app = new Vue({
   mounted: function() {
     this.initTooltips()
 
-    $(document).on('click', 'a[href^="http"]', function(event) {
-      event.preventDefault();
-      shell.openExternal(this.href);
-    });
+    if (env === 'electron') {
+      $(document).on('click', 'a[href^="http"]', function(event) {
+        event.preventDefault();
+        shell.openExternal(this.href);
+      })
+    }
   },
   updated: function() {
     this.initTooltips()

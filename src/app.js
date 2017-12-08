@@ -11,7 +11,8 @@ var dataInitial = {
     activeTab: 'config',
     activeRound: 0,
     activePlayer: -1,
-    playersSearch: ''
+    playersSearch: '',
+    debug: false
   },
   config: {
     name: 'Turnaj ve šprtci',
@@ -174,6 +175,12 @@ var app = new Vue({
       return regex.test(this.playerNames[playerIndex])
     },
 
+    randomRoundResults: function(roundIndex) {
+      this.rounds[roundIndex].matches.forEach(match => {
+        match.home_score = this.randomIndex([...Array(9).keys()])
+        match.away_score = this.randomIndex([...Array(9).keys()])
+      })
+    },
     generateRound: function(roundIndex) {
       var round = {
         matches: [],
@@ -217,7 +224,7 @@ var app = new Vue({
         }
       }
 
-      var maxDiff = (roundIndex + 1) * this.config.pointsWin
+      var maxDiff = (roundIndex + 1) * this.config.pointsWin * 2
 
       var possiblePairs = []
       availablePlayers.forEach(player => {
@@ -243,18 +250,35 @@ var app = new Vue({
         })
       })
 
+      possiblePairs = this.shuffle(possiblePairs)
+
       var rawPairing = edmondsBlossom(possiblePairs)
-      rawPairing.forEach((match, index) => {
-        if (match !== -1 && match < index) {
-          round.matches.push({
-            home: match,
+      rawPairing.forEach((home, away) => {
+        if (home !== -1 && home < away) {
+          var match = {
             home_score: '',
-            away: index,
             away_score: '',
             referee: -1
-          })
+          }
+          var homePosition = this.playerPlacementByIndex(home)
+          var awayPosition = this.playerPlacementByIndex(away)
+
+          if (homePosition < awayPosition) {
+            match.home = home
+            match.away = away
+            match.matchPosition = homePosition
+          }
+          else {
+            match.home = away
+            match.away = home
+            match.matchPosition = awayPosition
+          }
+
+          round.matches.push(match)
         }
       })
+
+      round.matches.sort(this.fieldSorter(['matchPosition']))
 
       this.$set(this.rounds, roundIndex, round)
     },
@@ -303,8 +327,16 @@ var app = new Vue({
       }
       return -1;
     },
+    shuffle: function(a) {
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    },
 
     initTooltips: function() {
+      $('[title]').tooltip('dispose')
       $('[title]').tooltip({html: true, trigger: 'hover', removeOnDestroy: true})
     },
     print: function() {

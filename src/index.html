@@ -398,6 +398,7 @@
           </div>
           <div class="col-auto">
             <button type="button" v-on:click="generateRound(state.activeRound)" class="btn btn-success" :disabled="!isTournamentReady || !isRoundReady(state.activeRound) || isRoundGenerated(state.activeRound)">Generovat zápasy</button>
+            <button v-if="state.debug && !roundsComplete[state.activeRound]" type="button" v-on:click="randomRoundResults(state.activeRound)" class="btn btn-danger">Náhodné výsledky</button>
             <!-- <button type="button" v-on:click="rounds = []" class="btn btn-danger">Reset</button> -->
             <button type="button" v-on:click="print" class="btn btn-primary">Tisk</button>
           </div>
@@ -618,7 +619,10 @@
             <a href="mailto:domo.fiala@gmail.com">domo.fiala@gmail.com</a>,
             <a href="tel:+420721090491">+420 721 090 491</a>
           </span>
-          <button type="button" v-on:click="print" class="btn btn-primary">Tisk</button>
+          <span>
+            <button type="button" v-on:click="state.debug = !state.debug" class="btn btn-danger" :class="{active: state.debug}">Ladící režim</button>
+            <button type="button" v-on:click="print" class="btn btn-primary">Tisk</button>
+          </span>
         </div>
       </div>
 
@@ -703,11 +707,11 @@
 
   <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
 
-  <script src="./node_modules/jquery/dist/jquery.slim.js"></script>
-  <script src="./node_modules/popper.js/dist/umd/popper.js"></script>
-  <script src="./node_modules/bootstrap/dist/js/bootstrap.js"></script>
-  <script src="./node_modules/vue/dist/vue.js"></script>
-  <script src="./node_modules/file-saver/FileSaver.js"></script>
+  <script src="../node_modules/jquery/dist/jquery.slim.js"></script>
+  <script src="../node_modules/popper.js/dist/umd/popper.js"></script>
+  <script src="../node_modules/bootstrap/dist/js/bootstrap.js"></script>
+  <script src="../node_modules/vue/dist/vue.js"></script>
+  <script src="../node_modules/file-saver/FileSaver.js"></script>
   <script src="./edmonds-blossom.js"></script>
   <script src="./app.js"></script>
 

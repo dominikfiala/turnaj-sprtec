@@ -7,18 +7,21 @@
     "appId": "cz.dominikfiala.${name}",
     "icon": "src/icon.ico",
     "directories": {
-      "buildResources": "./build",
-      "output": "./dist"
+      "buildResources": "./",
+      "output": "../dist"
     },
-    "asar": false,
     "win": {
       "target": "portable"
     }
   },
   "scripts": {
     "gulp": "./node_modules/gulp/bin/gulp.js",
-    "dist": "npx electron-builder --win --ia32",
-    "build": "rm -rf build && npm run gulp build && npm run dist"
+    "build-test": "npm run prebuild && npx electron-builder --win --ia32 --project=./build --dir",
+    "prebuild": "npm run build-clean && npm run gulp build && npm run build-vendor && npm run build-html",
+    "build": "npx electron-builder --win --ia32 --project=./build",
+    "build-html": "sed -i -e 's/node_modules\\//vendor\\//g' ./build/src/index.html",
+    "build-clean": "rm -rf build && rm -rf dist",
+    "build-vendor": "mv ./build/node_modules ./build/vendor"
   },
   "repository": {
     "type": "git",

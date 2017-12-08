@@ -50,11 +50,7 @@ gulp.task('build-copy', function () {
       "node_modules/bootstrap/dist/js/bootstrap.js",
       "node_modules/vue/dist/vue.js",
       "node_modules/file-saver/FileSaver.js",
-      "src/edmonds-blossom.js",
-      "src/app.js",
-      "src/main.js",
-      "src/index.html",
-      "src/icon.ico",
+      "src/**/*",
       "package.json"
     ])
     .pipe(gulpCopy('build'));

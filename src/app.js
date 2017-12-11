@@ -407,7 +407,7 @@ var app = new Vue({
       return this.players.map(function(player) {
         var age = season - player.yearOfBirth
 
-        if (age <= 11) {
+        if (age <= 12) {
           return {
             'shortcut': 'P',
             'name': 'Ml. žáci'
@@ -419,13 +419,13 @@ var app = new Vue({
             'name': 'Ženy'
           }
         }
-        else if (age <= 14) {
+        else if (age <= 15) {
           return {
             'shortcut': 'Z',
             'name': 'St. žáci'
           }
         }
-        else if (age <= 17) {
+        else if (age <= 18) {
           return {
             'shortcut': 'J',
             'name': 'Junioři'

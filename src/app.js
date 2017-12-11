@@ -295,6 +295,33 @@ var app = new Vue({
         return match.home_score === '' || match.away_score === ''
       }).length === 0
     },
+    isRoundStarted: function(roundIndex) {
+      if (!this.isRoundGenerated(roundIndex)) { return false }
+      var round = this.rounds[roundIndex]
+      return round.matches.filter(function(match) {
+        return match.home_score === '' || match.away_score === ''
+      }).length !== round.matches.length
+    },
+    getRoundStatus: function(roundIndex) {
+      if (!this.rounds[roundIndex]) {
+        return 'none'
+      }
+
+      var round = this.rounds[roundIndex]
+      var incompleteMatches = round.matches.filter(function(match) {
+        return match.home_score === '' || match.away_score === ''
+      }).length
+
+      if (incompleteMatches === 0) {
+        return 'complete'
+      }
+      else if (incompleteMatches === round.matches.length) {
+        return 'empty'
+      }
+      else {
+        return 'incomplete'
+      }
+    },
 
     fieldSorter: function(fields) {
       return function (a, b) {
@@ -433,9 +460,6 @@ var app = new Vue({
         }
       })
       this.rounds.forEach((round, roundIndex) => {
-        // round not complete yet
-        if (!this.isRoundComplete(roundIndex)) { return }
-
         // bye match
         if (round.bye !== -1) {
           results[round.bye].matches++
@@ -456,14 +480,28 @@ var app = new Vue({
 
         // calculate stats
         round.matches.forEach((match, matchIndex) => {
+          // sum points and score
+          var homePlayer = results[match.home]
+          var awayPlayer = results[match.away]
+
+          // match not complete yet, just get next opponent
+          if (match.home_score === '' || match.away_score === '') {
+            homePlayer.results[roundIndex] = {
+              opponent: match.away,
+              result: '?'
+            }
+            awayPlayer.results[roundIndex] = {
+              opponent: match.home,
+              result: '?'
+            }
+            return
+          }
+
           // sum referee
           if (match.referee !== -1) {
             results[match.referee].referee++
           }
 
-          // sum points and score
-          var homePlayer = results[match.home]
-          var awayPlayer = results[match.away]
           homePlayer.opponents.push(match.away)
           awayPlayer.opponents.push(match.home)
           homePlayer.goalsFor += match.home_score
@@ -546,7 +584,7 @@ var app = new Vue({
       var categoryWinner = []
 
       // sort player stats
-      results.sort(this.fieldSorter(['-points', '-oppontentsPoints', '-goalsForSort', '-opponentsOpponentsPoints']))
+      results.sort(this.fieldSorter(['-points', '-opponentsPoints', '-goalsForSort', '-opponentsOpponentsPoints']))
 
       var previousResult = null
       results.forEach((result, resultIndex) =>  {
@@ -595,14 +633,13 @@ var app = new Vue({
       return /^(\d{4})-(\d{2})-(\d{2})$/.test(this.config.date)
     },
 
+    roundsStatus: function() {
+      return [...Array(this.config.numberOfRounds).keys()].map(this.getRoundStatus)
+    },
     roundsComplete: function() {
-      complete = []
-      this.rounds.forEach((round, roundIndex) => {
-        if (this.isRoundComplete(roundIndex)) {
-          complete.push(roundIndex)
-        }
-      })
-      return complete
+      return this.roundsStatus.filter(round => {
+        return round === 'complete'
+      }).length
     },
     roundsPerPlayers: function() {
       if (this.players.length > 64) return 7

@@ -378,6 +378,8 @@
             </div>
           </div>
         </div>
+
+        <!-- Tab footer -->
         <div class="tab-footer p-2 mb-0 row d-print-none">
           <div class="col">
             <div class="nav nav-pills">
@@ -397,9 +399,15 @@
             </div>
           </div>
           <div class="col-auto">
-            <button type="button" v-on:click="generateRound(state.activeRound)" class="btn btn-success" :disabled="!isTournamentReady || !isRoundReady(state.activeRound) || isRoundGenerated(state.activeRound)">Generovat zápasy</button>
-            <button v-if="state.debug && !roundsComplete[state.activeRound]" type="button" v-on:click="randomRoundResults(state.activeRound)" class="btn btn-danger">Náhodné výsledky</button>
-            <!-- <button type="button" v-on:click="rounds = []" class="btn btn-danger">Reset</button> -->
+            <button type="button" class="btn btn-success"
+              v-if="isTournamentReady && isRoundReady(state.activeRound) && !isRoundGenerated(state.activeRound)"
+              v-on:click="generateRound(state.activeRound)">Napárovat soupeře</button>
+            <button type="button" class="btn btn-danger"
+              data-toggle="modal" data-target="#dropPairingModal"
+              v-if="roundsStatus[state.activeRound] === 'empty'">Zrušit párování</button>
+            <button type="button" class="btn btn-danger"
+              v-if="state.debug && roundsStatus[state.activeRound] !== 'none'"
+              v-on:click="randomRoundResults(state.activeRound)">Náhodné výsledky</button>
             <button type="button" v-on:click="print" class="btn btn-primary">Tisk</button>
           </div>
         </div>
@@ -412,10 +420,10 @@
           show: state.activeTab == 'results'
         }"
         id="results">
-        <p v-if="roundsComplete.length !== config.numberOfRounds" class="d-none d-print-block lead">
-          Průběžné výsledky, odehráno kol: {{ roundsComplete.length }}/{{ config.numberOfRounds }}
+        <p v-if="roundsComplete !== config.numberOfRounds" class="d-none d-print-block lead">
+          Průběžné výsledky, odehráno kol: {{ roundsComplete }}/{{ config.numberOfRounds }}
         </p>
-        <p v-if="roundsComplete.length === config.numberOfRounds" class="d-none d-print-block lead">
+        <p v-if="roundsComplete === config.numberOfRounds" class="d-none d-print-block lead">
           Konečné výsledky turnaje
         </p>
         <table class="table table-hover table-sm">
@@ -466,7 +474,7 @@
                   <span v-if="typeof(match) == 'undefined'">&mdash;</span>
                   <span v-if="typeof(match) == 'object' && match.opponent === -1">volno</span>
                   <abbr v-if="typeof(match) == 'object' && match.opponent !== -1" :title="playerNames[match.opponent]">
-                    {{ playerPlacementByIndex(match.opponent) }}{{ match.result }}&nbsp;<span class="text-muted">({{ match.goalsFor }}:{{ match.goalsAgainst }})</span>
+                    {{ playerPlacementByIndex(match.opponent) }}{{ match.result }}&nbsp;<span v-if="typeof(match.goalsFor) !== 'undefined'" class="text-muted">({{ match.goalsFor }}:{{ match.goalsAgainst }})</span>
                   </abbr>
                 </span>
               </td>
@@ -692,6 +700,31 @@
               <input type="file" class="d-none" accept="application/json" id="fileChooser" v-on:change="tournamentFileLoaded">
               <button type="button" class="btn btn-secondary" data-dismiss="modal">Zavřít</button>
               <button type="button" class="btn btn-primary" v-on:click="loadTournamentFromFile">Nahrát ze souboru</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Drop pairing modal -->
+      <div class="modal fade"
+        id="dropPairingModal"
+        tabindex="-1">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Zrušit párování</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <p><strong>Upozornění:</strong> Zrušit párování můžete pouze pokud se ještě žádný ze zápasů nerozehrál.</p>
+              <p>Používejte převážně v případech, kdy chcete doplnit hráče do již napárovaného kola.</p>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Zavřít</button>
+              <button type="button" class="btn btn-primary"
+                v-on:click="rounds = rounds.slice(0, state.activeRound)">Zrušit párování</button>
             </div>
           </div>
         </div>

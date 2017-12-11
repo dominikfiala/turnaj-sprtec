@@ -1,3 +1,7 @@
+const blossom = require('edmonds-blossom')
+const faker = require('faker')
+faker.locale = 'cz'
+
 var env = typeof(process) !== 'undefined' ? 'electron' : 'browser'
 
 if (env === 'electron') {
@@ -60,6 +64,7 @@ var dataInitial = {
       'SHL Brno',
       'SHL WIP Reklama D. Voda',
       'Sokol Stochov',
+      'Šprtmejkři Ostrava',
       'THE Orel Bohunice',
     ]
   },
@@ -147,6 +152,27 @@ var app = new Vue({
       window.setTimeout(function() {
         document.querySelector('.players-list .players-list-item:last-child input:not([readonly])').focus()
       }, 100)
+    },
+    addRandomPlayer: function() {
+      var sexIndex = faker.random.number({max: 1})
+      var player = {
+        byes: 0,
+        sex: ['male', 'female'][sexIndex],
+        name: faker.name.firstName(sexIndex),
+        surname: faker.name.lastName(sexIndex),
+        feePaid: false,
+        club: faker.random.number({max: this.config.clubs.length - 1}),
+        rounds: [],
+        yearOfBirth: faker.random.number({min: 1985, max: new Date().getFullYear() - 10})
+      }
+
+      for (var i = 0; i < this.config.numberOfRounds; i++) {
+        if (!this.rounds[i]) {
+          player.rounds.push(i)
+        }
+      }
+
+      this.players.push(player)
     },
     playerPlacementByIndex: function(playerIndex) {
       return this.tournamentResults.findIndex(function(player) {
@@ -239,7 +265,12 @@ var app = new Vue({
               return a - b;
             })
             if (player.opponents.indexOf(opponent.playerIndex) === -1) {
-              match.push(maxDiff - Math.abs(this.playerPlacementByIndex(player.playerIndex) - this.playerPlacementByIndex(opponent.playerIndex)))
+              if (roundIndex === 0) {
+                match.push(faker.random.number({max: maxDiff}))
+              }
+              else {
+                match.push(maxDiff - Math.abs(this.playerPlacementByIndex(player.playerIndex) - this.playerPlacementByIndex(opponent.playerIndex)))
+              }
             }
             else {
               match.push(0)
@@ -253,7 +284,7 @@ var app = new Vue({
 
       possiblePairs = this.shuffle(possiblePairs)
 
-      var rawPairing = edmondsBlossom(possiblePairs)
+      var rawPairing = blossom(possiblePairs)
       rawPairing.forEach((home, away) => {
         if (home !== -1 && home < away) {
           var match = {

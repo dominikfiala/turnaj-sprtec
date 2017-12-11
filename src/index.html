@@ -28,7 +28,7 @@
         <a href="#results" :class="{active: state.activeTab == 'results'}" v-on:click="state.activeTab = 'results'" id="results-tab" data-toggle="tab" class="nav-link">Výsledky</a>
       </li>
       <li class="nav-item">
-        <a href="#about-app" :class="{active: state.activeTab == 'about-app'}" v-on:click="state.activeTab = 'about-app'" id="about-app-tab" data-toggle="tab" class="nav-link">O aplikaci</a>
+        <a href="#about-app" :class="{active: state.activeTab == 'about-app'}" v-on:click="state.activeTab = 'about-app'" id="about-app-tab" data-toggle="tab" class="nav-link">O programu</a>
       </li>
     </ul>
 
@@ -542,7 +542,7 @@
 
             <div class="col">
               <h1 id="uvod">Turnaj ve&nbsp;šprtci</h1>
-              <p class="lead">Webová aplikace pro&nbsp;řízení šprtcových turnajů</p>
+              <p class="lead">Program pro&nbsp;řízení šprtcových turnajů</p>
 
               <h2 id="vlastnosti">Vlastnosti</h2>
               <ul>
@@ -571,11 +571,11 @@
               <p>Pokud je&nbsp;mezi hráči shoda ve&nbsp;všech výše zmíněných kritériích, jedná se&nbsp;o&nbsp;výsledkovou shodu (ve výsledcích zvýrazněno šedým otazníkem).</p>
 
               <h3 id="parovani">Párování soupeřů</h3>
-              <p>Hráči se&nbsp;do&nbsp;vzájemných utkání párují tzv. maďarským algoritmem (<a href="https://en.wikipedia.org/wiki/Hungarian_algorithm">článek na&nbsp;Wikipedii</a>, anglicky). Ten &ndash; stručně řečeno &ndash; vytvoří všechny možné kombinace dvou hráčů (kteří se&nbsp;generovaného kola účastní a&nbsp;nesehráli dříve vzájemný zápas). Těmto potenciálním párům přiřadí bodový rozdíl daných hráčů a&nbsp;násedně z&nbsp;nich vybere tak, aby&nbsp;se&nbsp;kola účastnili všichni hráči a&nbsp;zároveň byl&nbsp;bodový rozdíl všech párů co&nbsp;nejnižší.</p>
+              <p>Program páruje hráče, kteří jsou si nejblíže v průběžném pořadí turnaje a zároveň spolu ještě nesehráli vzájemný zápas.</p>
               <p>Pokud je&nbsp;hráčů v&nbsp;kole lichý počet, je&nbsp;náhodně vybrán jeden hráč ze&nbsp;spodní poloviny průběžného pořadí, a&nbsp;tomu je&nbsp;přiřazeno volné kolo. Volné kolo může během turnaje dostat pouze jeden hráč. Záměrně se&nbsp;volné kolo neuděluje nejhoršímu hráči v&nbsp;průběžném pořadí, protože v&nbsp;případě pozdního zapojení hráče do&nbsp;turnaje by&nbsp;bylo více než pravděpodobné, že&nbsp;právě takový hráč dostane hned ve&nbsp;svém prvním kole volno.</p>
 
               <h3 id="stav">Ukládání stavu turnaje</h3>
-              <p>Po&nbsp;spuštění aplikace je&nbsp;stav turnaje takový, jaký byl&nbsp;před&nbsp;ukončením aplikace. Stav turnaje není třeba ukládat, ukládání se&nbsp;děje automaticky. Pro&nbsp;zahájení nového turnaje je&nbsp;potřeba stav aplikace resetovat. Lze využít exportu a&nbsp;importu stavu turnaje &ndsash; např. pro&nbsp;přípravu startovní listiny den před&nbsp;turnajem a&nbsp;následné zaslání stavu turnaje s&nbsp;vyplněnými účastníky do&nbsp;aplikace v&nbsp;jiném počítači, na&nbsp;kterém se&nbsp;turnaj odřídí.</p>
+              <p>Po&nbsp;spuštění programu je&nbsp;stav turnaje takový, jaký byl&nbsp;před&nbsp;jeho ukončením. Stav turnaje není třeba ukládat, ukládání se&nbsp;děje automaticky. Pro&nbsp;zahájení nového turnaje je&nbsp;potřeba stav programu resetovat. Lze využít exportu a&nbsp;importu stavu turnaje &ndsash; např. pro&nbsp;přípravu startovní listiny den před&nbsp;turnajem a&nbsp;následné zaslání stavu turnaje s&nbsp;vyplněnými účastníky do&nbsp;programu v&nbsp;jiném počítači, na&nbsp;kterém se&nbsp;turnaj odřídí.</p>
 
               <h3 id="nastaveni">Nastavení turnaje</h3>
               <p>Důležité nastavení turnaje:</p>
@@ -589,20 +589,20 @@
               <h3 id="ucastnici">Účastníci</h3>
               <p>U účastníků je&nbsp;nezbytné vyplnit jejich jméno a&nbsp;příjmení, volitelně další pole. Bez vyplnění jména a&nbsp;příjmení všech účasntíků nelze turnaj zahájit a&nbsp;tito jsou zvýrazněni červeným obrysem polí pro&nbsp;vyplnění jména.</p>
               <p>Účast hráče v&nbsp;kolech se&nbsp;řídí po&nbsp;kliknutí na&nbsp;tlačítko vlevo od&nbsp;jeho příjmení. Využijte např. pro&nbsp;vyřazení účastníka z&nbsp;následujících kol v&nbsp;případě, že&nbsp;turnaj předčasně opouští.</p>
-              <p>Na&nbsp;základě datumu konání turnaje, pohlaví účastníka a&nbsp;roku narození se&nbsp;určuje hráčská kategorie účasníka. Pokud není vyplněno, aplikace účastníka automaticky považuje za&nbsp;muže (vychází z&nbsp;předpokladu, že&nbsp;se&nbsp;turnajů účastní nejvíce mužů).</p>
+              <p>Na&nbsp;základě datumu konání turnaje, pohlaví účastníka a&nbsp;roku narození se&nbsp;určuje hráčská kategorie účasníka. Pokud není vyplněno, program účastníka automaticky považuje za&nbsp;muže (vychází z&nbsp;předpokladu, že&nbsp;se&nbsp;turnajů účastní nejvíce mužů).</p>
 
               <h3 id="vysledky">Výsledky</h3>
               <p>Do&nbsp;průběžných výsledků se&nbsp;započítává poslední kolo vždy až po&nbsp;jeho kompletním vyplnění na&nbsp;záložce "Zápasy". Nezbytné je&nbsp;vyplnění výsledku zápasu, rozhodčí volitelně. Nevyplněné zápasy jsou zvýrazněny červeným obrysem pro&nbsp;vyplnění výsledku.</p>
               <p>Ve&nbsp;výsledkové listině jsou šedým otazníkem označeny nejasné umístění (výsledková shoda ve&nbsp;všech kritériích).</p>
-              <p>Šedým vykřičníkem jsou označeni vítězové jednotlivých hráčských kategorií, pokud má aplikace dostatek údajů k&nbsp;jejich určení (datum konání turnaje, pohlaví a&nbsp;datum narození účastníků).</p>
+              <p>Šedým vykřičníkem jsou označeni vítězové jednotlivých hráčských kategorií, pokud má program dostatek údajů k&nbsp;jejich určení (datum konání turnaje, pohlaví a&nbsp;datum narození účastníků).</p>
 
               <h3 id="kompenzace">Kompenzace bodů soupeřů</h3>
-              <p>Ve&nbsp;švýcarském systému může být znehodnocen hráč, mezi jehož soupeři je&nbsp;takový hráč, který&nbsp;v&nbsp;turnaji nesehrál všechna kola. Pro&nbsp;takové případy aplikace do&nbsp;bodů soupeřů přičítá počet bodů přidělovaných za&nbsp;remízu za&nbsp;každé kolo, kterého se&nbsp;soupeř neúčastnil.</p>
+              <p>Ve&nbsp;švýcarském systému může být znehodnocen hráč, mezi jehož soupeři je&nbsp;takový hráč, který&nbsp;v&nbsp;turnaji nesehrál všechna kola. Pro&nbsp;takové případy program do&nbsp;bodů soupeřů přičítá počet bodů přidělovaných za&nbsp;remízu za&nbsp;každé kolo, kterého se&nbsp;soupeř neúčastnil.</p>
 
               <h2 id="navrhy">Návrhy pro&nbsp;zlepšení</h2>
               <ul>
                 <li>zamíchat hráče před generováním zápasů (alespoň v prvním kole, které se jinak rozlosuje podle pořadí, ve kterém jsou hráči založeni)</li>
-                <li>nastavení <em>turnaj bez rozhodčích</em> - skryje z aplikace všechny ovládání a informace o rozhodčích</li>
+                <li>nastavení <em>turnaj bez rozhodčích</em> - skryje z programu všechny ovládání a informace o rozhodčích</li>
                 <li>seřadit zápasy dle pořadí účastníků? má být výše umístěný hráč domácí?</li>
                 <li>filtrování zápasů&nbsp;dle účastníka</li>
                 <li>export výsledků turnaje do&nbsp;souboru CSV (možné následně nahrát např. do&nbsp;Excel a&nbsp;archivovat)</li>
@@ -613,8 +613,8 @@
 
               <h2 id="neplanovane">Neplánované funkce</h2>
               <ul>
-                <li><strong>zabezpečení aplikace</strong>: pokud chcete zamezit, aby&nbsp;k&nbsp;aplikaci kdokoliv přišel a&nbsp;něco do&nbsp;ní psal, zamkněte počítač, na&nbsp;kterém běží</li>
-                <li><strong>kontrola duplicity účastníků</strong>: aplikace nekontroluje, zda není v&nbsp;účastnících hráč se&nbsp;stejným jménem vícekrát, toto má pořadatel odhalit při&nbsp;prezenci hráčů, která&nbsp;je&nbsp;seřazena&nbsp;dle abecedy</li>
+                <li><strong>zabezpečení programu</strong>: pokud chcete zamezit, aby&nbsp;k&nbsp;programu kdokoliv přišel a&nbsp;něco do&nbsp;ní psal, zamkněte počítač, na&nbsp;kterém běží</li>
+                <li><strong>kontrola duplicity účastníků</strong>: program nekontroluje, zda není v&nbsp;účastnících hráč se&nbsp;stejným jménem vícekrát, toto má pořadatel odhalit při&nbsp;prezenci hráčů, která&nbsp;je&nbsp;seřazena&nbsp;dle abecedy</li>
               </ul>
             </div>
           </div>
@@ -622,7 +622,7 @@
 
         <div class="tab-footer d-flex justify-content-between p-2 mb-0 d-print-none">
           <span class="btn">
-            Autor aplikace:
+            Autor:
             <strong>Dominik Fiala</strong>,
             <a href="mailto:domo.fiala@gmail.com">domo.fiala@gmail.com</a>,
             <a href="tel:+420721090491">+420 721 090 491</a>

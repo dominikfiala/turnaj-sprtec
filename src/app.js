@@ -224,7 +224,7 @@ var app = new Vue({
         }
       }
 
-      var maxDiff = (roundIndex + 1) * this.config.pointsWin * 2
+      var maxDiff = this.players.length
 
       var possiblePairs = []
       availablePlayers.forEach(player => {
@@ -238,7 +238,7 @@ var app = new Vue({
               return a - b;
             })
             if (player.opponents.indexOf(opponent.playerIndex) === -1) {
-              match.push(maxDiff - Math.abs(player.points - opponent.points))
+              match.push(maxDiff - Math.abs(this.playerPlacementByIndex(player.playerIndex) - this.playerPlacementByIndex(opponent.playerIndex)))
             }
             else {
               match.push(0)

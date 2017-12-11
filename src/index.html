@@ -330,7 +330,8 @@
                 </div>
                 <select v-model="match.referee" class="form-control w-25" :class="{'is-invalid': match.referee === -1}">
                   <option :value="-1">Rozhodčí</option>
-                  <option v-for="(player, playerIndex) in playerNames" :value="playerIndex" v-if="playerIndex != match.home && playerIndex != match.away">{{ player }}</option>
+                  <option v-for="player in playersSorted" :value="player.playerIndex"
+                    v-if="player.playerIndex != match.home && player.playerIndex != match.away">{{ playerNames[player.playerIndex] }}</option>
                 </select>
               </div>
 

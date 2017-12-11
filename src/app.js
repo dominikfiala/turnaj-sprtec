@@ -21,6 +21,7 @@ var dataInitial = {
     category: -1,
     numberOfRounds: 5,
     date: new Date().toISOString().slice(0, 10),
+    season: new Date().getFullYear(),
     categories: [
       {
         title: 'Expres',
@@ -402,9 +403,9 @@ var app = new Vue({
       })
     },
     playerCategories: function() {
-      var currentYear = new Date(this.config.date).getFullYear();
+      var season = this.config.season
       return this.players.map(function(player) {
-        var age = currentYear - player.yearOfBirth
+        var age = season - player.yearOfBirth
 
         if (age <= 11) {
           return {

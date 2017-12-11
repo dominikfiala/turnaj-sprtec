@@ -43,10 +43,16 @@
         id="config">
         <form class="mb-2">
           <div class="form-row">
-            <div class="col-5">
+            <div class="col">
               <div class="form-group">
                 <label for="config-name">Název turnaje</label>
                 <input type="text" v-model="config.name" class="form-control" id="config-name" :class="{'is-invalid': !config.name}">
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label for="config-venue">Místo konání</label>
+                <input type="text" v-model="config.venue" class="form-control" id="config-venue" :class="{'is-invalid': !config.venue}">
               </div>
             </div>
             <div class="col-3">
@@ -55,7 +61,10 @@
                 <input type="text" list="clubs" v-model="config.host" class="form-control" id="config-host" :class="{'is-invalid': !config.host}">
               </div>
             </div>
-            <div class="col-2">
+          </div>
+
+          <div class="form-row">
+            <div class="col">
               <div class="form-group">
                 <label for="config-date">Datum konání</label>
                 <input type="date"
@@ -65,7 +74,18 @@
                   :class="{'is-invalid': !tournamentDateValid}">
               </div>
             </div>
-            <div class="col-2">
+            <div class="col">
+              <div class="form-group">
+                <label for="config-season">Sezona</label>
+                <input type="number"
+                  v-model.number="config.season"
+                  :min="new Date().getFullYear()"
+                  class="form-control"
+                  id="config-season"
+                  :class="{'is-invalid': !config.season}">
+              </div>
+            </div>
+            <div class="col">
               <div class="form-group">
                 <label for="config-category">Kategorie</label>
                 <select v-model="config.category" class="form-control" id="config-category">
@@ -74,16 +94,7 @@
                 </select>
               </div>
             </div>
-          </div>
-
-          <div class="form-row">
-            <div class="col-5">
-              <div class="form-group">
-                <label for="config-venue">Místo konání</label>
-                <input type="text" v-model="config.venue" class="form-control" id="config-venue" :class="{'is-invalid': !config.venue}">
-              </div>
-            </div>
-            <div class="col-3">
+            <div class="col">
               <div class="form-group">
                 <label for="config-date">Počet kol</label>
                 <input type="number" min="3" class="form-control" id="config-date"
@@ -93,7 +104,7 @@
                   :title="rounds.length > 0 ? 'Nelze měnit u již rozehraného turnaje' : ''">
               </div>
             </div>
-            <div class="col-2">
+            <div class="col">
               <div class="form-group">
                 <label for="config-point-win">Bodů za výhru</label>
                 <input type="number" min="0" step="0.5" class="form-control" id="config-point-win"
@@ -103,7 +114,7 @@
                   :title="rounds.length > 0 ? 'Nelze měnit u již rozehraného turnaje' : ''">
               </div>
             </div>
-            <div class="col-2">
+            <div class="col">
               <div class="form-group">
                 <label for="config-point-draw">Bodů za remízu</label>
                 <input type="number" min="0" step="0.5" class="form-control" id="config-point-draw"

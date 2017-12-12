@@ -12,11 +12,11 @@ Vue.config.devtools = true
 
 var dataInitial = {
   state: {
-    activeTab: 'config',
     activeRound: 0,
     activePlayer: -1,
     playersSearch: '',
-    debug: false
+    debug: false,
+    generatingRound: false
   },
   config: {
     name: 'Turnaj ve šprtci',
@@ -48,7 +48,7 @@ var dataInitial = {
         points: [340, 325, 313, 303, 294, 286, 279, 273, 268, 263, 259, 256, 253, 250, 247, 244, 241, 238, 235, 232, 229, 227, 225, 223, 221, 219, 217, 215, 213, 211, 209, 207, 205, 203, 201, 199, 197, 195, 193, 191, 188, 186, 184, 182, 180, 178, 176, 174, 172, 170, 168, 166, 164, 162, 160, 158, 156, 154, 152, 150, 148, 146, 144, 142, 140, 138, 136, 134, 132, 130, 128, 126, 124, 122, 120, 118, 116, 114, 112, 110, 108, 106, 104, 102, 100, 98, 96, 94, 92, 90, 88, 86, 84, 82, 80, 78, 76, 74, 72, 70, 68, 67, 66, 65, 64, 63, 62, 61, 60, 59, 58, 57, 56, 55, 54, 53, 52, 51, 50, 49, 48, 47, 46, 45, 44, 43, 42, 41]
       }
     ],
-    pointsWin: 2,
+    pointsWin: 3,
     pointsDraw: 1,
     clubs: [
       'BHC Dragons Modřice',
@@ -149,7 +149,7 @@ var app = new Vue({
         }
       }
       this.players.push(player)
-      window.setTimeout(function() {
+      window.setTimeout(() => {
         document.querySelector('.players-list .players-list-item:last-child input:not([readonly])').focus()
       }, 100)
     },
@@ -180,7 +180,6 @@ var app = new Vue({
       }) + 1
     },
     removePlayer: function(playerIndex) {
-      $('[title]').tooltip('dispose') // otherwise tooltip stays displayed
       this.players.splice(playerIndex, 1)
     },
     playerSetActive(playerIndex) {
@@ -209,6 +208,9 @@ var app = new Vue({
       })
     },
     generateRound: function(roundIndex) {
+      this.state.generatingRound = true
+this.$forceUpdate()
+
       var round = {
         matches: [],
         bye: -1,
@@ -313,6 +315,8 @@ var app = new Vue({
       round.matches.sort(this.fieldSorter(['matchPosition']))
 
       this.$set(this.rounds, roundIndex, round)
+
+      this.state.generatingRound = false
     },
     isRoundReady: function(roundIndex) {
       return roundIndex === 0 || (roundIndex > 0 && this.isRoundComplete(roundIndex - 1))
@@ -398,10 +402,6 @@ var app = new Vue({
       return a;
     },
 
-    initTooltips: function() {
-      $('[title]').tooltip('dispose')
-      $('[title]').tooltip({html: true, trigger: 'hover', removeOnDestroy: true})
-    },
     print: function() {
       window.print()
     }
@@ -688,17 +688,12 @@ var app = new Vue({
     }
   },
   mounted: function() {
-    // this.initTooltips()
-
     if (env === 'electron') {
       $(document).on('click', 'a[href^="http"]', function(event) {
-        event.preventDefault();
-        shell.openExternal(this.href);
+        event.preventDefault()
+        shell.openExternal(this.href)
       })
     }
-  },
-  updated: function() {
-    // this.initTooltips()
   },
   watch: {
     '$data': {

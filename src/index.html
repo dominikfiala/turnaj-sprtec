@@ -16,31 +16,28 @@
     <!-- Application tabs -->
     <ul class="app-nav nav nav-tabs d-print-none pt-2 pr-2 pl-2">
       <li class="nav-item">
-        <a href="#config" :class="{active: state.activeTab == 'config', 'text-danger': !configComplete}" v-on:click="state.activeTab = 'config'" id="config-tab" data-toggle="tab" class="nav-link">Nastavení turnaje</a>
+        <a href="#config" id="config-tab" data-toggle="tab" class="nav-link active"
+          :class="{'text-danger': !configComplete}">Nastavení turnaje</a>
       </li>
       <li class="nav-item">
-        <a href="#players" :class="{active: state.activeTab == 'players', 'text-danger': !playersComplete}" v-on:click="state.activeTab = 'players'" id="players-tab" data-toggle="tab" class="nav-link">Účastníci</a>
+        <a href="#players" id="players-tab" data-toggle="tab" class="nav-link"
+          :class="{'text-danger': !playersComplete}">Účastníci</a>
       </li>
       <li class="nav-item">
-        <a href="#matches" :class="{active: state.activeTab == 'matches'}" v-on:click="state.activeTab = 'matches'" id="matches-tab" data-toggle="tab" class="nav-link">Zápasy</a>
+        <a href="#matches" id="matches-tab" data-toggle="tab" class="nav-link">Zápasy</a>
       </li>
       <li class="nav-item">
-        <a href="#results" :class="{active: state.activeTab == 'results'}" v-on:click="state.activeTab = 'results'" id="results-tab" data-toggle="tab" class="nav-link">Výsledky</a>
+        <a href="#results" id="results-tab" data-toggle="tab" class="nav-link">Výsledky</a>
       </li>
       <li class="nav-item">
-        <a href="#about-app" :class="{active: state.activeTab == 'about-app'}" v-on:click="state.activeTab = 'about-app'" id="about-app-tab" data-toggle="tab" class="nav-link">O programu</a>
+        <a href="#about-app" id="about-app-tab" data-toggle="tab" class="nav-link">O programu</a>
       </li>
     </ul>
 
     <!-- Application screen -->
     <div class="app-content tab-content" id="m-print-none">
       <!-- Tournament config -->
-      <div class="tab-pane"
-        :class="{
-          active: state.activeTab == 'config',
-          show: state.activeTab == 'config'
-        }"
-        id="config">
+      <div class="tab-pane active show" id="config">
         <form class="mb-2">
           <div class="form-row">
             <div class="col">
@@ -145,12 +142,7 @@
       </div>
 
       <!-- Players config tab -->
-      <div class="tab-pane"
-        :class="{
-          active: state.activeTab == 'players',
-          show: state.activeTab == 'players'
-        }"
-        id="players">
+      <div class="tab-pane" id="players">
         <form class="d-flex d-print-none flex-column-reverse players-list">
           <div v-for="(player, playerIndex) in players"
             class="players-list-item"
@@ -298,12 +290,7 @@
       </div>
 
       <!-- Matches tab -->
-      <div class="tab-pane"
-        :class="{
-          active: state.activeTab == 'matches',
-          show: state.activeTab == 'matches'
-        }"
-        id="matches">
+      <div class="tab-pane" id="matches">
         <div class="tab-content" id="rounds-tabContent">
           <p class="d-none d-print-block lead">Zápasy<span v-if="state.activeRound > -1"> {{ state.activeRound+1 }}. kola</span></p>
 
@@ -412,9 +399,9 @@
             </div>
           </div>
           <div class="col-auto">
-            <button type="button" class="btn btn-success"
-              v-if="isTournamentReady && isRoundReady(state.activeRound) && !isRoundGenerated(state.activeRound)"
-              v-on:click="generateRound(state.activeRound)">Napárovat soupeře</button>
+            <button id="generateRoundButton" type="button" class="btn btn-success"
+              v-on:click="generateRound(state.activeRound)"
+              :class="{'d-none': isRoundGenerated(state.activeRound)}">Napárovat soupeře {{ state.generatingRound }}</button>
             <button type="button" class="btn btn-danger"
               data-toggle="modal" data-target="#dropPairingModal"
               v-if="roundsStatus[state.activeRound] === 'empty'">Zrušit párování</button>
@@ -427,12 +414,7 @@
       </div>
 
       <!-- Results tab -->
-      <div class="tab-pane"
-        :class="{
-          active: state.activeTab == 'results',
-          show: state.activeTab == 'results'
-        }"
-        id="results">
+      <div class="tab-pane" id="results">
         <p v-if="roundsComplete !== config.numberOfRounds" class="d-none d-print-block lead">
           Průběžné výsledky, odehráno kol: {{ roundsComplete }}/{{ config.numberOfRounds }}
         </p>
@@ -501,12 +483,7 @@
       </div>
 
       <!-- About app tab -->
-      <div class="tab-pane"
-        :class="{
-          active: state.activeTab == 'about-app',
-          show: state.activeTab == 'about-app'
-        }"
-        id="about-app">
+      <div class="tab-pane" id="about-app">
         <div class="container">
           <div class="row">
             <div class="col-3">

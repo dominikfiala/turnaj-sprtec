@@ -90,7 +90,7 @@ var app = new Vue({
     editClub: function(clubIndex) {
       var clubName = event.target.value
       var oldName = this.config.clubs[clubIndex]
-      console.log(clubName, oldName)
+
       if (clubName !== oldName) {
         this.config.clubs.splice(clubIndex, 1)
       }
@@ -216,7 +216,7 @@ var app = new Vue({
       }
 
       // clone results array and filter unavailable players
-      var availablePlayers = this.playerStats.slice().filter((player) => {
+      var availablePlayers = this.tournamentResults.slice().filter((player) => {
         return this.players[player.playerIndex].rounds.indexOf(roundIndex) !== -1
       })
 
@@ -354,6 +354,10 @@ var app = new Vue({
         return 'incomplete'
       }
     },
+    dropRoundPairing: function(roundIndex) {
+      this.rounds = this.rounds.slice(0, roundIndex)
+      $('#dropPairingModal').modal('hide')
+    },
 
     fieldSorter: function(fields) {
       return function (a, b) {
@@ -420,17 +424,21 @@ var app = new Vue({
       }).length === 0 && this.players.length > 0
     },
 
-    playersSorted: function() {
-      return this.players.slice().map(function(item, index) {
-        item.playerIndex = index
-        return item
-      }).sort(function(a, b) {
-        return a.surname.localeCompare(b.surname)
-      })
-    },
     playerNames: function() {
       return this.players.map(function(player) {
         return `${player.surname.toUpperCase()} ${player.name}`
+      })
+    },
+    playersSorted: function() {
+      return this.players.map((item, index) => {
+        return {
+          name: this.playerNames[index],
+          playerIndex: index
+        }
+      }).sort(function(a, b) {
+        return a.name.localeCompare(b.name)
+      }).map(item => {
+        return item.playerIndex
       })
     },
     playerCategories: function() {
@@ -470,7 +478,8 @@ var app = new Vue({
         }
       })
     },
-    playerStats: function() {
+
+    tournamentResults: function() {
       var results = this.players.map(function(player, playerIndex) {
         return {
           playerIndex: playerIndex,
@@ -488,9 +497,13 @@ var app = new Vue({
           opponentsPoints: 0,
           opponentsOpponentsPoints: 0,
           results: [],
+          categoryWinner: false,
           sharedPosition: false
         }
       })
+
+      // return results
+
       this.rounds.forEach((round, roundIndex) => {
         // bye match
         if (round.bye !== -1) {
@@ -608,11 +621,6 @@ var app = new Vue({
         })
       })
 
-      return results
-    },
-
-    tournamentResults: function() {
-      var results = this.playerStats.slice()
       var categoryWinner = []
 
       // sort player stats
@@ -680,7 +688,7 @@ var app = new Vue({
     }
   },
   mounted: function() {
-    this.initTooltips()
+    // this.initTooltips()
 
     if (env === 'electron') {
       $(document).on('click', 'a[href^="http"]', function(event) {
@@ -690,7 +698,7 @@ var app = new Vue({
     }
   },
   updated: function() {
-    this.initTooltips()
+    // this.initTooltips()
   },
   watch: {
     '$data': {

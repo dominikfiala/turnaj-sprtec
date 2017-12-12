@@ -211,7 +211,7 @@
                   min="1900"
                   type="number"
                   class="form-control"
-                  v-model="player.yearOfBirth"
+                  v-model.number="player.yearOfBirth"
                   placeholder="Ročník"
                   :class="{
                     'is-invalid': player.yearOfBirth > (new Date()).getFullYear()
@@ -286,11 +286,11 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="player in playersSorted">
-                <td>{{ playerNames[player.playerIndex] }}</td>
-                <td>{{ config.clubs[player.club] }}</td>
-                <td>{{ playerCategories[player.playerIndex].name }}</td>
-                <td><span v-if="players[player.playerIndex].feePaid">Zaplaceno</span></td>
+              <tr v-for="playerIndex in playersSorted">
+                <td>{{ playerNames[playerIndex] }}</td>
+                <td>{{ config.clubs[players[playerIndex].club] }}</td>
+                <td>{{ playerCategories[playerIndex].name }}</td>
+                <td><span v-if="players[playerIndex].feePaid">Zaplaceno</span></td>
               </tr>
             </tbody>
           </table>
@@ -342,8 +342,8 @@
                 </div>
                 <select v-model="match.referee" class="form-control w-25" :class="{'is-invalid': match.referee === -1}">
                   <option :value="-1">Rozhodčí</option>
-                  <option v-for="player in playersSorted" :value="player.playerIndex"
-                    v-if="player.playerIndex != match.home && player.playerIndex != match.away">{{ playerNames[player.playerIndex] }}</option>
+                  <option v-for="playerIndex in playersSorted" :value="playerIndex"
+                    v-if="playerIndex != match.home && playerIndex != match.away">{{ playerNames[playerIndex] }}</option>
                 </select>
               </div>
 
@@ -739,7 +739,7 @@
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-dismiss="modal">Zavřít</button>
               <button type="button" class="btn btn-primary"
-                v-on:click="rounds = rounds.slice(0, state.activeRound)">Zrušit párování</button>
+                v-on:click="dropRoundPairing(state.activeRound)">Zrušit párování</button>
             </div>
           </div>
         </div>

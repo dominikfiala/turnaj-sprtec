@@ -401,7 +401,10 @@
           <div class="col-auto">
             <button id="generateRoundButton" type="button" class="btn btn-success"
               v-on:click="generateRound(state.activeRound)"
-              :class="{'d-none': isRoundGenerated(state.activeRound)}">Napárovat soupeře {{ state.generatingRound }}</button>
+              :class="{'d-none': isRoundGenerated(state.activeRound)}">
+                <span v-if="!state.generatingRound">Napárovat soupeře</span>
+                <span v-if="state.generatingRound">Páruji, sečkej&hellip;</span>
+            </button>
             <button type="button" class="btn btn-danger"
               data-toggle="modal" data-target="#dropPairingModal"
               v-if="roundsStatus[state.activeRound] === 'empty'">Zrušit párování</button>

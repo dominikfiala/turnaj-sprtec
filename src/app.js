@@ -207,10 +207,7 @@ var app = new Vue({
         match.away_score = this.randomIndex([...Array(9).keys()])
       })
     },
-    generateRound: function(roundIndex) {
-      this.state.generatingRound = true
-this.$forceUpdate()
-
+    makePairing: function(roundIndex) {
       var round = {
         matches: [],
         bye: -1,
@@ -315,8 +312,13 @@ this.$forceUpdate()
       round.matches.sort(this.fieldSorter(['matchPosition']))
 
       this.$set(this.rounds, roundIndex, round)
-
-      this.state.generatingRound = false
+    },
+    generateRound: function(roundIndex) {
+      setTimeout(() => {
+        this.makePairing(roundIndex)
+        this.state.generatingRound = false
+      }, 1)
+      this.state.generatingRound = true
     },
     isRoundReady: function(roundIndex) {
       return roundIndex === 0 || (roundIndex > 0 && this.isRoundComplete(roundIndex - 1))

@@ -1,23 +1,54 @@
+const blossom = require('edmonds-blossom')
+const faker = require('faker')
+faker.locale = 'cz'
+
+var env = typeof(process) !== 'undefined' ? 'electron' : 'browser'
+
+if (env === 'electron') {
+  var shell = require('electron').shell
+}
+
 Vue.config.devtools = true
 
-var data = {
+var dataInitial = {
   state: {
-    activeTab: 'config',
     activeRound: 0,
     activePlayer: -1,
-    playersSearch: ''
+    playersSearch: '',
+    debug: false,
+    generatingRound: false
   },
   config: {
     name: 'Turnaj ve šprtci',
     venue: 'Lumpenkavárna',
     host: 'Domo',
-    category: 'Expres',
+    category: -1,
     numberOfRounds: 5,
     date: new Date().toISOString().slice(0, 10),
+    season: new Date().getFullYear(),
     categories: [
-      'Expres', 'ČP12', 'ČP24', 'ČP36', 'Czech Open'
+      {
+        title: 'Expres',
+        points: [40, 34, 29, 25, 22, 20, 18, 16, 14, 12, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+      },
+      {
+        title: 'ČP12',
+        points: [160, 145, 133, 123, 114, 106, 99, 93, 88, 83, 79, 75, 71, 67, 64, 61, 58, 55, 52, 49, 46, 43, 41, 39, 37, 35, 33, 31, 29, 27, 25, 23, 21, 19, 17, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+      },
+      {
+        title: 'ČP24',
+        points: [200, 185, 173, 163, 154, 146, 139, 133, 128, 123, 119, 115, 111, 107, 104, 101, 98, 95, 92, 89, 86, 83, 81, 79, 77, 75, 73, 71, 69, 67, 65, 63, 61, 59, 57, 55, 53, 51, 49, 47, 45, 43, 41, 39, 37, 35, 34, 33, 32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11]
+      },
+      {
+        title: 'ČP36',
+        points: [340, 325, 313, 303, 294, 286, 279, 273, 268, 263, 259, 256, 253, 250, 247, 244, 241, 238, 235, 232, 229, 227, 225, 223, 221, 219, 217, 215, 213, 211, 209, 207, 205, 203, 201, 199, 197, 195, 193, 191, 188, 186, 184, 182, 180, 178, 176, 174, 172, 170, 168, 166, 164, 162, 160, 158, 156, 154, 152, 150, 148, 146, 144, 142, 140, 138, 136, 134, 132, 130, 128, 126, 124, 122, 120, 118, 116, 114, 112, 110, 108, 106, 104, 102, 100, 98, 96, 94, 92, 90, 88, 86, 84, 82, 80, 78, 76, 74, 72, 70, 68, 67, 66, 65, 64, 63, 62, 61, 60, 59, 58, 57, 56, 55, 54, 53, 52, 51, 50, 49, 48, 47, 46, 45, 44, 43, 42, 41]
+      },
+      {
+        title: 'Czech Open',
+        points: [340, 325, 313, 303, 294, 286, 279, 273, 268, 263, 259, 256, 253, 250, 247, 244, 241, 238, 235, 232, 229, 227, 225, 223, 221, 219, 217, 215, 213, 211, 209, 207, 205, 203, 201, 199, 197, 195, 193, 191, 188, 186, 184, 182, 180, 178, 176, 174, 172, 170, 168, 166, 164, 162, 160, 158, 156, 154, 152, 150, 148, 146, 144, 142, 140, 138, 136, 134, 132, 130, 128, 126, 124, 122, 120, 118, 116, 114, 112, 110, 108, 106, 104, 102, 100, 98, 96, 94, 92, 90, 88, 86, 84, 82, 80, 78, 76, 74, 72, 70, 68, 67, 66, 65, 64, 63, 62, 61, 60, 59, 58, 57, 56, 55, 54, 53, 52, 51, 50, 49, 48, 47, 46, 45, 44, 43, 42, 41]
+      }
     ],
-    pointsWin: 2,
+    pointsWin: 3,
     pointsDraw: 1,
     clubs: [
       'BHC Dragons Modřice',
@@ -33,6 +64,7 @@ var data = {
       'SHL Brno',
       'SHL WIP Reklama D. Voda',
       'Sokol Stochov',
+      'Šprtmejkři Ostrava',
       'THE Orel Bohunice',
     ]
   },
@@ -44,7 +76,10 @@ if (window.localStorage) {
   var store = window.localStorage
 
   if (store.getItem('data')) {
-    data = Object.assign(data, JSON.parse(store.getItem('data')))
+    data = Object.assign(dataInitial, JSON.parse(store.getItem('data')))
+  }
+  else {
+    data = dataInitial
   }
 }
 
@@ -55,7 +90,7 @@ var app = new Vue({
     editClub: function(clubIndex) {
       var clubName = event.target.value
       var oldName = this.config.clubs[clubIndex]
-      console.log(clubName, oldName)
+
       if (clubName !== oldName) {
         this.config.clubs.splice(clubIndex, 1)
       }
@@ -84,7 +119,7 @@ var app = new Vue({
       var input = event.target
       var reader = new FileReader()
       reader.onload = () => {
-        this.$data = Object.assign(this.$data, JSON.parse(reader.result))
+        this.$data = Object.assign(dataInitial, JSON.parse(reader.result))
         $('#importTournamentModal').modal('hide')
       };
       reader.readAsText(input.files[0])
@@ -114,9 +149,30 @@ var app = new Vue({
         }
       }
       this.players.push(player)
-      window.setTimeout(function() {
+      window.setTimeout(() => {
         document.querySelector('.players-list .players-list-item:last-child input:not([readonly])').focus()
       }, 100)
+    },
+    addRandomPlayer: function() {
+      var sexIndex = faker.random.number({max: 1})
+      var player = {
+        byes: 0,
+        sex: ['male', 'female'][sexIndex],
+        name: faker.name.firstName(sexIndex),
+        surname: faker.name.lastName(sexIndex),
+        feePaid: false,
+        club: faker.random.number({max: this.config.clubs.length - 1}),
+        rounds: [],
+        yearOfBirth: faker.random.number({min: 1985, max: new Date().getFullYear() - 10})
+      }
+
+      for (var i = 0; i < this.config.numberOfRounds; i++) {
+        if (!this.rounds[i]) {
+          player.rounds.push(i)
+        }
+      }
+
+      this.players.push(player)
     },
     playerPlacementByIndex: function(playerIndex) {
       return this.tournamentResults.findIndex(function(player) {
@@ -145,10 +201,17 @@ var app = new Vue({
       return regex.test(this.playerNames[playerIndex])
     },
 
-    generateRound: function(roundIndex) {
+    randomRoundResults: function(roundIndex) {
+      this.rounds[roundIndex].matches.forEach(match => {
+        match.home_score = this.randomIndex([...Array(9).keys()])
+        match.away_score = this.randomIndex([...Array(9).keys()])
+      })
+    },
+    makePairing: function(roundIndex) {
       var round = {
         matches: [],
-        bye: -1
+        bye: -1,
+        refereeCheck: [-1, -1]
       }
 
       // clone results array and filter unavailable players
@@ -164,7 +227,7 @@ var app = new Vue({
       // assign a bye if round players count odd
       if (availablePlayers.length % 2 === 1) {
         // get bottom half of player results
-        var byeCandidates = availablePlayers.slice(Math.floor(availablePlayers.length / 2), availablePlayers.length)
+        var byeCandidates = this.tournamentResults.slice(Math.floor(availablePlayers.length / 2), availablePlayers.length)
 
         // look for possible players
         while (round.bye === -1) {
@@ -187,43 +250,75 @@ var app = new Vue({
         }
       }
 
-      // make pairs
-      while (availablePlayers.length > 1) {
-        var home = availablePlayers.shift()
-        // console.log('volno', round.bye);
-        // console.log('zapasy', round.matches);
-        // console.log('domaci', home.playerIndex);
-        var away = false
-        var awayCandidateIndex = 0
-        while (!away) {
-          var awayCandidate = availablePlayers[awayCandidateIndex]
-          // console.log('zkousim hosta ', awayCandidate.playerIndex);
+      var maxDiff = this.players.length
 
-          if (!awayCandidate) {
-            alert('Nepodařilo se najít kombinace dostupných hráčů, prosím zkuste zápasy generovat znovu. Nejsou opravdu všechny kombinace vyčerpány?')
-            return
+      var possiblePairs = []
+      availablePlayers.forEach(player => {
+        availablePlayers.forEach(opponent => {
+          if (
+            player.playerIndex !== opponent.playerIndex // &&
+            // player.opponents.indexOf(opponent.playerIndex) === -1
+          ) {
+            var match = [player.playerIndex, opponent.playerIndex]
+            match.sort(function(a, b) {
+              return a - b;
+            })
+            if (player.opponents.indexOf(opponent.playerIndex) === -1) {
+              if (roundIndex === 0) {
+                match.push(faker.random.number({max: maxDiff}))
+              }
+              else {
+                match.push(maxDiff - Math.abs(this.playerPlacementByIndex(player.playerIndex) - this.playerPlacementByIndex(opponent.playerIndex)))
+              }
+            }
+            else {
+              match.push(0)
+            }
+            if (this.searchForArray(possiblePairs, match) === -1) {
+              possiblePairs.push(match)
+            }
+          }
+        })
+      })
+
+      possiblePairs = this.shuffle(possiblePairs)
+
+      var rawPairing = blossom(possiblePairs)
+      rawPairing.forEach((home, away) => {
+        if (home !== -1 && home < away) {
+          var match = {
+            home_score: '',
+            away_score: '',
+            referee: -1
+          }
+          var homePosition = this.playerPlacementByIndex(home)
+          var awayPosition = this.playerPlacementByIndex(away)
+
+          if (homePosition < awayPosition) {
+            match.home = home
+            match.away = away
+            match.matchPosition = homePosition
+          }
+          else {
+            match.home = away
+            match.away = home
+            match.matchPosition = awayPosition
           }
 
-          if (!this.playersMutualMatch(home.playerIndex, awayCandidate.playerIndex)) {
-            away = awayCandidate
-            availablePlayers.splice(awayCandidateIndex, 1)
-          }
-
-          // console.log('uz spolu hrali');
-          awayCandidateIndex++
+          round.matches.push(match)
         }
+      })
 
-        var match = {
-          home: home.playerIndex,
-          away: away.playerIndex,
-          home_score: '',
-          away_score: '',
-          referee: -1
-        }
-        round.matches.push(match)
-      }
+      round.matches.sort(this.fieldSorter(['matchPosition']))
 
       this.$set(this.rounds, roundIndex, round)
+    },
+    generateRound: function(roundIndex) {
+      setTimeout(() => {
+        this.makePairing(roundIndex)
+        this.state.generatingRound = false
+      }, 1)
+      this.state.generatingRound = true
     },
     isRoundReady: function(roundIndex) {
       return roundIndex === 0 || (roundIndex > 0 && this.isRoundComplete(roundIndex - 1))
@@ -237,6 +332,37 @@ var app = new Vue({
       return round.matches.filter(function(match) {
         return match.home_score === '' || match.away_score === ''
       }).length === 0
+    },
+    isRoundStarted: function(roundIndex) {
+      if (!this.isRoundGenerated(roundIndex)) { return false }
+      var round = this.rounds[roundIndex]
+      return round.matches.filter(function(match) {
+        return match.home_score === '' || match.away_score === ''
+      }).length !== round.matches.length
+    },
+    getRoundStatus: function(roundIndex) {
+      if (!this.rounds[roundIndex]) {
+        return 'none'
+      }
+
+      var round = this.rounds[roundIndex]
+      var incompleteMatches = round.matches.filter(function(match) {
+        return match.home_score === '' || match.away_score === ''
+      }).length
+
+      if (incompleteMatches === 0) {
+        return 'complete'
+      }
+      else if (incompleteMatches === round.matches.length) {
+        return 'empty'
+      }
+      else {
+        return 'incomplete'
+      }
+    },
+    dropRoundPairing: function(roundIndex) {
+      this.rounds = this.rounds.slice(0, roundIndex)
+      $('#dropPairingModal').modal('hide')
     },
 
     fieldSorter: function(fields) {
@@ -257,6 +383,29 @@ var app = new Vue({
     },
     randomIndex: function(array) {
       return Math.floor(Math.random()*array.length)
+    },
+    searchForArray: function(haystack, needle) {
+      var i, j, current;
+      for (i = 0; i < haystack.length; ++i) {
+        if (needle.length === haystack[i].length) {
+          current = haystack[i];
+          for (j = 0; j < needle.length && needle[j] === current[j]; ++j);
+          if (j === needle.length)
+            return i;
+        }
+      }
+      return -1;
+    },
+    shuffle: function(a) {
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    },
+
+    print: function() {
+      window.print()
     }
   },
   computed: {
@@ -282,12 +431,24 @@ var app = new Vue({
         return `${player.surname.toUpperCase()} ${player.name}`
       })
     },
+    playersSorted: function() {
+      return this.players.map((item, index) => {
+        return {
+          name: this.playerNames[index],
+          playerIndex: index
+        }
+      }).sort(function(a, b) {
+        return a.name.localeCompare(b.name)
+      }).map(item => {
+        return item.playerIndex
+      })
+    },
     playerCategories: function() {
-      var currentYear = new Date(this.config.date).getFullYear();
+      var season = this.config.season
       return this.players.map(function(player) {
-        var age = currentYear - player.yearOfBirth
+        var age = season - player.yearOfBirth
 
-        if (age <= 11) {
+        if (age <= 12) {
           return {
             'shortcut': 'P',
             'name': 'Ml. žáci'
@@ -299,13 +460,13 @@ var app = new Vue({
             'name': 'Ženy'
           }
         }
-        else if (age <= 14) {
+        else if (age <= 15) {
           return {
             'shortcut': 'Z',
             'name': 'St. žáci'
           }
         }
-        else if (age <= 17) {
+        else if (age <= 18) {
           return {
             'shortcut': 'J',
             'name': 'Junioři'
@@ -319,7 +480,8 @@ var app = new Vue({
         }
       })
     },
-    playerStats: function() {
+
+    tournamentResults: function() {
       var results = this.players.map(function(player, playerIndex) {
         return {
           playerIndex: playerIndex,
@@ -337,13 +499,14 @@ var app = new Vue({
           opponentsPoints: 0,
           opponentsOpponentsPoints: 0,
           results: [],
+          categoryWinner: false,
           sharedPosition: false
         }
       })
-      this.rounds.forEach((round, roundIndex) => {
-        // round not complete yet
-        if (!this.isRoundComplete(roundIndex)) { return }
 
+      // return results
+
+      this.rounds.forEach((round, roundIndex) => {
         // bye match
         if (round.bye !== -1) {
           results[round.bye].matches++
@@ -355,16 +518,37 @@ var app = new Vue({
           }
         }
 
+        if (round.refereeCheck[0] !== -1) {
+          results[round.refereeCheck[0]].referee++
+        }
+        if (round.refereeCheck[1] !== -1) {
+          results[round.refereeCheck[1]].referee++
+        }
+
         // calculate stats
         round.matches.forEach((match, matchIndex) => {
+          // sum points and score
+          var homePlayer = results[match.home]
+          var awayPlayer = results[match.away]
+
+          // match not complete yet, just get next opponent
+          if (match.home_score === '' || match.away_score === '') {
+            homePlayer.results[roundIndex] = {
+              opponent: match.away,
+              result: '?'
+            }
+            awayPlayer.results[roundIndex] = {
+              opponent: match.home,
+              result: '?'
+            }
+            return
+          }
+
           // sum referee
           if (match.referee !== -1) {
             results[match.referee].referee++
           }
 
-          // sum points and score
-          var homePlayer = results[match.home]
-          var awayPlayer = results[match.away]
           homePlayer.opponents.push(match.away)
           awayPlayer.opponents.push(match.home)
           homePlayer.goalsFor += match.home_score
@@ -377,11 +561,19 @@ var app = new Vue({
           awayPlayer.matches++
           homePlayer.results[roundIndex] = {
             opponent: match.away,
+            result:
+              (match.home_score > match.away_score) ? '+' :
+              (match.home_score < match.away_score) ? '-' :
+              '=',
             goalsFor: match.home_score,
             goalsAgainst: match.away_score
           }
           awayPlayer.results[roundIndex] = {
             opponent: match.home,
+            result:
+              (match.away_score > match.home_score) ? '+' :
+              (match.away_score < match.home_score) ? '-' :
+              '=',
             goalsFor: match.away_score,
             goalsAgainst: match.home_score
           }
@@ -406,14 +598,18 @@ var app = new Vue({
       })
 
       // sum opponents points
-      results.forEach(function(player) {
-        player.opponentsPoints += results.reduce(function(accumulator, opponent) {
+      results.forEach(player => {
+        player.opponentsPoints += results.reduce((accumulator, opponent) => {
           if (player.opponents.indexOf(opponent.playerIndex) !== -1) {
-            return accumulator + opponent.points
+            accumulator += opponent.points
+
+            // opponents points compensation for opponents that didnt play all the rounds
+            if (opponent.matches < this.roundsComplete.length) {
+              accumulator += (this.roundsComplete.length - opponent.matches) * this.config.pointsDraw
+            }
           }
-          else {
-            return accumulator
-          }
+
+          return accumulator
         }, 0)
       })
 
@@ -427,18 +623,13 @@ var app = new Vue({
         })
       })
 
-      return results
-    },
-
-    tournamentResults: function() {
-      var results = this.playerStats.slice()
       var categoryWinner = []
 
       // sort player stats
-      results.sort(this.fieldSorter(['-points', '-oppontentsPoints', '-opponentsOpponentsPoints', '-goalsForSort']))
+      results.sort(this.fieldSorter(['-points', '-opponentsPoints', '-goalsForSort', '-opponentsOpponentsPoints']))
 
       var previousResult = null
-      results.forEach((result) =>  {
+      results.forEach((result, resultIndex) =>  {
         // check category winner
         var category = this.playerCategories[result.playerIndex]
         if (!categoryWinner[category.shortcut]) {
@@ -456,6 +647,23 @@ var app = new Vue({
           result.sharedPosition = true
         }
         previousResult = result
+
+        // assign CP points
+        if (this.config.category !== -1) {
+          var categoryPoints = this.config.categories[this.config.category].points
+
+          var playersCount = this.players.length
+          var playersCountBase = categoryPoints.length
+          var playersDiff = playersCount - playersCountBase
+
+          var pointsBase = categoryPoints[resultIndex]
+          // pokud umisteni neni v bodovaci tabulce, vezmu posledni bodovane misto
+          // a odectu od nej body za kazdeho ucastnika navic
+          if (!pointsBase) {
+            pointsBase = categoryPoints[playersCountBase-1] - resultIndex + playersCount - playersDiff - 1
+          }
+          result.cpPoints = pointsBase + playersDiff
+        }
       })
 
       return results
@@ -467,19 +675,26 @@ var app = new Vue({
       return /^(\d{4})-(\d{2})-(\d{2})$/.test(this.config.date)
     },
 
+    roundsStatus: function() {
+      return [...Array(this.config.numberOfRounds).keys()].map(this.getRoundStatus)
+    },
     roundsComplete: function() {
-      complete = []
-      this.rounds.forEach((round, roundIndex) => {
-        if (this.isRoundComplete(roundIndex)) {
-          complete.push(roundIndex)
-        }
-      })
-      return complete
+      return this.roundsStatus.filter(round => {
+        return round === 'complete'
+      }).length
     },
     roundsPerPlayers: function() {
       if (this.players.length > 64) return 7
       else if (this.players.length > 32) return 6
       else return 5
+    }
+  },
+  mounted: function() {
+    if (env === 'electron') {
+      $(document).on('click', 'a[href^="http"]', function(event) {
+        event.preventDefault()
+        shell.openExternal(this.href)
+      })
     }
   },
   watch: {
@@ -493,47 +708,3 @@ var app = new Vue({
     }
   }
 })
-
-if ('serviceWorker' in navigator) {
-  // Delay registration until after the page has loaded, to ensure that our
-  // precaching requests don't degrade the first visit experience.
-  // See https://developers.google.com/web/fundamentals/instant-and-offline/service-worker/registration
-  window.addEventListener('load', function() {
-    // Your service-worker.js *must* be located at the top-level directory relative to your site.
-    // It won't be able to control pages unless it's located at the same level or higher than them.
-    // *Don't* register service worker file in, e.g., a scripts/ sub-directory!
-    // See https://github.com/slightlyoff/ServiceWorker/issues/468
-    navigator.serviceWorker.register('service-worker.js').then(function(reg) {
-      // updatefound is fired if service-worker.js changes.
-      reg.onupdatefound = function() {
-        // The updatefound event implies that reg.installing is set; see
-        // https://w3c.github.io/ServiceWorker/#service-worker-registration-updatefound-event
-        var installingWorker = reg.installing;
-
-        installingWorker.onstatechange = function() {
-          switch (installingWorker.state) {
-            case 'installed':
-              if (navigator.serviceWorker.controller) {
-                // At this point, the old content will have been purged and the fresh content will
-                // have been added to the cache.
-                // It's the perfect time to display a "New content is available; please refresh."
-                // message in the page's interface.
-                console.log('New or updated content is available.');
-              } else {
-                // At this point, everything has been precached.
-                // It's the perfect time to display a "Content is cached for offline use." message.
-                console.log('Content is now available offline!');
-              }
-              break;
-
-            case 'redundant':
-              console.error('The installing service worker became redundant.');
-              break;
-          }
-        };
-      };
-    }).catch(function(e) {
-      console.error('Error during service worker registration:', e);
-    });
-  });
-}

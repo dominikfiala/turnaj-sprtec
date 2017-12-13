@@ -1,12 +1,27 @@
 {
-  "name": "turnaj",
-  "version": "1.0.0",
+  "name": "turnaj-sprtec",
+  "version": "1.0.1",
   "description": "Aplikace pro řízení turnaje ve šprtci",
-  "main": "index.html",
+  "main": "src/main.js",
+  "build": {
+    "appId": "cz.dominikfiala.${name}",
+    "icon": "src/icon.ico",
+    "directories": {
+      "buildResources": "./",
+      "output": "../dist"
+    },
+    "win": {
+      "target": "portable"
+    }
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "./node_modules/.bin/gulp build && rm build/app.js && ./node_modules/.bin/gulp build-sw",
-    "serve": "./node_modules/.bin/gulp serve"
+    "gulp": "./node_modules/gulp/bin/gulp.js",
+    "build-test": "npm run prebuild && npx electron-builder --win --ia32 --project=./build --dir",
+    "prebuild": "npm run build-clean && npm run gulp build && npm run build-vendor && npm run build-html",
+    "build": "npx electron-builder --win --ia32 --project=./build",
+    "build-html": "sed -i -e 's/node_modules\\//vendor\\//g' ./build/src/index.html",
+    "build-clean": "rm -rf build && rm -rf dist",
+    "build-vendor": "mv ./build/node_modules ./build/vendor"
   },
   "repository": {
     "type": "git",
@@ -24,22 +39,22 @@
   "homepage": "https://github.com/dominikfiala/turnaj-sprtec#readme",
   "dependencies": {
     "bootstrap": "^4.0.0-beta.2",
+    "edmonds-blossom": "^1.0.0",
+    "exceljs": "^0.6.2",
+    "faker": "^4.1.0",
     "file-saver": "^1.3.3",
     "jquery": "^3.2.1",
-    "modernizr": "^3.5.0",
-    "popper.js": "^1.12.6",
-    "vue": "^2.5.2"
+    "popper.js": "^1.13.0",
+    "vue": "^2.5.9"
   },
   "devDependencies": {
-    "babel-core": "^6.26.0",
-    "babel-preset-env": "^1.6.1",
     "browser-sync": "^2.18.13",
-    "gulp": "^3.9.1",
-    "gulp-babel": "^7.0.0",
-    "gulp-clean-css": "^3.9.0",
-    "gulp-concat": "^2.6.1",
-    "gulp-html-replace": "^1.6.2",
-    "gulp-uglify": "^3.0.0",
-    "sw-precache": "^5.2.0"
+    "electron": "1.7.9",
+    "electron-builder": "^19.48.2",
+    "electron-connect": "^0.6.2",
+    "electron-devtools-installer": "^2.2.1",
+    "gulp": "github:gulpjs/gulp#4.0",
+    "gulp-copy": "^1.0.1",
+    "gulp-json-editor": "^2.2.1"
   }
 }

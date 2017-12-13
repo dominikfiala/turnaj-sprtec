@@ -1,98 +1,59 @@
-var gulp = require("gulp");
-var concat = require("gulp-concat");
-var babel = require("gulp-babel");
+'use strict';
+
+var gulp = require('gulp');
+var electron = require('electron-connect').server.create();
+var gulpCopy = require('gulp-copy');
 var browserSync = require("browser-sync").create();
-var htmlreplace = require("gulp-html-replace");
-var uglify = require("gulp-uglify");
-var cleanCSS = require("gulp-clean-css");
+var jeditor = require("gulp-json-editor");
 
-gulp.task("build-js", ["compile-js"], function() {
-  return gulp
-    .src([
-      "./node_modules/vue/dist/vue.js",
-      "./node_modules/jquery/dist/jquery.slim.js",
-      "./node_modules/popper.js/dist/umd/popper.js",
-      "./node_modules/bootstrap/dist/js/bootstrap.js",
-      "./node_modules/file-saver/FileSaver.js",
-      "./build/app.js"
-    ])
-    .pipe(concat("bundle.min.js"))
-    .pipe(uglify())
-    .pipe(gulp.dest("./build"));
-});
-
-gulp.task("build-css", function() {
-  return gulp
-    .src(["./node_modules/bootstrap/dist/css/bootstrap.css"])
-    .pipe(concat("bundle.min.css"))
-    .pipe(cleanCSS())
-    .pipe(gulp.dest("./build"));
-});
-
-gulp.task("build-html", function() {
-  return gulp
-    .src("./src/index.html")
-    .pipe(
-      htmlreplace({
-        css: "./bundle.min.css",
-        js: "./bundle.min.js"
-      })
-    )
-    .pipe(gulp.dest("./build"));
-});
-
-gulp.task("compile-js", function() {
-  return gulp
-    .src("src/app.js")
-    .pipe(
-      babel({
-        presets: ["env"]
-      })
-    )
-    .pipe(gulp.dest("./build"));
-});
-
-gulp.task("serve-build", function() {
-  browserSync.init({
-    server: {
-      baseDir: "./build/"
-    },
-    ui: false,
-    open: false,
-    files: "src/app.js"
-  });
-
-  gulp.watch("src/*.html").on("change", browserSync.reload);
-});
-
-gulp.task("serve", function() {
+gulp.task("serve-browser", function() {
   browserSync.init({
     server: {
       baseDir: "./"
     },
     ui: false,
     open: false,
-    files: "src/app.js",
-    startPath: "src"
+    files: ["./src/app.js", "./src/styles.css"],
+    startPath: "src/index.html"
   });
 
-  gulp.watch("src/*.html").on("change", browserSync.reload);
+  gulp.watch("./src/index.html").on("change", browserSync.reload);
 });
 
-gulp.task("build-sw", function(callback) {
-  var swPrecache = require("sw-precache");
-  var rootDir = "build";
+gulp.task('serve', function () {
+  // Start browser process
+  electron.start();
 
-  swPrecache.write(
-    `${rootDir}/service-worker.js`,
-    {
-      staticFileGlobs: [
-        rootDir + "/**/*.{js,html,css,png,jpg,gif,svg,eot,ttf,woff}"
-      ],
-      stripPrefix: rootDir
-    },
-    callback
-  );
+  // Restart browser process
+  gulp.watch('main.js', electron.restart);
+
+  // Reload renderer process
+  gulp.watch(['src/app.js', 'src/index.html'], electron.reload);
 });
 
-gulp.task("build", ["build-html", "build-js", "build-css"]);
+gulp.task('build-manifest', function () {
+  return gulp
+    .src("build/package.json")
+    .pipe(jeditor(function(json) {
+      delete json.dependencies;
+      return json;
+    }))
+    .pipe(gulp.dest("build"));
+});
+
+gulp.task('build-copy', function () {
+  return gulp
+    .src([
+      "node_modules/bootstrap/dist/css/bootstrap.css",
+      "node_modules/jquery/dist/jquery.slim.js",
+      "node_modules/popper.js/dist/umd/popper.js",
+      "node_modules/bootstrap/dist/js/bootstrap.js",
+      "node_modules/vue/dist/vue.js",
+      "node_modules/file-saver/FileSaver.js",
+      "src/**/*",
+      "package.json"
+    ])
+    .pipe(gulpCopy('build'));
+});
+
+gulp.task('build', gulp.series('build-copy', 'build-manifest'))

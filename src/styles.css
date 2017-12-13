@@ -32,7 +32,6 @@ body {
   right: 0;
   bottom: 48px;
   padding: 10px;
-  scroll-behavior: smooth;
 }
 .tab-footer {
   position: fixed;

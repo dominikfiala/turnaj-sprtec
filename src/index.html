@@ -27,7 +27,8 @@
         <a href="#matches" id="matches-tab" data-toggle="tab" class="nav-link">Zápasy</a>
       </li>
       <li class="nav-item">
-        <a href="#results" id="results-tab" data-toggle="tab" class="nav-link">Výsledky</a>
+        <a href="#results" id="results-tab" data-toggle="tab" class="nav-link"
+          v-on:click="tournamentResults">Výsledky</a>
       </li>
       <li class="nav-item">
         <a href="#about-app" id="about-app-tab" data-toggle="tab" class="nav-link">O programu</a>
@@ -446,7 +447,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(result, resultIndex) in tournamentResults">
+            <tr v-for="(result, resultIndex) in results">
               <td>
                 {{ resultIndex + 1 }}.
                 <abbr v-if="result.sharedPosition" class="text-muted" title="Výsledková shoda s&nbsp;předchozím hráčem v&nbsp;pořadí">?</abbr>
@@ -482,6 +483,7 @@
         </table>
 
         <p class="tab-footer p-2 mb-0 text-right d-print-none">
+          <button v-if="isTournamentComplete" type="button" v-on:click="resultsExportExcel" class="btn btn-success">Archiv Excel</button>
           <button type="button" v-on:click="print" class="btn btn-primary">Tisk</button>
         </p>
       </div>
@@ -739,7 +741,7 @@
   <script src="../node_modules/jquery/dist/jquery.slim.js"></script>
   <script src="../node_modules/popper.js/dist/umd/popper.js"></script>
   <script src="../node_modules/bootstrap/dist/js/bootstrap.js"></script>
-  <script src="../node_modules/vue/dist/vue.js"></script>
+  <script src="../node_modules/vue/dist/vue.min.js"></script>
   <script src="../node_modules/file-saver/FileSaver.js"></script>
   <script src="./app.js"></script>
 

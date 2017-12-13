@@ -1,6 +1,8 @@
 const blossom = require('edmonds-blossom')
 const faker = require('faker')
 faker.locale = 'cz'
+var Excel = require('exceljs');
+var fs = require('fs');
 
 var env = typeof(process) !== 'undefined' ? 'electron' : 'browser'
 
@@ -69,7 +71,8 @@ var dataInitial = {
     ]
   },
   players: [],
-  rounds: []
+  rounds: [],
+  results: []
 }
 
 if (window.localStorage) {
@@ -124,363 +127,6 @@ var app = new Vue({
       };
       reader.readAsText(input.files[0])
     },
-
-    playersMutualMatch: function(a, b) {
-      return this.rounds.some(function(round) {
-        return round.matches.some(function(match) {
-          return match.home === a && match.away === b || match.home === b && match.away === a
-        })
-      })
-    },
-    addPlayer: function() {
-      var player = {
-        surname: '',
-        name: '',
-        club: -1,
-        sex: 'male',
-        yearOfBirth: '',
-        feePaid: false,
-        rounds: [],
-        byes: 0
-      }
-      for (var i = 0; i < this.config.numberOfRounds; i++) {
-        if (!this.rounds[i]) {
-          player.rounds.push(i)
-        }
-      }
-      this.players.push(player)
-      window.setTimeout(() => {
-        document.querySelector('.players-list .players-list-item:last-child input:not([readonly])').focus()
-      }, 100)
-    },
-    addRandomPlayer: function() {
-      var sexIndex = faker.random.number({max: 1})
-      var player = {
-        byes: 0,
-        sex: ['male', 'female'][sexIndex],
-        name: faker.name.firstName(sexIndex),
-        surname: faker.name.lastName(sexIndex),
-        feePaid: false,
-        club: faker.random.number({max: this.config.clubs.length - 1}),
-        rounds: [],
-        yearOfBirth: faker.random.number({min: 1985, max: new Date().getFullYear() - 10})
-      }
-
-      for (var i = 0; i < this.config.numberOfRounds; i++) {
-        if (!this.rounds[i]) {
-          player.rounds.push(i)
-        }
-      }
-
-      this.players.push(player)
-    },
-    playerPlacementByIndex: function(playerIndex) {
-      return this.tournamentResults.findIndex(function(player) {
-        return playerIndex === player.playerIndex
-      }) + 1
-    },
-    removePlayer: function(playerIndex) {
-      this.players.splice(playerIndex, 1)
-    },
-    playerSetActive(playerIndex) {
-      if (this.state.activePlayer === playerIndex) {
-        this.state.activePlayer = -1
-      }
-      else {
-        this.state.activePlayer = playerIndex
-      }
-    },
-    playerRoundsAll: function(playerIndex) {
-      this.players[playerIndex].rounds = this.players[playerIndex].rounds === true ? [] : true
-    },
-    playerInSearch: function(playerIndex) {
-      var query = this.state.playersSearch.trim()
-      if (!query) return true
-      var words = query.split(' ')
-      var regex = new RegExp(words.join('|'), 'i')
-      return regex.test(this.playerNames[playerIndex])
-    },
-
-    randomRoundResults: function(roundIndex) {
-      this.rounds[roundIndex].matches.forEach(match => {
-        match.home_score = this.randomIndex([...Array(9).keys()])
-        match.away_score = this.randomIndex([...Array(9).keys()])
-      })
-    },
-    makePairing: function(roundIndex) {
-      var round = {
-        matches: [],
-        bye: -1,
-        refereeCheck: [-1, -1]
-      }
-
-      // clone results array and filter unavailable players
-      var availablePlayers = this.tournamentResults.slice().filter((player) => {
-        return this.players[player.playerIndex].rounds.indexOf(roundIndex) !== -1
-      })
-
-      if (availablePlayers.length < 2) {
-        alert('V kole není dostatek hráčů.')
-        return
-      }
-
-      // assign a bye if round players count odd
-      if (availablePlayers.length % 2 === 1) {
-        // get bottom half of player results
-        var byeCandidates = this.tournamentResults.slice(Math.floor(availablePlayers.length / 2), availablePlayers.length)
-
-        // look for possible players
-        while (round.bye === -1) {
-          // if bye not available for player from bottom line
-          if (byeCandidates.length === 0) {
-            byeCandidates = availablePlayers.slice()
-          }
-
-          var byeCandidateIndex = this.randomIndex(byeCandidates)
-          var byeCandidate = byeCandidates.splice(byeCandidateIndex, 1)[0]
-
-          // assign a bye round
-          if (byeCandidate.byes === 0) {
-            round.bye = byeCandidate.playerIndex
-            // and remove from round available players
-            availablePlayers.splice(availablePlayers.findIndex(function(player) {
-              return player.playerIndex === byeCandidate.playerIndex
-            }), 1)
-          }
-        }
-      }
-
-      var maxDiff = this.players.length
-
-      var possiblePairs = []
-      availablePlayers.forEach(player => {
-        availablePlayers.forEach(opponent => {
-          if (
-            player.playerIndex !== opponent.playerIndex // &&
-            // player.opponents.indexOf(opponent.playerIndex) === -1
-          ) {
-            var match = [player.playerIndex, opponent.playerIndex]
-            match.sort(function(a, b) {
-              return a - b;
-            })
-            if (player.opponents.indexOf(opponent.playerIndex) === -1) {
-              if (roundIndex === 0) {
-                match.push(faker.random.number({max: maxDiff}))
-              }
-              else {
-                match.push(maxDiff - Math.abs(this.playerPlacementByIndex(player.playerIndex) - this.playerPlacementByIndex(opponent.playerIndex)))
-              }
-            }
-            else {
-              match.push(0)
-            }
-            if (this.searchForArray(possiblePairs, match) === -1) {
-              possiblePairs.push(match)
-            }
-          }
-        })
-      })
-
-      possiblePairs = this.shuffle(possiblePairs)
-
-      var rawPairing = blossom(possiblePairs)
-      rawPairing.forEach((home, away) => {
-        if (home !== -1 && home < away) {
-          var match = {
-            home_score: '',
-            away_score: '',
-            referee: -1
-          }
-          var homePosition = this.playerPlacementByIndex(home)
-          var awayPosition = this.playerPlacementByIndex(away)
-
-          if (homePosition < awayPosition) {
-            match.home = home
-            match.away = away
-            match.matchPosition = homePosition
-          }
-          else {
-            match.home = away
-            match.away = home
-            match.matchPosition = awayPosition
-          }
-
-          round.matches.push(match)
-        }
-      })
-
-      round.matches.sort(this.fieldSorter(['matchPosition']))
-
-      this.$set(this.rounds, roundIndex, round)
-    },
-    generateRound: function(roundIndex) {
-      setTimeout(() => {
-        this.makePairing(roundIndex)
-        this.state.generatingRound = false
-      }, 1)
-      this.state.generatingRound = true
-    },
-    isRoundReady: function(roundIndex) {
-      return roundIndex === 0 || (roundIndex > 0 && this.isRoundComplete(roundIndex - 1))
-    },
-    isRoundGenerated: function(roundIndex) {
-      return this.rounds[roundIndex] && this.rounds[roundIndex].matches
-    },
-    isRoundComplete: function(roundIndex) {
-      if (!this.isRoundGenerated(roundIndex)) { return false }
-      var round = this.rounds[roundIndex]
-      return round.matches.filter(function(match) {
-        return match.home_score === '' || match.away_score === ''
-      }).length === 0
-    },
-    isRoundStarted: function(roundIndex) {
-      if (!this.isRoundGenerated(roundIndex)) { return false }
-      var round = this.rounds[roundIndex]
-      return round.matches.filter(function(match) {
-        return match.home_score === '' || match.away_score === ''
-      }).length !== round.matches.length
-    },
-    getRoundStatus: function(roundIndex) {
-      if (!this.rounds[roundIndex]) {
-        return 'none'
-      }
-
-      var round = this.rounds[roundIndex]
-      var incompleteMatches = round.matches.filter(function(match) {
-        return match.home_score === '' || match.away_score === ''
-      }).length
-
-      if (incompleteMatches === 0) {
-        return 'complete'
-      }
-      else if (incompleteMatches === round.matches.length) {
-        return 'empty'
-      }
-      else {
-        return 'incomplete'
-      }
-    },
-    dropRoundPairing: function(roundIndex) {
-      this.rounds = this.rounds.slice(0, roundIndex)
-      $('#dropPairingModal').modal('hide')
-    },
-
-    fieldSorter: function(fields) {
-      return function (a, b) {
-        return fields.map(function (o) {
-            var dir = 1;
-            if (o[0] === '-') {
-               dir = -1;
-               o=o.substring(1);
-            }
-            if (a[o] > b[o]) return dir;
-            if (a[o] < b[o]) return -(dir);
-            return 0;
-        }).reduce(function firstNonZeroValue (p,n) {
-            return p ? p : n;
-        }, 0);
-      };
-    },
-    randomIndex: function(array) {
-      return Math.floor(Math.random()*array.length)
-    },
-    searchForArray: function(haystack, needle) {
-      var i, j, current;
-      for (i = 0; i < haystack.length; ++i) {
-        if (needle.length === haystack[i].length) {
-          current = haystack[i];
-          for (j = 0; j < needle.length && needle[j] === current[j]; ++j);
-          if (j === needle.length)
-            return i;
-        }
-      }
-      return -1;
-    },
-    shuffle: function(a) {
-      for (let i = a.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [a[i], a[j]] = [a[j], a[i]];
-      }
-      return a;
-    },
-
-    print: function() {
-      window.print()
-    }
-  },
-  computed: {
-    isTournamentReady: function() {
-      return this.playersComplete && this.configComplete
-    },
-    configComplete: function() {
-      return this.config.name !== '' &&
-        this.config.numberOfRounds > 0 &&
-        this.config.venue !== '' &&
-        this.config.host !== '' &&
-        this.config.category !== '' &&
-        this.tournamentDateValid
-    },
-    playersComplete: function() {
-      return this.players.filter(function(player){
-        return !player.name || !player.surname
-      }).length === 0 && this.players.length > 0
-    },
-
-    playerNames: function() {
-      return this.players.map(function(player) {
-        return `${player.surname.toUpperCase()} ${player.name}`
-      })
-    },
-    playersSorted: function() {
-      return this.players.map((item, index) => {
-        return {
-          name: this.playerNames[index],
-          playerIndex: index
-        }
-      }).sort(function(a, b) {
-        return a.name.localeCompare(b.name)
-      }).map(item => {
-        return item.playerIndex
-      })
-    },
-    playerCategories: function() {
-      var season = this.config.season
-      return this.players.map(function(player) {
-        var age = season - player.yearOfBirth
-
-        if (age <= 12) {
-          return {
-            'shortcut': 'P',
-            'name': 'Ml. žáci'
-          }
-        }
-        else if (player.sex == 'female') {
-          return {
-            'shortcut': 'L',
-            'name': 'Ženy'
-          }
-        }
-        else if (age <= 15) {
-          return {
-            'shortcut': 'Z',
-            'name': 'St. žáci'
-          }
-        }
-        else if (age <= 18) {
-          return {
-            'shortcut': 'J',
-            'name': 'Junioři'
-          }
-        }
-        else {
-          return {
-            'shortcut': 'M',
-            'name': 'Muži'
-          }
-        }
-      })
-    },
-
     tournamentResults: function() {
       var results = this.players.map(function(player, playerIndex) {
         return {
@@ -509,10 +155,12 @@ var app = new Vue({
       this.rounds.forEach((round, roundIndex) => {
         // bye match
         if (round.bye !== -1) {
-          results[round.bye].matches++
-          results[round.bye].wins++
-          results[round.bye].points += this.config.pointsWin
-          results[round.bye].byes++
+          if (this.roundsStatus[roundIndex] === 'complete') {
+            results[round.bye].matches++
+            results[round.bye].wins++
+            results[round.bye].points += this.config.pointsWin
+            results[round.bye].byes++
+          }
           results[round.bye].results[roundIndex] = {
             opponent: -1
           }
@@ -666,8 +314,439 @@ var app = new Vue({
         }
       })
 
-      return results
+      this.results = results
     },
+    resultsExportExcel: function() {
+      var workbook = new Excel.Workbook()
+      var worksheet = workbook.addWorksheet('Výsledky')
+      var columns = [
+        { header: '#', key: 'position', width: 5 },
+        { header: 'Hráč', key: 'name', width: 25 },
+        { header: 'Klub', key: 'club', width: 25 },
+        { header: 'K', key: 'category', width: 3 },
+        { header: 'Z', key: 'matches', width: 3 },
+        { header: 'V', key: 'wins', width: 3 },
+        { header: 'R', key: 'ties', width: 3 },
+        { header: 'P', key: 'losses', width: 3 },
+        { header: 'B', key: 'points', width: 5 },
+        { header: 'BS', key: 'opponentsPoints', width: 5 },
+        { header: 'BSS', key: 'opponentsOpponentsPoints', width: 5 },
+        { header: 'BV', key: 'goalsFor', width: 5 },
+        { header: 'BO', key: 'goalsAgainst', width: 5 },
+        { header: 'ČP', key: 'cpPoints', width: 5 },
+        { header: 'R', key: 'referee', width: 3 },
+      ]
+      this.rounds.forEach((round, roundIndex) => {
+        columns.push({header: `Z ${roundIndex+1}`, key: 'match'+roundIndex, width: 10})
+      })
+      worksheet.columns = columns
+
+      this.results.forEach((result, resultIndex) => {
+        var row = {
+          position: resultIndex + 1,
+          name: this.playerNames[result.playerIndex],
+          club: this.config.clubs[this.players[result.playerIndex].club],
+          category: this.playerCategories[result.playerIndex].shortcut,
+          matches: result.matches,
+          wins: result.wins,
+          ties: result.ties,
+          losses: result.losses,
+          points: result.points,
+          opponentsPoints: result.opponentsPoints,
+          opponentsOpponentsPoints: result.opponentsOpponentsPoints,
+          goalsFor: result.goalsFor,
+          goalsAgainst: result.goalsAgainst,
+          cpPoints: result.cpPoints,
+          referee: result.referee,
+        }
+        if (result.categoryWinner) {
+          row.category += '!'
+        }
+        result.results.forEach((result, resultIndex) => {
+          var type = typeof(result)
+          if (type == 'undefined') {
+            row['match'+resultIndex] = `—`
+          }
+          else if(type == 'object' && result.opponent === -1) {
+            row['match'+resultIndex] = 'volno'
+          }
+          else {
+            row['match'+resultIndex] = `${result.opponent}${result.result} (${result.goalsFor}:${result.goalsAgainst})`
+          }
+        })
+        worksheet.addRow(row)
+      })
+
+      var filename = 'results.xlsx'
+      workbook.xlsx.writeFile(filename).then(() => {
+        console.log('done')
+        // var blob = new Blob([fs.readFileSync(filename)], {type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"})
+        // saveAs(blob, `${this.config.date} ${this.config.name}.xlsx`)
+      })
+    },
+
+    playersMutualMatch: function(a, b) {
+      return this.rounds.some(function(round) {
+        return round.matches.some(function(match) {
+          return match.home === a && match.away === b || match.home === b && match.away === a
+        })
+      })
+    },
+    addPlayer: function() {
+      var player = {
+        surname: '',
+        name: '',
+        club: -1,
+        sex: 'male',
+        yearOfBirth: '',
+        feePaid: false,
+        rounds: [],
+        byes: 0
+      }
+      for (var i = 0; i < this.config.numberOfRounds; i++) {
+        if (!this.rounds[i]) {
+          player.rounds.push(i)
+        }
+      }
+      this.players.push(player)
+      window.setTimeout(() => {
+        document.querySelector('.players-list .players-list-item:last-child input:not([readonly])').focus()
+      }, 100)
+    },
+    addRandomPlayer: function() {
+      var sexIndex = faker.random.number({max: 1})
+      var player = {
+        byes: 0,
+        sex: ['male', 'female'][sexIndex],
+        name: faker.name.firstName(sexIndex),
+        surname: faker.name.lastName(sexIndex),
+        feePaid: false,
+        club: faker.random.number({max: this.config.clubs.length - 1}),
+        rounds: [],
+        yearOfBirth: faker.random.number({min: 1985, max: new Date().getFullYear() - 10})
+      }
+
+      for (var i = 0; i < this.config.numberOfRounds; i++) {
+        if (!this.rounds[i]) {
+          player.rounds.push(i)
+        }
+      }
+
+      this.players.push(player)
+    },
+    playerPlacementByIndex: function(playerIndex) {
+      return this.results.findIndex(function(player) {
+        return playerIndex === player.playerIndex
+      }) + 1
+    },
+    removePlayer: function(playerIndex) {
+      this.players.splice(playerIndex, 1)
+    },
+    playerSetActive(playerIndex) {
+      if (this.state.activePlayer === playerIndex) {
+        this.state.activePlayer = -1
+      }
+      else {
+        this.state.activePlayer = playerIndex
+      }
+    },
+    playerRoundsAll: function(playerIndex) {
+      this.players[playerIndex].rounds = this.players[playerIndex].rounds === true ? [] : true
+    },
+    playerInSearch: function(playerIndex) {
+      var query = this.state.playersSearch.trim()
+      if (!query) return true
+      var words = query.split(' ')
+      var regex = new RegExp(words.join('|'), 'i')
+      return regex.test(this.playerNames[playerIndex])
+    },
+
+    randomRoundResults: function(roundIndex) {
+      this.rounds[roundIndex].matches.forEach(match => {
+        match.home_score = this.randomIndex([...Array(9).keys()])
+        match.away_score = this.randomIndex([...Array(9).keys()])
+      })
+    },
+    makePairing: function(roundIndex) {
+      var round = {
+        matches: [],
+        bye: -1,
+        refereeCheck: [-1, -1]
+      }
+
+      // clone results array and filter unavailable players
+      var availablePlayers = this.results.slice().filter((player) => {
+        return this.players[player.playerIndex].rounds.indexOf(roundIndex) !== -1
+      })
+
+      if (availablePlayers.length < 2) {
+        alert('V kole není dostatek hráčů.')
+        return
+      }
+
+      // assign a bye if round players count odd
+      if (availablePlayers.length % 2 === 1) {
+        // get bottom half of player results
+        var byeCandidates = this.results.slice(Math.floor(availablePlayers.length / 2), availablePlayers.length)
+
+        // look for possible players
+        while (round.bye === -1) {
+          // if bye not available for player from bottom line
+          if (byeCandidates.length === 0) {
+            byeCandidates = availablePlayers.slice()
+          }
+
+          var byeCandidateIndex = this.randomIndex(byeCandidates)
+          var byeCandidate = byeCandidates.splice(byeCandidateIndex, 1)[0]
+
+          // assign a bye round
+          if (byeCandidate.byes === 0) {
+            round.bye = byeCandidate.playerIndex
+            // and remove from round available players
+            availablePlayers.splice(availablePlayers.findIndex(function(player) {
+              return player.playerIndex === byeCandidate.playerIndex
+            }), 1)
+          }
+        }
+      }
+
+      var maxDiff = this.players.length
+
+      var possiblePairs = []
+      availablePlayers.forEach(player => {
+        availablePlayers.forEach(opponent => {
+          if (
+            player.playerIndex !== opponent.playerIndex // &&
+            // player.opponents.indexOf(opponent.playerIndex) === -1
+          ) {
+            var match = [player.playerIndex, opponent.playerIndex]
+            match.sort(function(a, b) {
+              return a - b;
+            })
+            if (player.opponents.indexOf(opponent.playerIndex) === -1) {
+              if (roundIndex === 0) {
+                match.push(faker.random.number({max: maxDiff}))
+              }
+              else {
+                match.push(maxDiff - Math.abs(this.playerPlacementByIndex(player.playerIndex) - this.playerPlacementByIndex(opponent.playerIndex)))
+              }
+            }
+            else {
+              match.push(0)
+            }
+            if (this.searchForArray(possiblePairs, match) === -1) {
+              possiblePairs.push(match)
+            }
+          }
+        })
+      })
+
+      possiblePairs = this.shuffle(possiblePairs)
+
+      var rawPairing = blossom(possiblePairs)
+      rawPairing.forEach((home, away) => {
+        if (home !== -1 && home < away) {
+          var match = {
+            home_score: '',
+            away_score: '',
+            referee: -1
+          }
+          var homePosition = this.playerPlacementByIndex(home)
+          var awayPosition = this.playerPlacementByIndex(away)
+
+          if (homePosition < awayPosition) {
+            match.home = home
+            match.away = away
+            match.matchPosition = homePosition
+          }
+          else {
+            match.home = away
+            match.away = home
+            match.matchPosition = awayPosition
+          }
+
+          round.matches.push(match)
+        }
+      })
+
+      round.matches.sort(this.fieldSorter(['matchPosition']))
+
+      this.$set(this.rounds, roundIndex, round)
+    },
+    generateRound: function(roundIndex) {
+      setTimeout(() => {
+        this.tournamentResults()
+        this.makePairing(roundIndex)
+        this.state.generatingRound = false
+      }, 1)
+      this.state.generatingRound = true
+    },
+    isRoundReady: function(roundIndex) {
+      return roundIndex === 0 || (roundIndex > 0 && this.isRoundComplete(roundIndex - 1))
+    },
+    isRoundGenerated: function(roundIndex) {
+      return this.rounds[roundIndex] && this.rounds[roundIndex].matches
+    },
+    isRoundComplete: function(roundIndex) {
+      if (!this.isRoundGenerated(roundIndex)) { return false }
+      var round = this.rounds[roundIndex]
+      return round.matches.filter(function(match) {
+        return match.home_score === '' || match.away_score === ''
+      }).length === 0
+    },
+    isRoundStarted: function(roundIndex) {
+      if (!this.isRoundGenerated(roundIndex)) { return false }
+      var round = this.rounds[roundIndex]
+      return round.matches.filter(function(match) {
+        return match.home_score === '' || match.away_score === ''
+      }).length !== round.matches.length
+    },
+    getRoundStatus: function(roundIndex) {
+      if (!this.rounds[roundIndex]) {
+        return 'none'
+      }
+
+      var round = this.rounds[roundIndex]
+      var incompleteMatches = round.matches.filter(function(match) {
+        return match.home_score === '' || match.away_score === ''
+      }).length
+
+      if (incompleteMatches === 0) {
+        return 'complete'
+      }
+      else if (incompleteMatches === round.matches.length) {
+        return 'empty'
+      }
+      else {
+        return 'incomplete'
+      }
+    },
+    dropRoundPairing: function(roundIndex) {
+      this.rounds = this.rounds.slice(0, roundIndex)
+      $('#dropPairingModal').modal('hide')
+    },
+
+    fieldSorter: function(fields) {
+      return function (a, b) {
+        return fields.map(function (o) {
+            var dir = 1;
+            if (o[0] === '-') {
+               dir = -1;
+               o=o.substring(1);
+            }
+            if (a[o] > b[o]) return dir;
+            if (a[o] < b[o]) return -(dir);
+            return 0;
+        }).reduce(function firstNonZeroValue (p,n) {
+            return p ? p : n;
+        }, 0);
+      };
+    },
+    randomIndex: function(array) {
+      return Math.floor(Math.random()*array.length)
+    },
+    searchForArray: function(haystack, needle) {
+      var i, j, current;
+      for (i = 0; i < haystack.length; ++i) {
+        if (needle.length === haystack[i].length) {
+          current = haystack[i];
+          for (j = 0; j < needle.length && needle[j] === current[j]; ++j);
+          if (j === needle.length)
+            return i;
+        }
+      }
+      return -1;
+    },
+    shuffle: function(a) {
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    },
+
+    print: function() {
+      window.print()
+    }
+  },
+  computed: {
+    isTournamentReady: function() {
+      return this.playersComplete && this.configComplete
+    },
+    isTournamentComplete: function() {
+      return this.roundsStatus.filter((roundStatus) => {
+        return roundStatus !== 'complete'
+      }).length === 0
+    },
+    configComplete: function() {
+      return this.config.name !== '' &&
+        this.config.numberOfRounds > 0 &&
+        this.config.venue !== '' &&
+        this.config.host !== '' &&
+        this.config.category !== '' &&
+        this.tournamentDateValid
+    },
+    playersComplete: function() {
+      return this.players.filter(function(player){
+        return !player.name || !player.surname
+      }).length === 0 && this.players.length > 0
+    },
+
+    playerNames: function() {
+      return this.players.map(function(player) {
+        return `${player.surname.toUpperCase()} ${player.name}`
+      })
+    },
+    playersSorted: function() {
+      return this.players.map((item, index) => {
+        return {
+          name: this.playerNames[index],
+          playerIndex: index
+        }
+      }).sort(function(a, b) {
+        return a.name.localeCompare(b.name)
+      }).map(item => {
+        return item.playerIndex
+      })
+    },
+    playerCategories: function() {
+      var season = this.config.season
+      return this.players.map(function(player) {
+        var age = season - player.yearOfBirth
+
+        if (age <= 12) {
+          return {
+            'shortcut': 'P',
+            'name': 'Ml. žáci'
+          }
+        }
+        else if (player.sex == 'female') {
+          return {
+            'shortcut': 'L',
+            'name': 'Ženy'
+          }
+        }
+        else if (age <= 15) {
+          return {
+            'shortcut': 'Z',
+            'name': 'St. žáci'
+          }
+        }
+        else if (age <= 18) {
+          return {
+            'shortcut': 'J',
+            'name': 'Junioři'
+          }
+        }
+        else {
+          return {
+            'shortcut': 'M',
+            'name': 'Muži'
+          }
+        }
+      })
+    },
+
     tournamentDate: function() {
       return new Date(this.config.date).toLocaleDateString();
     },

@@ -1,14 +1,13 @@
 {
   "name": "turnaj-sprtec",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Aplikace pro řízení turnaje ve šprtci",
   "main": "src/main.js",
   "build": {
     "appId": "cz.dominikfiala.${name}",
     "icon": "src/icon.ico",
     "directories": {
-      "buildResources": "./",
-      "output": "../dist"
+      "output": "./dist"
     },
     "win": {
       "target": "portable"
@@ -16,12 +15,10 @@
   },
   "scripts": {
     "gulp": "./node_modules/gulp/bin/gulp.js",
-    "build-test": "npm run prebuild && npx electron-builder --win --ia32 --project=./build --dir",
-    "prebuild": "npm run build-clean && npm run gulp build && npm run build-vendor && npm run build-html",
-    "build": "npx electron-builder --win --ia32 --project=./build",
-    "build-html": "sed -i -e 's/node_modules\\//vendor\\//g' ./build/src/index.html",
-    "build-clean": "rm -rf build && rm -rf dist",
-    "build-vendor": "mv ./build/node_modules ./build/vendor"
+    "build-test": "npm run prebuild && npx electron-builder --win --ia32 --dir",
+    "prebuild": "npm run build-clean",
+    "build": "npx electron-builder --win --ia32",
+    "build-clean": "rm -rf build && rm -rf dist"
   },
   "repository": {
     "type": "git",
@@ -53,8 +50,6 @@
     "electron-builder": "^19.48.2",
     "electron-connect": "^0.6.2",
     "electron-devtools-installer": "^2.2.1",
-    "gulp": "github:gulpjs/gulp#4.0",
-    "gulp-copy": "^1.0.1",
-    "gulp-json-editor": "^2.2.1"
+    "gulp": "github:gulpjs/gulp#4.0"
   }
 }

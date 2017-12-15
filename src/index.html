@@ -466,6 +466,7 @@
         </table>
 
         <p class="tab-footer p-2 mb-0 text-right d-print-none">
+          <button v-if="isTournamentComplete" type="button" v-on:click="resultsExportExcel" class="btn btn-success">Export Excel</button>
           <button type="button" v-on:click="print" class="btn btn-primary">Tisk</button>
         </p>
       </div>

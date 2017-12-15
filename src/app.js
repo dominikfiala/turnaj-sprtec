@@ -320,7 +320,7 @@ var app = new Vue({
       var workbook = new Excel.Workbook()
       var worksheet = workbook.addWorksheet('Výsledky')
       var columns = [
-        { header: '#', key: 'position', width: 5 },
+        { header: '', key: 'position', width: 5 },
         { header: 'Hráč', key: 'name', width: 25 },
         { header: 'Klub', key: 'club', width: 25 },
         { header: 'K', key: 'category', width: 3 },
@@ -332,18 +332,34 @@ var app = new Vue({
         { header: 'BS', key: 'opponentsPoints', width: 5 },
         { header: 'BSS', key: 'opponentsOpponentsPoints', width: 5 },
         { header: 'BV', key: 'goalsFor', width: 5 },
+        { header: '', key: 'goalsSeparator', width: 1 },
         { header: 'BO', key: 'goalsAgainst', width: 5 },
         { header: 'ČP', key: 'cpPoints', width: 5 },
         { header: 'R', key: 'referee', width: 3 },
       ]
       this.rounds.forEach((round, roundIndex) => {
-        columns.push({header: `Z ${roundIndex+1}`, key: 'match'+roundIndex, width: 10})
+        columns.push({header: `${roundIndex + 1}.`, key: 'match'+roundIndex, width: 10})
       })
       worksheet.columns = columns
 
+      worksheet.getColumn('position').alignment = { horizontal: 'right' }
+      worksheet.getColumn('category').alignment = { horizontal: 'center' }
+      worksheet.getColumn('matches').alignment = { horizontal: 'center' }
+      worksheet.getColumn('wins').alignment = { horizontal: 'center' }
+      worksheet.getColumn('ties').alignment = { horizontal: 'center' }
+      worksheet.getColumn('losses').alignment = { horizontal: 'center' }
+      worksheet.getColumn('points').alignment = { horizontal: 'center' }
+      worksheet.getColumn('opponentsPoints').alignment = { horizontal: 'center' }
+      worksheet.getColumn('opponentsOpponentsPoints').alignment = { horizontal: 'center' }
+      worksheet.getColumn('goalsFor').alignment = { horizontal: 'right' }
+      worksheet.getColumn('goalsSeparator').alignment = { horizontal: 'center' }
+      worksheet.getColumn('goalsAgainst').alignment = { horizontal: 'left' }
+      worksheet.getColumn('cpPoints').alignment = { horizontal: 'left' }
+      worksheet.getColumn('referee').alignment = { horizontal: 'left' }
+
       this.results.forEach((result, resultIndex) => {
         var row = {
-          position: resultIndex + 1,
+          position: `${resultIndex + 1}.`,
           name: this.playerNames[result.playerIndex],
           club: this.config.clubs[this.players[result.playerIndex].club],
           category: this.playerCategories[result.playerIndex].shortcut,
@@ -355,6 +371,7 @@ var app = new Vue({
           opponentsPoints: result.opponentsPoints,
           opponentsOpponentsPoints: result.opponentsOpponentsPoints,
           goalsFor: result.goalsFor,
+          goalsSeparator: ':',
           goalsAgainst: result.goalsAgainst,
           cpPoints: result.cpPoints,
           referee: result.referee,
@@ -376,6 +393,9 @@ var app = new Vue({
         })
         worksheet.addRow(row)
       })
+
+      // var newRow4Values = ['one', 'two', 'three', 'four', 'five'];
+      // worksheet.spliceRows(1, 0, newRow4Values);
 
       var filename = 'results.xlsx'
       workbook.xlsx.writeFile(filename).then(() => {

@@ -293,92 +293,80 @@
 
       <!-- Matches tab -->
       <div class="tab-pane" id="matches">
-        <div class="tab-content" id="rounds-tabContent">
-          <p class="d-none d-print-block lead">Zápasy<span v-if="state.activeRound > -1"> {{ state.activeRound+1 }}. kola</span></p>
+        <p class="d-none d-print-block lead">Zápasy {{ state.activeRound+1 }}. kola</p>
 
-          <p class="alert alert-warning"
-            v-if="!isTournamentReady && state.activeRound !== -1">
-            Kolo nelze zahájit, není kompletní nastavení turnaje nebo listina účastníků.
-          </p>
-          <p class="alert alert-warning"
-            v-if="!isRoundReady(state.activeRound) && state.activeRound !== -1">
-            Nelze generovat zápasy, není kompletní předchozí kolo.
-          </p>
+        <p class="alert alert-warning"
+          v-if="!isTournamentReady">
+          Kolo nelze zahájit, není kompletní nastavení turnaje nebo listina účastníků.
+        </p>
+        <p class="alert alert-warning"
+          v-if="!isRoundReady(state.activeRound)">
+          Nelze generovat zápasy, není kompletní předchozí kolo.
+        </p>
 
-          <div v-for="(round, roundIndex) in rounds"
-            class="tab-pane"
-            :id="`rounds-tab-${roundIndex}`"
-            :class="{
-              show: state.activeRound === roundIndex || state.activeRound === -1,
-              active: state.activeRound === roundIndex || state.activeRound === -1
-            }">
-            <p v-if="state.activeRound === -1" class="mb-2"><strong>{{roundIndex + 1}}. kolo</strong></p>
-
-            <div class="d-print-none">
-              <!-- Zadani vysledku zapasu -->
-              <div class="d-flex mb-2" v-for="(match, matchIndex) in round.matches">
-                <input type="text" readonly tabindex="-1" class="form-control-plaintext" style="width: 30px"
-                  :value="matchIndex + 1 + '.'">
-                <input type="text" readonly tabindex="-1" class="form-control-plaintext" style="flex: 1"
-                  :value="playerNames[match.home]">
-                <input type="text" readonly tabindex="-1" class="form-control-plaintext text-center" style="width: 30px" value="&times;">
-                <input type="text" readonly tabindex="-1" class="form-control-plaintext" style="flex: 1"
-                  :value="playerNames[match.away]">
-                <div class="input-group mr-2" style="width: 150px">
-                  <input v-model.number="match.home_score" type="number" class="form-control text-right" :class="{'is-invalid': match.home_score === ''}" min="0">
-                  <span class="input-group-addon">:</span>
-                  <input v-model.number="match.away_score" type="number" class="form-control" :class="{'is-invalid': match.away_score === ''}" min="0">
-                </div>
-                <select v-model="match.referee" class="form-control w-25" :class="{'is-invalid': match.referee === -1}">
-                  <option :value="-1">Rozhodčí</option>
-                  <option v-for="playerIndex in playersSorted" :value="playerIndex"
-                    v-if="playerIndex != match.home && playerIndex != match.away">{{ playerNames[playerIndex] }}</option>
-                </select>
-              </div>
-
-              <!-- Zapisovatele rozhodcich -->
-              <div class="d-flex mb-2" v-for="(refereeCheck, refereeCheckIndex) in round.refereeCheck">
-                <input type="text" readonly tabindex="-1"
-                  class="form-control-plaintext text-right mr-2" style="flex: 1"
-                  value="Zapisovatel rozhodčích:">
-                <select v-model="round.refereeCheck[refereeCheckIndex]"
-                  :class="{'is-invalid': round.refereeCheck[refereeCheckIndex] === -1}" class="w-25 form-control">
-                  <option :value="-1">Zapisovatel rozhodčích</option>
-                  <option v-for="(player, playerIndex) in playerNames" :value="playerIndex">{{ player }}</option>
-                </select>
-              </div>
-
-              <div class="d-flex mb-2" v-if="round.bye !== -1">
-                <input type="text" readonly tabindex="-1" class="form-control-plaintext text-right mr-2" style="flex: 1" value="Volné kolo:">
-                <input type="text" readonly tabindex="-1" class="form-control-plaintext w-25 pl-3 font-weight-bold" :value="playerNames[round.bye]">
-              </div>
+        <div class="d-print-none" v-if="rounds[state.activeRound]">
+          <!-- Zadani vysledku zapasu -->
+          <div class="d-flex mb-2" v-for="(match, matchIndex) in rounds[state.activeRound].matches">
+            <input type="text" readonly tabindex="-1" class="form-control-plaintext" style="width: 30px"
+              :value="matchIndex + 1 + '.'">
+            <input type="text" readonly tabindex="-1" class="form-control-plaintext" style="flex: 1"
+              :value="playerNames[match.home]">
+            <input type="text" readonly tabindex="-1" class="form-control-plaintext text-center" style="width: 30px" value="&times;">
+            <input type="text" readonly tabindex="-1" class="form-control-plaintext" style="flex: 1"
+              :value="playerNames[match.away]">
+            <div class="input-group mr-2" style="width: 150px">
+              <input v-model.number="match.home_score" type="number" class="form-control text-right" :class="{'is-invalid': match.home_score === ''}" min="0">
+              <span class="input-group-addon">:</span>
+              <input v-model.number="match.away_score" type="number" class="form-control" :class="{'is-invalid': match.away_score === ''}" min="0">
             </div>
-
-            <!-- Print -->
-            <div class="d-none d-print-block">
-              <table class="table table-sm">
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th colspan="3">Soupeři</th>
-                    <th class="text-center">Výsledek</th>
-                    <th>Rozhodčí</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="(match, matchIndex) in round.matches">
-                    <td>{{ matchIndex+1 }}.</td>
-                    <td>{{ playerNames[match.home] }}</td>
-                    <td class="text-center">&times;</td>
-                    <td>{{ playerNames[match.away] }}</td>
-                    <td class="text-center">{{match.home_score}}:{{match.away_score}}</td>
-                    <td class="w-25">{{playerNames[match.referee]}}</td>
-                  </tr>
-                </tbody>
-              </table>
-              <p v-if="round.bye !== -1">Volné kolo: <strong>{{ playerNames[round.bye] }}</strong></p>
-            </div>
+            <select v-model="match.referee" class="form-control w-25" :class="{'is-invalid': match.referee === -1}">
+              <option :value="-1">Rozhodčí</option>
+              <option v-for="playerIndex in playersSorted" :value="playerIndex"
+                v-if="playerIndex != match.home && playerIndex != match.away">{{ playerNames[playerIndex] }}</option>
+            </select>
           </div>
+
+          <!-- Zapisovatele rozhodcich -->
+          <div class="d-flex mb-2" v-for="(refereeCheck, refereeCheckIndex) in rounds[state.activeRound].refereeCheck">
+            <input type="text" readonly tabindex="-1"
+              class="form-control-plaintext text-right mr-2" style="flex: 1"
+              value="Zapisovatel rozhodčích:">
+            <select v-model="rounds[state.activeRound].refereeCheck[refereeCheckIndex]"
+              :class="{'is-invalid': rounds[state.activeRound].refereeCheck[refereeCheckIndex] === -1}" class="w-25 form-control">
+              <option :value="-1">Zapisovatel rozhodčích</option>
+              <option v-for="(player, playerIndex) in playerNames" :value="playerIndex">{{ player }}</option>
+            </select>
+          </div>
+
+          <div class="d-flex mb-2" v-if="rounds[state.activeRound].bye !== -1">
+            <input type="text" readonly tabindex="-1" class="form-control-plaintext text-right mr-2" style="flex: 1" value="Volné kolo:">
+            <input type="text" readonly tabindex="-1" class="form-control-plaintext w-25 pl-3 font-weight-bold" :value="playerNames[rounds[state.activeRound].bye]">
+          </div>
+        </div>
+
+        <!-- Print -->
+        <div class="d-none d-print-block" v-if="rounds[state.activeRound]">
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th colspan="3">Soupeři</th>
+                <th class="text-center">Výsledek</th>
+                <th>Rozhodčí</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(match, matchIndex) in rounds[state.activeRound].matches">
+                <td>{{ matchIndex+1 }}.</td>
+                <td>{{ playerNames[match.home] }}</td>
+                <td class="text-center">&times;</td>
+                <td>{{ playerNames[match.away] }}</td>
+                <td class="text-center">{{match.home_score}}:{{match.away_score}}</td>
+                <td class="w-25">{{playerNames[match.referee]}}</td>
+              </tr>
+            </tbody>
+          </table>
+          <p v-if="rounds[state.activeRound].bye !== -1">Volné kolo: <strong>{{ playerNames[rounds[state.activeRound].bye] }}</strong></p>
         </div>
 
         <!-- Tab footer -->
@@ -386,24 +374,19 @@
           <div class="col">
             <div class="nav nav-pills">
               <span class="nav-link">Kolo:</span>
-              <a href="#"
-                class="nav-link"
-                :class="{active: state.activeRound === -1}"
-                v-on:click="state.activeRound = -1">Vše</a>
               <a v-for="round in config.numberOfRounds"
                 class="nav-link"
                 :class="{active: state.activeRound === round - 1}"
-                :id="`rounds-tab-${round}-tab`"
-                data-toggle="pill"
-                :href="`#rounds-tab-${round - 1}`"
+                href="#"
                 v-on:click="state.activeRound = round - 1"
               >{{round}}.</a>
             </div>
           </div>
           <div class="col-auto">
-            <button id="generateRoundButton" type="button" class="btn btn-success"
-              v-on:click="generateRound(state.activeRound)"
-              :class="{'d-none': isRoundGenerated(state.activeRound)}">
+            <button type="button" class="btn btn-success"
+              v-on:mousedown="state.generatingRound = true"
+              v-on:mouseup="generateRound(state.activeRound)"
+              :class="{'d-none': isRoundGenerated(state.activeRound) || !isRoundReady(state.activeRound)}">
                 <span v-if="!state.generatingRound">Napárovat soupeře</span>
                 <span v-if="state.generatingRound">Páruji, sečkej&hellip;</span>
             </button>
@@ -411,7 +394,7 @@
               data-toggle="modal" data-target="#dropPairingModal"
               v-if="roundsStatus[state.activeRound] === 'empty'">Zrušit párování</button>
             <button type="button" class="btn btn-warning"
-              v-if="state.debug && roundsStatus[state.activeRound] !== 'none'"
+              v-if="state.debug && roundsStatus[state.activeRound] !== 'none' && state.activeRound !== -1"
               v-on:click="randomRoundResults(state.activeRound)">Náhodné výsledky</button>
             <button type="button" v-on:click="print" class="btn btn-primary">Tisk</button>
           </div>
@@ -483,7 +466,6 @@
         </table>
 
         <p class="tab-footer p-2 mb-0 text-right d-print-none">
-          <button v-if="isTournamentComplete" type="button" v-on:click="resultsExportExcel" class="btn btn-success">Archiv Excel</button>
           <button type="button" v-on:click="print" class="btn btn-primary">Tisk</button>
         </p>
       </div>
@@ -741,7 +723,7 @@
   <script src="../node_modules/jquery/dist/jquery.slim.js"></script>
   <script src="../node_modules/popper.js/dist/umd/popper.js"></script>
   <script src="../node_modules/bootstrap/dist/js/bootstrap.js"></script>
-  <script src="../node_modules/vue/dist/vue.min.js"></script>
+  <script src="../node_modules/vue/dist/vue.js"></script>
   <script src="../node_modules/file-saver/FileSaver.js"></script>
   <script src="./app.js"></script>
 

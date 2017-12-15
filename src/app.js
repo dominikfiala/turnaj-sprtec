@@ -574,12 +574,9 @@ var app = new Vue({
       this.$set(this.rounds, roundIndex, round)
     },
     generateRound: function(roundIndex) {
-      setTimeout(() => {
-        this.tournamentResults()
-        this.makePairing(roundIndex)
-        this.state.generatingRound = false
-      }, 1)
-      this.state.generatingRound = true
+      this.tournamentResults()
+      this.makePairing(roundIndex)
+      this.state.generatingRound = false
     },
     isRoundReady: function(roundIndex) {
       return roundIndex === 0 || (roundIndex > 0 && this.isRoundComplete(roundIndex - 1))

@@ -280,11 +280,11 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="playerIndex in playersSorted">
-                <td>{{ playerNames[playerIndex] }}</td>
-                <td>{{ config.clubs[players[playerIndex].club] }}</td>
-                <td>{{ playerCategories[playerIndex].name }}</td>
-                <td><span v-if="players[playerIndex].feePaid">Zaplaceno</span></td>
+              <tr v-for="player in playersSorted">
+                <td>{{ playerNames[player.playerIndex] }}</td>
+                <td>{{ config.clubs[players[player.playerIndex].club] }}</td>
+                <td>{{ playerCategories[player.playerIndex].name }}</td>
+                <td><span v-if="players[player.playerIndex].feePaid">Zaplaceno</span></td>
               </tr>
             </tbody>
           </table>
@@ -306,7 +306,9 @@
 
         <div class="d-print-none" v-if="rounds[state.activeRound]">
           <!-- Zadani vysledku zapasu -->
-          <div class="d-flex mb-2" v-for="(match, matchIndex) in rounds[state.activeRound].matches">
+          <div class="d-flex mb-2"
+            v-for="(match, matchIndex) in rounds[state.activeRound].matches"
+            :key="match.matchPosition">
             <input type="text" readonly tabindex="-1" class="form-control-plaintext" style="width: 30px"
               :value="matchIndex + 1 + '.'">
             <input type="text" readonly tabindex="-1" class="form-control-plaintext" style="flex: 1"
@@ -321,20 +323,23 @@
             </div>
             <select v-model="match.referee" class="form-control w-25" :class="{'is-invalid': match.referee === -1}">
               <option :value="-1">Rozhodčí</option>
-              <option v-for="playerIndex in playersSorted" :value="playerIndex"
-                v-if="playerIndex != match.home && playerIndex != match.away">{{ playerNames[playerIndex] }}</option>
+              <option v-for="player in playersSorted"
+                :value="player.playerIndex" :key="player.playerIndex">{{ player.name }}</option>
             </select>
           </div>
 
           <!-- Zapisovatele rozhodcich -->
-          <div class="d-flex mb-2" v-for="(refereeCheck, refereeCheckIndex) in rounds[state.activeRound].refereeCheck">
+          <div class="d-flex mb-2"
+            v-for="(refereeCheck, refereeCheckIndex) in rounds[state.activeRound].refereeCheck"
+            :key="refereeCheckIndex">
             <input type="text" readonly tabindex="-1"
               class="form-control-plaintext text-right mr-2" style="flex: 1"
               value="Zapisovatel rozhodčích:">
             <select v-model="rounds[state.activeRound].refereeCheck[refereeCheckIndex]"
               :class="{'is-invalid': rounds[state.activeRound].refereeCheck[refereeCheckIndex] === -1}" class="w-25 form-control">
               <option :value="-1">Zapisovatel rozhodčích</option>
-              <option v-for="(player, playerIndex) in playerNames" :value="playerIndex">{{ player }}</option>
+              <option v-for="(player, playerIndex) in playerNames"
+                :value="playerIndex" :key="playerIndex">{{ player }}</option>
             </select>
           </div>
 
@@ -356,7 +361,9 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(match, matchIndex) in rounds[state.activeRound].matches">
+              <tr
+                v-for="(match, matchIndex) in rounds[state.activeRound].matches"
+                :key="match.matchPosition">
                 <td>{{ matchIndex+1 }}.</td>
                 <td>{{ playerNames[match.home] }}</td>
                 <td class="text-center">&times;</td>
@@ -374,7 +381,8 @@
           <div class="col">
             <div class="nav nav-pills">
               <span class="nav-link">Kolo:</span>
-              <a v-for="round in config.numberOfRounds"
+              <a v-for="(round, roundIndex) in config.numberOfRounds"
+                :key="roundIndex"
                 class="nav-link"
                 :class="{active: state.activeRound === round - 1}"
                 href="#"

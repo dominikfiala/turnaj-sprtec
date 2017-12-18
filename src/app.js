@@ -722,8 +722,6 @@ var app = new Vue({
         }
       }).sort(function(a, b) {
         return a.name.localeCompare(b.name)
-      }).map(item => {
-        return item.playerIndex
       })
     },
     playerCategories: function() {

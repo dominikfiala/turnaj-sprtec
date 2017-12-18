@@ -394,14 +394,75 @@ var app = new Vue({
         worksheet.addRow(row)
       })
 
-      // var newRow4Values = ['one', 'two', 'three', 'four', 'five'];
-      // worksheet.spliceRows(1, 0, newRow4Values);
+      worksheet.spliceRows(1, 0,
+        [
+          this.config.name.toUpperCase()
+        ],[
+
+        ],[
+          'Místo konání: ', '',
+          this.config.venue, '', '', '', '', '', '',
+          'Datum: ', '',
+          this.tournamentDate, '', '', '', ''
+        ],[
+          'Soutěž: ', '',
+          'Český pohár 2018', '', '', '', '', '', '',
+          'Disciplína: ', '',
+          'Billiard-hockey šprtec', '', '', '', ''
+        ],[
+          'Pořadatel: ', '',
+          this.config.host, '', '', '', '', '', '',
+          'Kategorie: ', '',
+          this.config.categories[this.config.category].title, '', '', '', ''
+        ],[
+
+        ],[
+          'Výsledky turnaje', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '',
+          'Tabulka vzájemných zápasů'
+        ]
+      )
+
+      worksheet.mergeCells('A1:P1')
+      worksheet.getCell('A1').font = { size: 18, bold: true, name: 'Arial' }
+
+      worksheet.mergeCells('A3:B3')
+      worksheet.mergeCells('C3:I3')
+      worksheet.mergeCells('J3:K3')
+      worksheet.mergeCells('L3:P3')
+
+      worksheet.mergeCells('A4:B4')
+      worksheet.mergeCells('C4:I4')
+      worksheet.mergeCells('J4:K4')
+      worksheet.mergeCells('L4:P4')
+
+      worksheet.mergeCells('A5:B5')
+      worksheet.mergeCells('C5:I5')
+      worksheet.mergeCells('J5:K5')
+      worksheet.mergeCells('L5:P5')
+
+      worksheet.mergeCells('A7:P7')
+      var matchesSpanEnd = String.fromCharCode("Q".charCodeAt(0) + this.config.numberOfRounds - 1)
+      worksheet.mergeCells(`Q7:${matchesSpanEnd}7`)
+      worksheet.getCell('A7').font = { bold: true, name: 'Arial' }
+
+      worksheet.getRow(1).alignment = { horizontal: 'center' }
+      worksheet.getCell('A3').alignment = { horizontal: 'right' }
+      worksheet.getCell('C3').alignment = { horizontal: 'left' }
+      worksheet.getCell('J3').alignment = { horizontal: 'right' }
+      worksheet.getCell('L3').alignment = { horizontal: 'left' }
+      worksheet.getCell('A4').alignment = { horizontal: 'right' }
+      worksheet.getCell('C4').alignment = { horizontal: 'left' }
+      worksheet.getCell('J4').alignment = { horizontal: 'right' }
+      worksheet.getCell('L4').alignment = { horizontal: 'left' }
+      worksheet.getCell('A5').alignment = { horizontal: 'right' }
+      worksheet.getCell('C5').alignment = { horizontal: 'left' }
+      worksheet.getCell('J5').alignment = { horizontal: 'right' }
+      worksheet.getCell('L5').alignment = { horizontal: 'left' }
+      worksheet.getRow(7).alignment = { horizontal: 'center' }
 
       var filename = 'results.xlsx'
       workbook.xlsx.writeFile(filename).then(() => {
         console.log('done')
-        // var blob = new Blob([fs.readFileSync(filename)], {type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"})
-        // saveAs(blob, `${this.config.date} ${this.config.name}.xlsx`)
       })
     },
 

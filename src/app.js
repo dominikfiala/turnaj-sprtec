@@ -68,7 +68,8 @@ var dataInitial = {
       'Sokol Stochov',
       'Šprtmejkři Ostrava',
       'THE Orel Bohunice',
-    ]
+    ],
+    contests: ['Český pohár', 'Žákovská tour']
   },
   players: [],
   rounds: [],

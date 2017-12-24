@@ -53,7 +53,7 @@
                 <input type="text" v-model="config.venue" class="form-control" id="config-venue" :class="{'is-invalid': !config.venue}">
               </div>
             </div>
-            <div class="col-3">
+            <div class="col">
               <div class="form-group">
                 <label for="config-host">Pořadatel</label>
                 <input type="text" list="clubs" v-model="config.host" class="form-control" id="config-host" :class="{'is-invalid': !config.host}">
@@ -82,15 +82,6 @@
                   class="form-control"
                   id="config-season"
                   :class="{'is-invalid': !config.season}">
-              </div>
-            </div>
-            <div class="col">
-              <div class="form-group">
-                <label for="config-category">Kategorie</label>
-                <select v-model="config.category" class="form-control" id="config-category">
-                  <option :value="-1">Nezařazeno do ČP</option>
-                  <option v-for="(category, categoryIndex) in config.categories" :value="categoryIndex">{{ category.title }}</option>
-                </select>
               </div>
             </div>
             <div class="col">
@@ -125,6 +116,33 @@
             </div>
           </div>
 
+          <div class="form-row">
+            <div class="col-4">
+              <div class="form-group">
+                <label for="config-category">Kategorie</label>
+                <select v-model="config.category" class="form-control" id="config-category">
+                  <option :value="-1">Nezařazeno do ČP</option>
+                  <option v-for="(category, categoryIndex) in config.categories" :value="categoryIndex">{{ category.title }}</option>
+                </select>
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label>Zařazení do soutěží</label><br>
+                <div class="form-check form-check-inline">
+                  <label class="form-check-label">
+                    <input v-model="config.contests" class="form-check-input" type="checkbox" value="Český pohár"> Český pohár
+                  </label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <label class="form-check-label">
+                    <input v-model="config.contests" class="form-check-input" type="checkbox" value="Žákovská tour"> Žákovská tour
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <label>Kluby</label>
           <div class="form-row">
             <div class="col-4 form-group mb-2" v-for="(club, clubIndex) in config.clubs">
@@ -148,8 +166,7 @@
         <form class="d-flex d-print-none flex-column-reverse players-list">
           <div v-for="(player, playerIndex) in players"
             class="players-list-item"
-            :class="{'d-none': !playerInSearch(playerIndex)}"
-            >
+            :class="{'d-none': !playerInSearch(playerIndex)}">
             <div class="form-row mb-2">
               <div class="col-auto" v-if="rounds.length === 0">
                 <button type="button" title="Odebrat účastníka"
@@ -588,13 +605,10 @@
 
               <h2 id="navrhy">Návrhy pro&nbsp;zlepšení</h2>
               <ul>
-                <li>zamíchat hráče před generováním zápasů (alespoň v prvním kole, které se jinak rozlosuje podle pořadí, ve kterém jsou hráči založeni)</li>
                 <li>nastavení <em>turnaj bez rozhodčích</em> - skryje z programu všechny ovládání a informace o rozhodčích</li>
-                <li>seřadit zápasy dle pořadí účastníků? má být výše umístěný hráč domácí?</li>
                 <li>filtrování zápasů&nbsp;dle účastníka</li>
                 <li>export výsledků turnaje do&nbsp;souboru CSV (možné následně nahrát např. do&nbsp;Excel a&nbsp;archivovat)</li>
                 <li><strong>účastníci bez splněných aktivit</strong> zvýraznění ve&nbsp;výsledcích</li>
-                <li>vyhnout se&nbsp;vzájemným zápasům hráčů stejného klubu?</li>
                 <li>kontrolní součty vybraného a&nbsp;celkového startovného turnaje</li>
               </ul>
 

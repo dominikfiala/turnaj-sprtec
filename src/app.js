@@ -281,21 +281,12 @@ var app = new Vue({
         })
       })
 
-      var categoryWinner = []
-
       // sort player stats
       results.sort(this.fieldSorter(['-points', '-opponentsPoints', '-goalsForSort', '-opponentsOpponentsPoints']))
 
+      // check shared positions
       var previousResult = null
       results.forEach((result, resultIndex) =>  {
-        // check category winner
-        var category = this.playerCategories[result.playerIndex]
-        if (!categoryWinner[category.shortcut]) {
-          categoryWinner[category.shortcut] = true
-          result.categoryWinner = true
-        }
-
-        // check shared positions
         if (previousResult &&
           previousResult.points === result.points &&
           previousResult.oppontentsPoints === result.oppontentsPoints &&
@@ -306,28 +297,11 @@ var app = new Vue({
           previousResult.sharedPosition = true
         }
         previousResult = result
-
-        // assign CP points
-        if (this.config.category !== -1) {
-          var categoryPoints = this.config.categories[this.config.category].points
-
-          var playersCount = this.players.length
-          var playersCountBase = categoryPoints.length
-          var playersDiff = playersCount - playersCountBase
-
-          var pointsBase = categoryPoints[resultIndex]
-          // pokud umisteni neni v bodovaci tabulce, vezmu posledni bodovane misto
-          // a odectu od nej body za kazdeho ucastnika navic
-          if (!pointsBase) {
-            pointsBase = categoryPoints[playersCountBase-1] - resultIndex + playersCount - playersDiff - 1
-          }
-          result.cpPoints = pointsBase + playersDiff
-        }
       })
 
       // mutual match of two players with same points amount
       // cancels the sharedPosition flag
-      var pairs = app.groupBy(app.results, 'points').filter(item => item.length === 2)
+      var pairs = this.groupBy(results, 'points').filter(item => item.length === 2)
       pairs.forEach(players => {
         let firstPlayer = players[0]
         let secondPlayer = players[1]
@@ -345,6 +319,34 @@ var app = new Vue({
 
           results[firstPlayerIndex].sharedPosition = false
           results[secondPlayerIndex].sharedPosition = false
+        }
+      })
+
+      var categoryWinner = []
+      // check category winner and assign CP points
+      results.forEach((result, resultIndex) =>  {
+        // check category winner
+        var category = this.playerCategories[result.playerIndex]
+        if (!categoryWinner[category.shortcut]) {
+          categoryWinner[category.shortcut] = true
+          result.categoryWinner = true
+        }
+
+        // assign CP points
+        if (this.config.category !== -1) {
+          var categoryPoints = this.config.categories[this.config.category].points
+
+          var playersCount = this.players.length
+          var playersCountBase = categoryPoints.length
+          var playersDiff = playersCount - playersCountBase
+
+          var pointsBase = categoryPoints[resultIndex]
+          // pokud umisteni neni v bodovaci tabulce, vezmu posledni bodovane misto
+          // a odectu od nej body za kazdeho ucastnika navic
+          if (!pointsBase) {
+            pointsBase = categoryPoints[playersCountBase-1] - resultIndex + playersCount - playersDiff - 1
+          }
+          result.cpPoints = pointsBase + playersDiff
         }
       })
 

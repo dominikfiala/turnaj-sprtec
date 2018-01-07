@@ -96,9 +96,21 @@
             <div class="col-2">
               <div class="form-group">
                 <label for="config-numberOfRounds">Počet kol</label>
-                <input type="number" min="1" class="form-control" id="config-numberOfRounds"
-                  v-model.number="config.numberOfRounds"
-                  :class="{'is-invalid': !config.numberOfRounds}">
+                <div class="input-group">
+                  <div class="input-group-prepend">
+                    <button class="btn btn-light" type="button"
+                      v-on:click="removeRound"
+                      :disabled="config.numberOfRounds === 1 || config.numberOfRounds < rounds.length">&minus;</button>
+                  </div>
+                  <input type="number" class="form-control" id="config-numberOfRounds" readonly
+                    :min="rounds.length"
+                    v-model.number="config.numberOfRounds"
+                    :class="{'is-invalid': !config.numberOfRounds || config.numberOfRounds < rounds.length}">
+                  <div class="input-group-append">
+                    <button class="btn btn-light" type="button"
+                      v-on:click="addRound">&plus;</button>
+                  </div>
+                </div>
               </div>
             </div>
             <div class="col">
@@ -264,7 +276,7 @@
             <div :class="{'d-none': playerIndex !== state.activePlayer}">
               <div class="form-check form-check-inline">
                 <label class="form-check-label pl-0">
-                  {{ playerNames[playerIndex] }} se účastní kol č.:
+                  {{ playerNames[playerIndex] }} se účastní kol:
                 </label>
               </div>
               <div class="form-check form-check-inline"

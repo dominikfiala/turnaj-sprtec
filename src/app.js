@@ -739,6 +739,18 @@ var app = new Vue({
       this.rounds = this.rounds.slice(0, roundIndex)
       $('#dropPairingModal').modal('hide')
     },
+    addRound: function() {
+      this.config.numberOfRounds++
+      this.players.forEach(player => {
+        player.rounds.push(this.config.numberOfRounds - 1)
+      })
+    },
+    removeRound: function() {
+      this.config.numberOfRounds--
+      this.players.forEach(player => {
+        player.rounds.pop()
+      })
+    },
 
     fieldSorter: function(fields) {
       return function (a, b) {
@@ -895,6 +907,7 @@ var app = new Vue({
     }
   },
   watch: {
+    // autosave application state
     '$data': {
       handler: function (dataToStore) {
         if (store) {

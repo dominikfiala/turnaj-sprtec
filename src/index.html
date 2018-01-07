@@ -62,7 +62,7 @@
           </div>
 
           <div class="form-row">
-            <div class="col">
+            <div class="col-2">
               <div class="form-group">
                 <label for="config-date">Datum konání</label>
                 <input type="date"
@@ -73,7 +73,7 @@
                   :class="{'is-invalid': !tournamentDateValid}">
               </div>
             </div>
-            <div class="col">
+            <div class="col-2">
               <div class="form-group">
                 <label for="config-season">Sezona</label>
                 <input type="number"
@@ -86,14 +86,39 @@
             </div>
             <div class="col">
               <div class="form-group">
-                <label for="config-date">Počet kol</label>
-                <input type="number" min="3" class="form-control" id="config-date"
-                  v-model.number="config.numberOfRounds"
-                  :class="{'is-invalid': !config.numberOfRounds}"
-                  :readonly="rounds.length > 0"
-                  :title="rounds.length > 0 ? 'Nelze měnit u již rozehraného turnaje' : ''">
+                <label for="config-category">Kategorie</label>
+                <select v-model="config.category" class="form-control" id="config-category">
+                  <option :value="-1">Nezařazeno do ČP</option>
+                  <option v-for="(category, categoryIndex) in config.categories" :value="categoryIndex">{{ category.title }}</option>
+                </select>
               </div>
             </div>
+            <div class="col-2">
+              <div class="form-group">
+                <label for="config-numberOfRounds">Počet kol</label>
+                <input type="number" min="1" class="form-control" id="config-numberOfRounds"
+                  v-model.number="config.numberOfRounds"
+                  :class="{'is-invalid': !config.numberOfRounds}">
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label>Zařazení do soutěží</label><br>
+                <div class="form-check form-check-inline">
+                  <label class="form-check-label">
+                    <input v-model="config.contests" class="form-check-input" type="checkbox" value="Český pohár"> Český pohár
+                  </label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <label class="form-check-label">
+                    <input v-model="config.contests" class="form-check-input" type="checkbox" value="Žákovská tour"> Žákovská tour
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row">
             <div class="col">
               <div class="form-group">
                 <label for="config-point-win">Bodů za výhru</label>
@@ -114,31 +139,22 @@
                   :title="rounds.length > 0 ? 'Nelze měnit u již rozehraného turnaje' : ''">
               </div>
             </div>
-          </div>
-
-          <div class="form-row">
-            <div class="col-4">
+            <div class="col">
               <div class="form-group">
-                <label for="config-category">Kategorie</label>
-                <select v-model="config.category" class="form-control" id="config-category">
-                  <option :value="-1">Nezařazeno do ČP</option>
-                  <option v-for="(category, categoryIndex) in config.categories" :value="categoryIndex">{{ category.title }}</option>
-                </select>
+                <label for="config-goalsForSortMax">Strop vstřelených branek</label>
+                <input type="number" min="0" class="form-control" id="config-goalsForSortMax"
+                  v-model.number="config.goalsForSortMax"
+                  :readonly="rounds.length > 0"
+                  :title="rounds.length > 0 ? 'Nelze měnit u již rozehraného turnaje' : ''">
               </div>
             </div>
             <div class="col">
               <div class="form-group">
-                <label>Zařazení do soutěží</label><br>
-                <div class="form-check form-check-inline">
-                  <label class="form-check-label">
-                    <input v-model="config.contests" class="form-check-input" type="checkbox" value="Český pohár"> Český pohár
-                  </label>
-                </div>
-                <div class="form-check form-check-inline">
-                  <label class="form-check-label">
-                    <input v-model="config.contests" class="form-check-input" type="checkbox" value="Žákovská tour"> Žákovská tour
-                  </label>
-                </div>
+                <label for="config-byeGoalsFor">Vstřelených branek za volno</label>
+                <input type="number" min="0" class="form-control" id="config-byeGoalsFor"
+                  v-model.number="config.byeGoalsFor"
+                  :readonly="rounds.length > 0"
+                  :title="rounds.length > 0 ? 'Nelze měnit u již rozehraného turnaje' : ''">
               </div>
             </div>
           </div>

@@ -52,6 +52,8 @@ var dataInitial = {
     ],
     pointsWin: 3,
     pointsDraw: 1,
+    goalsForSortMax: 5,
+    byeGoalsFor: 5,
     clubs: [
       'BHC Dragons Modřice',
       'BHC StarColor Most',
@@ -160,8 +162,10 @@ var app = new Vue({
             results[round.bye].wins++
             results[round.bye].points += this.config.pointsWin
             results[round.bye].byes++
-            results[round.bye].goalsFor += 5
-            results[round.bye].goalsForSort += 5
+            results[round.bye].goalsFor += this.config.byeGoalsFor
+            results[round.bye].goalsForSort += this.config.goalsForSortMax === 0 ?
+              this.config.byeGoalsFor :
+              Math.min(this.config.goalsForSortMax, this.config.byeGoalsFor)
           }
           results[round.bye].results[roundIndex] = {
             opponent: -1
@@ -202,9 +206,13 @@ var app = new Vue({
           homePlayer.opponents.push(match.away)
           awayPlayer.opponents.push(match.home)
           homePlayer.goalsFor += match.home_score
-          homePlayer.goalsForSort += match.home_score > 5 ? 5 : match.home_score
+          homePlayer.goalsForSort += this.config.goalsForSortMax === 0 ?
+            match.home_score :
+            Math.min(match.home_score, this.config.goalsForSortMax)
           awayPlayer.goalsFor += match.away_score
-          awayPlayer.goalsForSort += match.away_score > 5 ? 5 : match.away_score
+          awayPlayer.goalsForSort +=  this.config.goalsForSortMax === 0 ?
+            match.away_score :
+            Math.min(match.away_score, this.config.goalsForSortMax)
           homePlayer.goalsAgainst += match.away_score
           awayPlayer.goalsAgainst += match.home_score
           homePlayer.matches++

@@ -61,8 +61,11 @@ abbr[title], abbr[data-original-title] {
 
 
 @media print {
+  * {
+    color: #000;
+  }
   body {
-    font-size: 10px;
+    font-size: 12px;
   }
   abbr[title] {
     text-decoration: none;

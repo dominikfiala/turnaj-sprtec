@@ -152,7 +152,6 @@ var app = new Vue({
       })
 
       // return results
-
       this.rounds.forEach((round, roundIndex) => {
         // bye match
         if (round.bye !== -1) {
@@ -161,6 +160,8 @@ var app = new Vue({
             results[round.bye].wins++
             results[round.bye].points += this.config.pointsWin
             results[round.bye].byes++
+            results[round.bye].goalsFor += 5
+            results[round.bye].goalsForSort += 5
           }
           results[round.bye].results[roundIndex] = {
             opponent: -1
@@ -291,9 +292,10 @@ var app = new Vue({
           previousResult.points === result.points &&
           previousResult.oppontentsPoints === result.oppontentsPoints &&
           previousResult.opponentsOpponentsPoints === result.opponentsOpponentsPoints &&
-          previousResult.goalsFor === result.goalsFor
+          previousResult.goalsForSort === result.goalsForSort
         ) {
           result.sharedPosition = true
+          previousResult.sharedPosition = true
         }
         previousResult = result
 
@@ -312,6 +314,29 @@ var app = new Vue({
             pointsBase = categoryPoints[playersCountBase-1] - resultIndex + playersCount - playersDiff - 1
           }
           result.cpPoints = pointsBase + playersDiff
+        }
+      })
+
+      // mutual match of two players with same points amount
+      // cancels the sharedPosition flag
+      var pairs = app.groupBy(app.results, 'points').filter(item => item.length === 2)
+      pairs.forEach(players => {
+        let firstPlayer = players[0]
+        let secondPlayer = players[1]
+        let mutualMatch = firstPlayer.results.find(item => item.opponent === secondPlayer.playerIndex)
+
+        if (mutualMatch) {
+          let firstPlayerIndex = results.findIndex(item => item.playerIndex === firstPlayer.playerIndex)
+          let secondPlayerIndex = results.findIndex(item => item.playerIndex === secondPlayer.playerIndex)
+
+          // clone player object to get rid of the var reference
+          if (mutualMatch.result === "-") {
+            results[firstPlayerIndex] = Object.assign({}, secondPlayer)
+            results[secondPlayerIndex] = Object.assign({}, firstPlayer)
+          }
+
+          results[firstPlayerIndex].sharedPosition = false
+          results[secondPlayerIndex].sharedPosition = false
         }
       })
 
@@ -407,7 +432,7 @@ var app = new Vue({
           this.tournamentDate, '', '', '', ''
         ],[
           'Soutěž: ', '',
-          'Český pohár 2018', '', '', '', '', '', '',
+          this.config.contests.join(` ${this.config.season}, `) + ` ${this.config.season}`, '', '', '', '', '', '',
           'Disciplína: ', '',
           'Billiard-hockey šprtec', '', '', '', ''
         ],[
@@ -742,6 +767,12 @@ var app = new Vue({
         [a[i], a[j]] = [a[j], a[i]];
       }
       return a;
+    },
+    groupBy: function(xs, key) {
+      return xs.reduce(function(rv, x) {
+        (rv[x[key]] = rv[x[key]] || []).push(x);
+        return rv;
+      }, []);
     },
 
     print: function() {

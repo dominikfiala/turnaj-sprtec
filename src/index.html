@@ -447,6 +447,7 @@
               <th class="text-center"><abbr title="Prohry">P</abbr></th>
               <th class="text-center"><abbr title="Body">B</abbr></th>
               <th class="text-center"><abbr title="Body soupeřů">BS</abbr></th>
+              <th class="text-center"><abbr title="Vstřelené branky jako rozhodující kritérium">VB</abbr></th>
               <th class="text-center"><abbr title="Body soupeřů soupeřů">BSS</abbr></th>
               <th class="text-center" colspan="3">Skóre</th>
               <th v-if="config.category !== -1" class="text-center"><abbr title="Body Českého poháru">ČP</abbr></th>
@@ -458,7 +459,7 @@
             <tr v-for="(result, resultIndex) in results">
               <td>
                 {{ resultIndex + 1 }}.
-                <abbr v-if="result.sharedPosition" class="text-muted" title="Výsledková shoda s&nbsp;předchozím hráčem v&nbsp;pořadí">?</abbr>
+                <abbr v-if="result.sharedPosition && !result.mutualMatchSwap" class="text-muted" title="Výsledková shoda s&nbsp;předchozím hráčem v&nbsp;pořadí">?</abbr>
               </td>
               <td>{{ playerNames[result.playerIndex] }}</td>
               <td><span v-if="players[result.playerIndex].club !== -1">{{ config.clubs[players[result.playerIndex].club] }}</span></td>
@@ -471,6 +472,7 @@
               <td class="text-center">{{ result.losses }}</td>
               <td class="text-center"><strong>{{ result.points }}</strong></td>
               <td class="text-center">{{ result.opponentsPoints }}</td>
+              <td class="text-center">{{ result.goalsForSort }}</td>
               <td class="text-center">{{ result.opponentsOpponentsPoints }}</td>
               <td :title="'Z toho jako rozhodující kritérium: ' + result.goalsForSort" class="text-right">{{ result.goalsFor }}</td>
               <td class="text-center">:</td>
@@ -614,7 +616,7 @@
 
               <h2 id="neplanovane">Neplánované funkce</h2>
               <ul>
-                <li><strong>zabezpečení programu</strong>: pokud chcete zamezit, aby&nbsp;k&nbsp;programu kdokoliv přišel a&nbsp;něco do&nbsp;ní psal, zamkněte počítač, na&nbsp;kterém běží</li>
+                <li><strong>zabezpečení programu</strong>: pokud chcete zamezit, aby&nbsp;k&nbsp;programu kdokoliv přišel a&nbsp;libovolně do něj zasahoval, zamkněte počítač, na&nbsp;kterém běží</li>
                 <li><strong>kontrola duplicity účastníků</strong>: program nekontroluje, zda není v&nbsp;účastnících hráč se&nbsp;stejným jménem vícekrát, toto má pořadatel odhalit při&nbsp;prezenci hráčů, která&nbsp;je&nbsp;seřazena&nbsp;dle abecedy</li>
               </ul>
             </div>

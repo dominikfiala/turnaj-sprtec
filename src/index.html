@@ -11,7 +11,7 @@
 
 <body>
   <div id="app">
-    <h3 class="d-none d-print-block">{{ config.name }}, {{ tournamentDate }}</h3>
+    <p class="d-none d-print-block lead mb-0">{{ config.name }}, {{ tournamentDate }}</p>
 
     <!-- Application tabs -->
     <ul class="app-nav nav nav-tabs d-print-none pt-2 pr-2 pl-2">
@@ -36,7 +36,7 @@
     </ul>
 
     <!-- Application screen -->
-    <div class="app-content tab-content" id="m-print-none">
+    <div class="app-content tab-content" id="p-print-none">
       <!-- Tournament config -->
       <div class="tab-pane active show" id="config">
         <form class="mb-2">
@@ -100,7 +100,7 @@
                   <div class="input-group-prepend">
                     <button class="btn btn-light" type="button"
                       v-on:click="removeRound"
-                      :disabled="config.numberOfRounds === 1 || config.numberOfRounds < rounds.length">&minus;</button>
+                      :disabled="config.numberOfRounds === 1 || config.numberOfRounds <= rounds.length">&minus;</button>
                   </div>
                   <input type="number" class="form-control" id="config-numberOfRounds" readonly
                     :min="rounds.length"
@@ -314,7 +314,7 @@
 
         <!-- Print -->
         <div class="d-none d-print-block">
-          <p class="lead">Listina účastníků, celkem hráčů: {{ players.length }}</p>
+          <p>Listina účastníků, celkem hráčů: {{ players.length }}</p>
           <table class="table table-sm">
             <thead>
               <tr>
@@ -419,6 +419,8 @@
             </tbody>
           </table>
           <p v-if="rounds[state.activeRound].bye !== -1">Volné kolo: <strong>{{ playerNames[rounds[state.activeRound].bye] }}</strong></p>
+          <p>Rozhodčí první části kola zapsal:</p>
+          <p>Rozhodčí druhé části kola zapsal:</p>
         </div>
 
         <!-- Tab footer -->
@@ -456,11 +458,8 @@
 
       <!-- Results tab -->
       <div class="tab-pane" id="results">
-        <p v-if="roundsComplete !== config.numberOfRounds" class="d-none d-print-block lead">
+        <p v-if="roundsComplete !== config.numberOfRounds" class="d-none d-print-block">
           Průběžné výsledky, odehráno kol: {{ roundsComplete }}/{{ config.numberOfRounds }}
-        </p>
-        <p v-if="roundsComplete === config.numberOfRounds" class="d-none d-print-block lead">
-          Konečné výsledky turnaje
         </p>
         <table class="table table-hover table-sm">
           <thead>
@@ -490,7 +489,10 @@
                 <abbr v-if="result.sharedPosition && !result.mutualMatchSwap" class="text-muted" title="Výsledková shoda s&nbsp;předchozím hráčem v&nbsp;pořadí">?</abbr>
               </td>
               <td>{{ playerNames[result.playerIndex] }}</td>
-              <td><span v-if="players[result.playerIndex].club !== -1">{{ config.clubs[players[result.playerIndex].club] }}</span></td>
+              <td>
+                <span class="d-print-none" v-if="players[result.playerIndex].club !== -1">{{ config.clubs[players[result.playerIndex].club] }}</span>
+                <span class="d-none d-print-inline" v-if="players[result.playerIndex].club !== -1">{{ config.clubs[players[result.playerIndex].club].substring(0, 10) }}&hellip;</span>
+              </td>
               <td class="text-center" :title="playerCategories[result.playerIndex].name">
                 {{ playerCategories[result.playerIndex].shortcut }}<span v-if="result.categoryWinner">!</span>
               </td>
@@ -507,12 +509,12 @@
               <td>{{ result.goalsAgainst }}</td>
               <td v-if="config.category !== -1" class="text-center">{{ result.cpPoints }}</td>
               <td class="text-center">{{ result.referee }}</td>
-              <td v-if="result.results">
+              <td class="pl-2" d v-if="result.results">
                 <span v-for="match in result.results" class="pr-1">
                   <span v-if="typeof(match) == 'undefined'">&mdash;</span>
                   <span v-if="typeof(match) == 'object' && match.opponent === -1">volno</span>
                   <abbr v-if="typeof(match) == 'object' && match.opponent !== -1" :title="playerNames[match.opponent]">
-                    {{ playerPlacementByIndex(match.opponent) }}{{ match.result }}&nbsp;<span v-if="typeof(match.goalsFor) !== 'undefined'" class="text-muted">({{ match.goalsFor }}:{{ match.goalsAgainst }})</span>
+                    {{ playerPlacementByIndex(match.opponent) }}{{ match.result }}&nbsp;<span v-if="typeof(match.goalsFor) !== 'undefined'" class="text-muted d-print-none">({{ match.goalsFor }}:{{ match.goalsAgainst }})</span>
                   </abbr>
                 </span>
               </td>
@@ -769,7 +771,6 @@
       </datalist>
     </div>
   </div>
-
 
   <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
 

@@ -35,21 +35,21 @@
   },
   "homepage": "https://github.com/dominikfiala/turnaj-sprtec#readme",
   "dependencies": {
-    "bootstrap": "^4.0.0-beta.2",
+    "bootstrap": "^4.0.0-beta.3",
     "edmonds-blossom": "^1.0.0",
-    "exceljs": "^0.6.2",
+    "exceljs": "^0.8.1",
     "faker": "^4.1.0",
     "file-saver": "^1.3.3",
     "jquery": "^3.2.1",
     "popper.js": "^1.13.0",
-    "vue": "^2.5.9"
+    "vue": "^2.5.13"
   },
   "devDependencies": {
-    "browser-sync": "^2.18.13",
+    "browser-sync": "^2.23.3",
     "electron": "1.7.9",
-    "electron-builder": "^19.48.2",
+    "electron-builder": "^19.53.2",
     "electron-connect": "^0.6.2",
-    "electron-devtools-installer": "^2.2.1",
+    "electron-devtools-installer": "^2.2.3",
     "gulp": "github:gulpjs/gulp#4.0"
   }
 }

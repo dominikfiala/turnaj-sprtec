@@ -1,64 +1,65 @@
 @import url('./bootstrap.cosmo.css');
 
-html {
-  overflow: hidden;
-  height: 100%;
-}
-
-body {
-  height: 100%;
-  overflow-y: auto;
-  position: relative;
-}
-
-.app-nav {
-  position: fixed;
-  z-index: 3;
-  top: 0;
-  right: 0;
-  left: 0;
-  background-color: var(--light);
-}
-  .about-app-nav {
-    height: calc(100vh - 118px);
-    overflow-y: auto;
+@media screen {
+  html {
+    overflow: hidden;
+    height: 100%;
   }
 
-.app-content {
-  position: absolute;
-  overflow-y: auto;
-  top: 48px;
-  left: 0;
-  right: 0;
-  bottom: 48px;
-  padding: 10px;
-}
-.tab-footer {
-  position: fixed;
-  z-index: 3;
-  bottom: 0;
-  right: 0;
-  left: 0;
-  border-top: 1px solid #ddd;
-  background-color: var(--light);
-}
+  body {
+    height: 100%;
+    overflow-y: auto;
+    position: relative;
+  }
 
-input[type="date"] {
-  height: 2.25rem;
-}
-input[type="date"]::-webkit-clear-button,
-input[type="date"]::-webkit-inner-spin-button {
-  display: none;
-}
+  .app-nav {
+    position: fixed;
+    z-index: 3;
+    top: 0;
+    right: 0;
+    left: 0;
+    background-color: var(--light);
+  }
+    .about-app-nav {
+      height: calc(100vh - 118px);
+      overflow-y: auto;
+    }
 
-abbr[title], abbr[data-original-title] {
-  text-decoration: none;
-}
+  .app-content {
+    position: absolute;
+    overflow-y: auto;
+    top: 48px;
+    left: 0;
+    right: 0;
+    bottom: 48px;
+    padding: 10px;
+  }
+  .tab-footer {
+    position: fixed;
+    z-index: 3;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    border-top: 1px solid #ddd;
+    background-color: var(--light);
+  }
 
-.table th {
-  border-top: none;
-}
+  input[type="date"] {
+    height: 2.25rem;
+  }
+  input[type="date"]::-webkit-clear-button,
+  input[type="date"]::-webkit-inner-spin-button {
+    display: none;
+  }
 
+  abbr[title], abbr[data-original-title] {
+    text-decoration: none;
+  }
+
+  .table th {
+    border-top: none;
+  }
+}
 
 @media print {
   * {
@@ -81,5 +82,8 @@ abbr[title], abbr[data-original-title] {
   }
   .table-sm th, .table-sm td {
     padding: 0;
+  }
+  .app-content {
+    position: static;
   }
 }

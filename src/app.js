@@ -7,7 +7,8 @@ var fs = require('fs');
 var env = typeof(process) !== 'undefined' ? 'electron' : 'browser'
 
 if (env === 'electron') {
-  var shell = require('electron').shell
+  var electron = require('electron')
+  var shell = electron.shell
 }
 
 Vue.config.devtools = true
@@ -366,6 +367,7 @@ var app = new Vue({
         { header: 'P', key: 'losses', width: 3 },
         { header: 'B', key: 'points', width: 5 },
         { header: 'BS', key: 'opponentsPoints', width: 5 },
+        { header: 'VB', key: 'goalsForSort', width: 5 },
         { header: 'BSS', key: 'opponentsOpponentsPoints', width: 5 },
         { header: 'BV', key: 'goalsFor', width: 5 },
         { header: '', key: 'goalsSeparator', width: 1 },
@@ -373,9 +375,6 @@ var app = new Vue({
         { header: 'ČP', key: 'cpPoints', width: 5 },
         { header: 'R', key: 'referee', width: 3 },
       ]
-      this.rounds.forEach((round, roundIndex) => {
-        columns.push({header: `${roundIndex + 1}.`, key: 'match'+roundIndex, width: 10})
-      })
       worksheet.columns = columns
 
       worksheet.getColumn('position').alignment = { horizontal: 'right' }
@@ -385,13 +384,14 @@ var app = new Vue({
       worksheet.getColumn('ties').alignment = { horizontal: 'center' }
       worksheet.getColumn('losses').alignment = { horizontal: 'center' }
       worksheet.getColumn('points').alignment = { horizontal: 'center' }
+      worksheet.getColumn('goalsForSort').alignment = { horizontal: 'center' }
       worksheet.getColumn('opponentsPoints').alignment = { horizontal: 'center' }
       worksheet.getColumn('opponentsOpponentsPoints').alignment = { horizontal: 'center' }
       worksheet.getColumn('goalsFor').alignment = { horizontal: 'right' }
       worksheet.getColumn('goalsSeparator').alignment = { horizontal: 'center' }
       worksheet.getColumn('goalsAgainst').alignment = { horizontal: 'left' }
-      worksheet.getColumn('cpPoints').alignment = { horizontal: 'left' }
-      worksheet.getColumn('referee').alignment = { horizontal: 'left' }
+      worksheet.getColumn('cpPoints').alignment = { horizontal: 'center' }
+      worksheet.getColumn('referee').alignment = { horizontal: 'center' }
 
       this.results.forEach((result, resultIndex) => {
         var row = {
@@ -404,29 +404,18 @@ var app = new Vue({
           ties: result.ties,
           losses: result.losses,
           points: result.points,
+          goalsForSort: result.goalsForSort,
           opponentsPoints: result.opponentsPoints,
           opponentsOpponentsPoints: result.opponentsOpponentsPoints,
           goalsFor: result.goalsFor,
           goalsSeparator: ':',
           goalsAgainst: result.goalsAgainst,
-          cpPoints: result.cpPoints,
+          cpPoints: result.cpPoints ? result.cpPoints : 0,
           referee: result.referee,
         }
         if (result.categoryWinner) {
           row.category += '!'
         }
-        result.results.forEach((result, resultIndex) => {
-          var type = typeof(result)
-          if (type == 'undefined') {
-            row['match'+resultIndex] = `—`
-          }
-          else if(type == 'object' && result.opponent === -1) {
-            row['match'+resultIndex] = 'volno'
-          }
-          else {
-            row['match'+resultIndex] = `${result.opponent}${result.result} (${result.goalsFor}:${result.goalsAgainst})`
-          }
-        })
         worksheet.addRow(row)
       })
 
@@ -449,39 +438,32 @@ var app = new Vue({
           'Pořadatel: ', '',
           this.config.host, '', '', '', '', '', '',
           'Kategorie: ', '',
-          this.config.categories[this.config.category].title, '', '', '', ''
+          this.config.category === -1 ? 'Nezařazeno do ČP' : this.config.categories[this.config.category].title, '', '', '', ''
         ],[
 
-        ],[
-          'Výsledky turnaje', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '',
-          'Tabulka vzájemných zápasů'
         ]
       )
 
-      worksheet.mergeCells('A1:P1')
+      worksheet.mergeCells('A1:Q1')
       worksheet.getCell('A1').font = { size: 18, bold: true, name: 'Arial' }
 
       worksheet.mergeCells('A3:B3')
       worksheet.mergeCells('C3:I3')
       worksheet.mergeCells('J3:K3')
-      worksheet.mergeCells('L3:P3')
+      worksheet.mergeCells('L3:Q3')
 
       worksheet.mergeCells('A4:B4')
       worksheet.mergeCells('C4:I4')
       worksheet.mergeCells('J4:K4')
-      worksheet.mergeCells('L4:P4')
+      worksheet.mergeCells('L4:Q4')
 
       worksheet.mergeCells('A5:B5')
       worksheet.mergeCells('C5:I5')
       worksheet.mergeCells('J5:K5')
-      worksheet.mergeCells('L5:P5')
-
-      worksheet.mergeCells('A7:P7')
-      var matchesSpanEnd = String.fromCharCode("Q".charCodeAt(0) + this.config.numberOfRounds - 1)
-      worksheet.mergeCells(`Q7:${matchesSpanEnd}7`)
-      worksheet.getCell('A7').font = { bold: true, name: 'Arial' }
+      worksheet.mergeCells('L5:Q5')
 
       worksheet.getRow(1).alignment = { horizontal: 'center' }
+      worksheet.getRow(2).height = 10
       worksheet.getCell('A3').alignment = { horizontal: 'right' }
       worksheet.getCell('C3').alignment = { horizontal: 'left' }
       worksheet.getCell('J3').alignment = { horizontal: 'right' }
@@ -494,7 +476,7 @@ var app = new Vue({
       worksheet.getCell('C5').alignment = { horizontal: 'left' }
       worksheet.getCell('J5').alignment = { horizontal: 'right' }
       worksheet.getCell('L5').alignment = { horizontal: 'left' }
-      worksheet.getRow(7).alignment = { horizontal: 'center' }
+      worksheet.getRow(6).height = 10
 
       var filename = 'results.xlsx'
       workbook.xlsx.writeFile(filename).then(() => {
@@ -579,9 +561,12 @@ var app = new Vue({
     },
 
     randomRoundResults: function(roundIndex) {
+      this.rounds[roundIndex].refereeCheck[0] = this.randomIndex(this.players)
+      this.rounds[roundIndex].refereeCheck[1] = this.randomIndex(this.players)
       this.rounds[roundIndex].matches.forEach(match => {
         match.home_score = this.randomIndex([...Array(9).keys()])
         match.away_score = this.randomIndex([...Array(9).keys()])
+        match.referee = this.randomIndex(this.players)
       })
     },
     makePairing: function(roundIndex) {

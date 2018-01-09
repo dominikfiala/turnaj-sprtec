@@ -141,6 +141,7 @@ var app = new Vue({
           losses: 0,
           ties: 0,
           referee: 0,
+          refereeWarning: false,
           goalsFor: 0,
           goalsForSort: 0,
           goalsAgainst: 0,
@@ -285,7 +286,7 @@ var app = new Vue({
       // sort player stats
       results.sort(this.fieldSorter(['-points', '-opponentsPoints', '-goalsForSort', '-opponentsOpponentsPoints']))
 
-      // check shared positions
+      // check shared positions and referee warning
       var previousResult = null
       results.forEach((result, resultIndex) =>  {
         if (previousResult &&
@@ -298,6 +299,10 @@ var app = new Vue({
           previousResult.sharedPosition = true
         }
         previousResult = result
+
+        if (result.referee < Math.floor(result.matches / 2)) {
+          result.refereeWarning = true
+        }
       })
 
       // mutual match of two players with same points amount
@@ -356,11 +361,11 @@ var app = new Vue({
     resultsExportExcel: function() {
       var workbook = new Excel.Workbook()
       var worksheet = workbook.addWorksheet('Výsledky')
-      var columns = [
+      worksheet.columns = [
         { header: '', key: 'position', width: 5 },
         { header: 'Hráč', key: 'name', width: 25 },
         { header: 'Klub', key: 'club', width: 25 },
-        { header: 'K', key: 'category', width: 3 },
+        { header: 'K', key: 'category', width: 4 },
         { header: 'Z', key: 'matches', width: 3 },
         { header: 'V', key: 'wins', width: 3 },
         { header: 'R', key: 'ties', width: 3 },
@@ -375,7 +380,6 @@ var app = new Vue({
         { header: 'ČP', key: 'cpPoints', width: 5 },
         { header: 'R', key: 'referee', width: 3 },
       ]
-      worksheet.columns = columns
 
       worksheet.getColumn('position').alignment = { horizontal: 'right' }
       worksheet.getColumn('category').alignment = { horizontal: 'center' }
@@ -415,6 +419,9 @@ var app = new Vue({
         }
         if (result.categoryWinner) {
           row.category += '!'
+        }
+        if (result.refereeWarning) {
+          row.referee += '!'
         }
         worksheet.addRow(row)
       })
@@ -478,9 +485,65 @@ var app = new Vue({
       worksheet.getCell('L5').alignment = { horizontal: 'left' }
       worksheet.getRow(6).height = 10
 
+      // rounds
+      this.rounds.forEach((round, roundIndex) => {
+        var worksheet = workbook.addWorksheet(`${roundIndex + 1}. kolo`)
+        worksheet.columns = [
+          { header: 'Domácí', key: 'home', width: 25 },
+          { header: 'Host', key: 'away', width: 25 },
+          { header: 'Výsledek', key: 'homeScore', width: 4 },
+          { header: '', key: 'scoreDivider', width: 1 },
+          { header: '', key: 'awayScore', width: 4 },
+          { header: 'Rozhodčí', key: 'referee', width: 25 },
+        ]
+
+        worksheet.getColumn('homeScore').alignment = { horizontal: 'right' }
+        worksheet.getColumn('scoreDivider').alignment = { horizontal: 'center' }
+        worksheet.getColumn('awayScore').alignment = { horizontal: 'left' }
+
+        round.matches.forEach((match, matchIndex) => {
+          var row = {
+            home: this.playerNames[match.home],
+            away: this.playerNames[match.away],
+            homeScore: match.home_score,
+            scoreDivider: ':',
+            awayScore: match.away_score,
+            referee: this.playerNames[match.referee],
+          }
+          worksheet.addRow(row)
+        })
+
+        worksheet.mergeCells('C1:E1')
+        worksheet.getCell('C1').alignment = { horizontal: 'center' }
+
+        worksheet.addRow()
+        if (round.bye !== -1) {
+          worksheet.addRow({
+            home: 'Volné kolo:',
+            away: this.playerNames[round.bye],
+          })
+        }
+        if (round.refereeCheck[0] !== -1) {
+          worksheet.addRow({
+            home: 'Zapisovatel rozhodčích:',
+            away: this.playerNames[round.refereeCheck[0]],
+          })
+        }
+        if (round.refereeCheck[1] !== -1) {
+          worksheet.addRow({
+            home: 'Zapisovatel rozhodčích:',
+            away: this.playerNames[round.refereeCheck[1]],
+          })
+        }
+      })
+
+
+      // export to file and force download
       var filename = 'results.xlsx'
       workbook.xlsx.writeFile(filename).then(() => {
         console.log('done')
+        // var blob = new Blob([fs.readFileSync(filename)], {type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"})
+        // saveAs(blob, `${this.config.date} ${this.config.name}.xlsx`)
       })
     },
 
@@ -853,9 +916,15 @@ var app = new Vue({
             'name': 'Junioři'
           }
         }
-        else {
+        else if (player.yearOfBirth && age > 18) {
           return {
             'shortcut': 'M',
+            'name': 'Muži'
+          }
+        }
+        else {
+          return {
+            'shortcut': 'M?',
             'name': 'Muži'
           }
         }

@@ -508,7 +508,7 @@
               <td class="text-center">:</td>
               <td>{{ result.goalsAgainst }}</td>
               <td v-if="config.category !== -1" class="text-center">{{ result.cpPoints }}</td>
-              <td class="text-center">{{ result.referee }}</td>
+              <td class="text-center">{{ result.referee }}<span v-if="result.refereeWarning">!</span></td>
               <td class="pl-2" d v-if="result.results">
                 <span v-for="match in result.results" class="pr-1">
                   <span v-if="typeof(match) == 'undefined'">&mdash;</span>

@@ -233,8 +233,8 @@
                   :class="{'is-invalid': player.club === -1}">
                   <option :value="-1">Klub</option>
                   <option
-                    v-for="(club, clubIndex) in config.clubs"
-                    :value="clubIndex">{{ club }}</option>
+                    v-for="club in clubsSorted"
+                    :value="club.clubIndex">{{ club.name }}</option>
                 </select>
               </div>
               <div class="col-auto">

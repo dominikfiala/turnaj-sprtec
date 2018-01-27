@@ -925,14 +925,25 @@ var app = new Vue({
         else {
           return {
             'shortcut': 'M?',
-            'name': 'Muži'
+            'name': 'Muži?'
           }
         }
       })
     },
 
+    clubsSorted: function() {
+      return this.config.clubs.map((item, index) => {
+        return {
+          name: item,
+          clubIndex: index
+        }
+      }).sort(function(a, b) {
+        return a.name.localeCompare(b.name)
+      })
+    },
+
     tournamentDate: function() {
-      return new Date(this.config.date).toLocaleDateString();
+      return new Date(this.config.date).toLocaleDateString('cs-CZ');
     },
     tournamentDateValid: function() {
       return /^(\d{4})-(\d{2})-(\d{2})$/.test(this.config.date)

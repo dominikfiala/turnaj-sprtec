@@ -541,9 +541,9 @@ var app = new Vue({
       // export to file and force download
       var filename = 'results.xlsx'
       workbook.xlsx.writeFile(filename).then(() => {
-        console.log('done')
-        // var blob = new Blob([fs.readFileSync(filename)], {type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"})
-        // saveAs(blob, `${this.config.date} ${this.config.name}.xlsx`)
+        // console.log('done')
+        var blob = new Blob([fs.readFileSync(filename)], {type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"})
+        saveAs(blob, `${this.config.date} ${this.config.name}.xlsx`)
       })
     },
 

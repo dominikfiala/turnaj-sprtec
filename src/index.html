@@ -400,9 +400,8 @@
           <table class="table table-sm">
             <thead>
               <tr>
-                <th>#</th>
+                <th class="text-right pr-2">#</th>
                 <th colspan="3">Soupeři</th>
-                <th class="text-center">Výsledek</th>
                 <th>Rozhodčí</th>
               </tr>
             </thead>
@@ -410,12 +409,11 @@
               <tr
                 v-for="(match, matchIndex) in rounds[state.activeRound].matches"
                 :key="match.matchPosition">
-                <td>{{ matchIndex+1 }}.</td>
-                <td>{{ playerNames[match.home] }}</td>
-                <td class="text-center">&times;</td>
-                <td>{{ playerNames[match.away] }}</td>
-                <td class="text-center">{{match.home_score}}:{{match.away_score}}</td>
-                <td class="w-25">{{playerNames[match.referee]}}</td>
+                <td style="width: 5%;" class="text-right pr-2">{{ matchIndex+1 }}.</td>
+                <td style="width: 20%;">{{ playerNames[match.home] }}</td>
+                <td style="width: 15%;" class="text-center">{{match.home_score}}:{{match.away_score}}</td>
+                <td style="width: 20%;">{{ playerNames[match.away] }}</td>
+                <td style="width: 40%;">{{playerNames[match.referee]}}</td>
               </tr>
             </tbody>
           </table>

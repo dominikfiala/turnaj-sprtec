@@ -14,7 +14,7 @@
     }
   },
   "scripts": {
-    "gulp": "./node_modules/gulp/bin/gulp.js",
+    "serve": "npx gulp serve",
     "build-test": "rm -rf dist && npx electron-builder --win --ia32 --dir",
     "build": "rm -rf dist && npx electron-builder --win --ia32"
   },
@@ -45,9 +45,9 @@
   },
   "devDependencies": {
     "browser-sync": "^2.23.6",
-    "electron": "1.7.9",
-    "electron-builder": "^19.55.3",
+    "electron": "1.8.2",
+    "electron-builder": "^20.0.5",
     "electron-connect": "^0.6.3",
-    "gulp": "github:gulpjs/gulp#4.0"
+    "gulp": "^4.0.0"
   }
 }

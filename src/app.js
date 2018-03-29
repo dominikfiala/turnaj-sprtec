@@ -892,7 +892,7 @@ var app = new Vue({
       return this.players.map(function(player) {
         var age = season - player.yearOfBirth
 
-        if (age <= 12) {
+        if (age < 12) {
           return {
             'shortcut': 'P',
             'name': 'Ml. žáci'
@@ -904,19 +904,19 @@ var app = new Vue({
             'name': 'Ženy'
           }
         }
-        else if (age <= 15) {
+        else if (age < 15) {
           return {
             'shortcut': 'Z',
             'name': 'St. žáci'
           }
         }
-        else if (age <= 18) {
+        else if (age < 18) {
           return {
             'shortcut': 'J',
             'name': 'Junioři'
           }
         }
-        else if (player.yearOfBirth && age > 18) {
+        else if (player.yearOfBirth && age >= 18) {
           return {
             'shortcut': 'M',
             'name': 'Muži'
@@ -924,8 +924,8 @@ var app = new Vue({
         }
         else {
           return {
-            'shortcut': 'M?',
-            'name': 'Muži?'
+            'shortcut': '?',
+            'name': 'Neznámá'
           }
         }
       })

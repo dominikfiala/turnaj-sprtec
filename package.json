@@ -1,6 +1,6 @@
 {
   "name": "turnaj-sprtec",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Aplikace pro řízení turnaje ve šprtci",
   "main": "src/main.js",
   "build": {

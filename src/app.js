@@ -602,6 +602,7 @@ var app = new Vue({
       }) + 1
     },
     removePlayer: function(playerIndex) {
+      this.results = []
       this.players.splice(playerIndex, 1)
     },
     playerSetActive(playerIndex) {

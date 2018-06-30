@@ -503,16 +503,18 @@
               <td class="text-center">{{ result.opponentsPoints }}</td>
               <td class="text-center">{{ result.goalsForSort }}</td>
               <td class="text-center">{{ result.opponentsOpponentsPoints }}</td>
-              <td :title="'Z toho jako rozhodující kritérium: ' + result.goalsForSort" class="text-right">{{ result.goalsFor }}</td>
+              <td class="text-right">
+                <abbr :title="`Z toho jako rozhodující kritérium: ${result.goalsForSort}`">{{ result.goalsFor }}</abbr>
+              </td>
               <td class="text-center">:</td>
               <td>{{ result.goalsAgainst }}</td>
               <td v-if="config.category !== -1" class="text-center">{{ result.cpPoints }}</td>
               <td class="text-center">{{ result.referee }}<span v-if="result.refereeWarning">!</span></td>
               <td class="pl-2" v-if="result.results">
                 <span v-for="match in result.results" class="pr-1">
-                  <span v-if="typeof(match) == 'undefined'">&mdash;</span>
-                  <span v-if="typeof(match) == 'object' && match.opponent === -1">volno</span>
-                  <abbr v-if="typeof(match) == 'object' && match.opponent !== -1" :title="playerNames[match.opponent]">
+                  <span v-if="!match">&mdash;</span>
+                  <span v-if="match && match.opponent === -1">volno</span>
+                  <abbr v-if="match && match.opponent !== -1" :title="playerNames[match.opponent]">
                     {{ playerPlacementByIndex(match.opponent) }}{{ match.result }}&nbsp;<span v-if="typeof(match.goalsFor) !== 'undefined'" class="text-muted d-print-none">({{ match.goalsFor }}:{{ match.goalsAgainst }})</span>
                   </abbr>
                 </span>

@@ -146,10 +146,10 @@ var app = new Vue({
           goalsForSort: 0,
           goalsAgainst: 0,
           byes: 0,
-          opponents: [],
+          opponents: new Array(app.config.numberOfRounds),
           opponentsPoints: 0,
           opponentsOpponentsPoints: 0,
-          results: [],
+          results: new Array(app.config.numberOfRounds),
           categoryWinner: false,
           sharedPosition: false
         }
@@ -311,7 +311,7 @@ var app = new Vue({
       pairs.forEach(players => {
         let firstPlayer = players[0]
         let secondPlayer = players[1]
-        let mutualMatch = firstPlayer.results.find(item => item.opponent === secondPlayer.playerIndex)
+        let mutualMatch = firstPlayer.results.filter(match => match.result).find(item => item.opponent === secondPlayer.playerIndex)
 
         if (mutualMatch) {
           let firstPlayerIndex = results.findIndex(item => item.playerIndex === firstPlayer.playerIndex)

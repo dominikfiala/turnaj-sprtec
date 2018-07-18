@@ -1,6 +1,6 @@
 {
   "name": "turnaj-sprtec",
-  "version": "1.2.2",
+  "version": "1.2.4",
   "description": "Aplikace pro řízení turnaje ve šprtci",
   "main": "src/main.js",
   "build": {
@@ -33,7 +33,8 @@
   },
   "homepage": "https://github.com/dominikfiala/turnaj-sprtec#readme",
   "dependencies": {
-    "bootstrap": "^4.0.0",
+    "bootstrap": "^4.1.2",
+    "bootswatch": "^4.1.2",
     "edmonds-blossom": "^1.0.0",
     "electron-devtools-installer": "^2.2.3",
     "exceljs": "^0.8.2",
@@ -44,9 +45,9 @@
     "vue": "^2.5.13"
   },
   "devDependencies": {
-    "browser-sync": "^2.23.6",
-    "electron": "1.8.2",
-    "electron-builder": "^20.0.5",
+    "browser-sync": "^2.24.5",
+    "electron": "^2.0.5",
+    "electron-builder": "^20.22.0",
     "electron-connect": "^0.6.3",
     "gulp": "^4.0.0"
   }

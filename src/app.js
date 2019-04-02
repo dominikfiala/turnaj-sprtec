@@ -645,13 +645,13 @@ var app = new Vue({
         return this.players[player.playerIndex].rounds.indexOf(roundIndex) !== -1
       })
 
-      if (availablePlayers.length < 2) {
-        alert('V kole není dostatek hráčů.')
-        return
-      }
-
       // assign a bye if round players count odd
       if (availablePlayers.length % 2 === 1) {
+        if (availablePlayers.filter(player => player.byes === 1).length >= availablePlayers.length) {
+          alert('Chyba: Nelze přidělit volné kolo. Všichni hráči jej již měli. Turnaj je nutné předčasně ukončit.')
+          return
+        }
+        
         // get bottom half of player results
         var byeCandidates = this.results.slice(Math.floor(availablePlayers.length / 2), availablePlayers.length)
 
@@ -675,41 +675,45 @@ var app = new Vue({
           }
         }
       }
-
+      
       var maxDiff = this.players.length
 
       var possiblePairs = []
       availablePlayers.forEach(player => {
         availablePlayers.forEach(opponent => {
-          if (
-            player.playerIndex !== opponent.playerIndex // &&
-            // player.opponents.indexOf(opponent.playerIndex) === -1
-          ) {
+          // Hrac nemuze hrat sam proti sobe
+          if (player.playerIndex !== opponent.playerIndex) {
             var match = [player.playerIndex, opponent.playerIndex]
             match.sort(function(a, b) {
               return a - b;
             })
+            
+            // Hrac proti souperi jeste nehral
             if (player.opponents.indexOf(opponent.playerIndex) === -1) {
+              // V prvnim kole je pravdepodobnost naparovani nahodna
               if (roundIndex === 0) {
                 match.push(faker.random.number({max: maxDiff}))
               }
+              // Od druheho kola je pravdepodobnost naparovani zavisla na rozdilu hracu v poradi
               else {
                 match.push(maxDiff - Math.abs(this.playerPlacementByIndex(player.playerIndex) - this.playerPlacementByIndex(opponent.playerIndex)))
               }
-            }
-            else {
-              match.push(0)
-            }
-            if (this.searchForArray(possiblePairs, match) === -1) {
-              possiblePairs.push(match)
+              
+              // Kombinace souperu jeste neni vygenerovana z predchozi iterace
+              if (this.searchForArray(possiblePairs, match) === -1) {
+                possiblePairs.push(match)
+              }
             }
           }
         })
       })
 
-      possiblePairs = this.shuffle(possiblePairs)
-
       var rawPairing = blossom(possiblePairs)
+      if (rawPairing.length === 0 || rawPairing.filter(match => match === -1).length > 1) {
+        alert('Chyba: Nelze vygenerovat dostatečné množství zápasů. Turnaj je nutné předčasně ukončit.')
+        return
+      }
+      
       rawPairing.forEach((home, away) => {
         if (home !== -1 && home < away) {
           var match = {
@@ -719,7 +723,7 @@ var app = new Vue({
           }
           var homePosition = this.playerPlacementByIndex(home)
           var awayPosition = this.playerPlacementByIndex(away)
-
+          
           if (homePosition < awayPosition) {
             match.home = home
             match.away = away

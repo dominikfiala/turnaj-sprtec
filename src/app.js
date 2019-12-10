@@ -14,6 +14,7 @@ if (env === 'electron') {
 Vue.config.devtools = true
 
 var dataInitial = {
+  app: require('../package.json'),
   state: {
     activeRound: 0,
     activePlayer: -1,
@@ -22,9 +23,9 @@ var dataInitial = {
     generatingRound: false
   },
   config: {
-    name: 'Turnaj ve šprtci',
-    venue: 'Lumpenkavárna',
-    host: 'Domo',
+    name: '',
+    venue: '',
+    host: '',
     category: -1,
     numberOfRounds: 5,
     date: new Date().toISOString().slice(0, 10),
@@ -55,23 +56,7 @@ var dataInitial = {
     pointsDraw: 1,
     goalsForSortMax: 5,
     byeGoalsFor: 5,
-    clubs: [
-      'BHC Dragons Modřice',
-      'BHC StarColor Most',
-      'BHK Orel Boskovice',
-      'Doudeen Team',
-      'Fluke Kohoutovice',
-      'Future Úsov',
-      'Gunners Břeclav',
-      'Old Friends Stochov',
-      'Prague NHL',
-      'SHC Bizoni Uherčice',
-      'SHL Brno',
-      'SHL WIP Reklama D. Voda',
-      'Sokol Stochov',
-      'Šprtmejkři Ostrava',
-      'THE Orel Bohunice',
-    ],
+    clubs: ["B.H.C. Dobrá","Basque Country","BHC 15. ZŠ Most","BHC Dragons Brno","BHC Dragons Modřice","BHC Most","BHC StarColor Most","BHC TJ Sokol Bohumín","BHK IQ Boskovice","BHL Žďár nad Sázavou","Black Sharks Most","Brno","Černí Tygři 3. ZŠ Most","Doudeen Team","Fluke Kohoutovice","Gunners Břeclav","Haluzáci 8. ZŠ Most","Hungary","KSH Draci Třebenice","KSH ZŠ Meziboří","Litvínov","Most","Netopýři Most","Podřípská NHL Roudnice n.L.","Poland","Prague NHL","Real Draci 18. ZŠ Most","Riders Líšeň","Russia","SDH Nové Dvory","Sharks 4.ZŠ Most","SHK Kadolec","SHL Brno","SHL WIP Reklama D. Voda","Sokol Stochov","SVČ Most","Šprtmejkři Ostrava","Sweden","THE Orel Bohunice","TJ Sokol Bohumín","Tučňáci 14. ZŠ Most","Valašské Meziříčí","WIP Reklama Dobrá Voda","ZŠ Hamry nad Sázavou","ZŠ Janov","ZŠ Komenského Břeclav","ZŠ Kupkova Břeclav","ZŠ Slovácká Břeclav"],
     contests: ['Český pohár', 'Žákovská tour']
   },
   players: [],
@@ -896,42 +881,51 @@ var app = new Vue({
       var season = this.config.season
       return this.players.map(function(player) {
         var age = season - player.yearOfBirth
+        var category = {
+          age: age
+        }
 
-        if (age < 12) {
-          return {
+        if (player.sex === 'veteran') {
+          return Object.assign(category, {
+            'shortcut': 'V',
+            'name': 'Veteráni'
+          })
+        }
+        else if (age < 12) {
+          return Object.assign(category, {
             'shortcut': 'P',
             'name': 'Ml. žáci'
-          }
+          })
         }
         else if (player.sex == 'female') {
-          return {
+          return Object.assign(category, {
             'shortcut': 'L',
             'name': 'Ženy'
-          }
+          })
         }
         else if (age < 15) {
-          return {
+          return Object.assign(category, {
             'shortcut': 'Z',
             'name': 'St. žáci'
-          }
+          })
         }
         else if (age < 18) {
-          return {
+          return Object.assign(category, {
             'shortcut': 'J',
             'name': 'Junioři'
-          }
+          })
         }
         else if (player.yearOfBirth && age >= 18) {
-          return {
+          return Object.assign(category, {
             'shortcut': 'M',
             'name': 'Muži'
-          }
+          })
         }
         else {
-          return {
+          return Object.assign(category, {
             'shortcut': '?',
             'name': 'Neznámá'
-          }
+          })
         }
       })
     },

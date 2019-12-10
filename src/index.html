@@ -44,19 +44,19 @@
             <div class="col">
               <div class="form-group">
                 <label for="config-name">Název turnaje</label>
-                <input type="text" v-model="config.name" class="form-control" id="config-name" :class="{'is-invalid': !config.name}">
+                <input type="text" v-model="config.name" class="form-control" id="config-name" :class="{'is-invalid': !config.name}" placeholder="Mikulášský pohár">
               </div>
             </div>
             <div class="col">
               <div class="form-group">
                 <label for="config-venue">Místo konání</label>
-                <input type="text" v-model="config.venue" class="form-control" id="config-venue" :class="{'is-invalid': !config.venue}">
+                <input type="text" v-model="config.venue" class="form-control" id="config-venue" :class="{'is-invalid': !config.venue}" placeholder="Sokolovna Boskovice">
               </div>
             </div>
             <div class="col">
               <div class="form-group">
                 <label for="config-host">Pořadatel</label>
-                <input type="text" list="clubs" v-model="config.host" class="form-control" id="config-host" :class="{'is-invalid': !config.host}">
+                <input type="text" list="clubs" v-model="config.host" class="form-control" id="config-host" :class="{'is-invalid': !config.host}" placeholder="BHK IQ Boskovice">
               </div>
             </div>
           </div>
@@ -241,6 +241,7 @@
                   class="form-control">
                   <option value="male">muž</option>
                   <option value="female">žena</option>
+                  <option value="veteran" :disabled="playerCategories[playerIndex].age < 50">veterán</option>
                 </select>
               </div>
               <div class="col-auto">
@@ -530,9 +531,9 @@
       <!-- About app tab -->
       <div class="tab-pane" id="about-app">
         <div class="container">
-          <div class="row">
-            <div class="col-3">
-              <ul class="about-app-nav nav flex-column flex-nowrap position-fixed">
+          <div class="d-flex">
+            <div class="flex-shrink-0 mr-4">
+              <ul class="nav flex-column sticky-top">
                 <li class="nav-item">
                   <strong class="nav-link">Navigace</strong>
                 </li>
@@ -575,7 +576,7 @@
               </ul>
             </div>
 
-            <div class="col">
+            <div class="">
               <h1 id="uvod">Turnaj ve&nbsp;šprtci</h1>
               <p class="lead">Program pro&nbsp;řízení šprtcových turnajů</p>
 
@@ -610,7 +611,7 @@
               <p>Pokud je&nbsp;hráčů v&nbsp;kole lichý počet, je&nbsp;náhodně vybrán jeden hráč ze&nbsp;spodní poloviny průběžného pořadí, a&nbsp;tomu je&nbsp;přiřazeno volné kolo. Volné kolo může během turnaje dostat pouze jeden hráč. Záměrně se&nbsp;volné kolo neuděluje nejhoršímu hráči v&nbsp;průběžném pořadí, protože v&nbsp;případě pozdního zapojení hráče do&nbsp;turnaje by&nbsp;bylo více než pravděpodobné, že&nbsp;právě takový hráč dostane hned ve&nbsp;svém prvním kole volno.</p>
 
               <h3 id="stav">Ukládání stavu turnaje</h3>
-              <p>Po&nbsp;spuštění programu je&nbsp;stav turnaje takový, jaký byl&nbsp;před&nbsp;jeho ukončením. Stav turnaje není třeba ukládat, ukládání se&nbsp;děje automaticky. Pro&nbsp;zahájení nového turnaje je&nbsp;potřeba stav programu resetovat. Lze využít exportu a&nbsp;importu stavu turnaje &ndsash; např. pro&nbsp;přípravu startovní listiny den před&nbsp;turnajem a&nbsp;následné zaslání stavu turnaje s&nbsp;vyplněnými účastníky do&nbsp;programu v&nbsp;jiném počítači, na&nbsp;kterém se&nbsp;turnaj odřídí.</p>
+              <p>Po&nbsp;spuštění programu je&nbsp;stav turnaje takový, jaký byl&nbsp;před&nbsp;jeho ukončením. Stav turnaje není třeba ukládat, ukládání se&nbsp;děje automaticky. Pro&nbsp;zahájení nového turnaje je&nbsp;potřeba stav programu resetovat. Lze využít exportu a&nbsp;importu stavu turnaje &ndash; např. pro&nbsp;přípravu startovní listiny den před&nbsp;turnajem a&nbsp;následné zaslání stavu turnaje s&nbsp;vyplněnými účastníky do&nbsp;programu v&nbsp;jiném počítači, na&nbsp;kterém se&nbsp;turnaj odřídí.</p>
 
               <h3 id="nastaveni">Nastavení turnaje</h3>
               <p>Důležité nastavení turnaje:</p>
@@ -625,6 +626,7 @@
               <p>U účastníků je&nbsp;nezbytné vyplnit jejich jméno a&nbsp;příjmení, volitelně další pole. Bez vyplnění jména a&nbsp;příjmení všech účasntíků nelze turnaj zahájit a&nbsp;tito jsou zvýrazněni červeným obrysem polí pro&nbsp;vyplnění jména.</p>
               <p>Účast hráče v&nbsp;kolech se&nbsp;řídí po&nbsp;kliknutí na&nbsp;tlačítko vlevo od&nbsp;jeho příjmení. Využijte např. pro&nbsp;vyřazení účastníka z&nbsp;následujících kol v&nbsp;případě, že&nbsp;turnaj předčasně opouští.</p>
               <p>Na&nbsp;základě datumu konání turnaje, pohlaví účastníka a&nbsp;roku narození se&nbsp;určuje hráčská kategorie účasníka. Pokud není vyplněno, program účastníka automaticky považuje za&nbsp;muže (vychází z&nbsp;předpokladu, že&nbsp;se&nbsp;turnajů účastní nejvíce mužů).</p>
+              <p>Hráčům starším padesáti let bez rozdílu pohlaví, nebo bez zadaného ročníku, lze přiřadit kategorii Veterán.</p>
 
               <h3 id="vysledky">Výsledky</h3>
               <p>Do&nbsp;průběžných výsledků se&nbsp;započítává poslední kolo vždy až po&nbsp;jeho kompletním vyplnění na&nbsp;záložce "Zápasy". Nezbytné je&nbsp;vyplnění výsledku zápasu, rozhodčí volitelně. Nevyplněné zápasy jsou zvýrazněny červeným obrysem pro&nbsp;vyplnění výsledku.</p>
@@ -653,11 +655,12 @@
         </div>
 
         <div class="tab-footer d-flex justify-content-between p-2 mb-0 d-print-none">
-          <span class="btn">
+          <span class="p-2">
             Autor:
             <strong>Dominik Fiala</strong>,
             <a href="mailto:domo.fiala@gmail.com">domo.fiala@gmail.com</a>,
-            <a href="tel:+420721090491">+420 721 090 491</a>
+            <a href="tel:+420721090491">+420 721 090 491</a>,
+            verze: {{app.version}}
           </span>
           <span>
             <button type="button" class="btn btn-warning"
